@@ -94,9 +94,6 @@ const MainContentFooter: FC = function () {
           </Footer.LinkGroup>
         </div>
       </Footer>
-      <p className="my-8 text-center text-sm text-gray-500 dark:text-gray-300">
-        &copy; 2019-2022 Flowbite.com. All rights reserved.
-      </p>
     </>
   );
 };

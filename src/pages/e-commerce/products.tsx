@@ -10,7 +10,7 @@ import {
   TextInput,
 } from "flowbite-react";
 import type { FC } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
 import {
   HiCog,
@@ -24,6 +24,7 @@ import {
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import { Pagination } from "../users/list";
+import axios from "axios";
 
 const EcommerceProductsPage: FC = function () {
   return (
@@ -370,6 +371,19 @@ const DeleteProductModal: FC = function () {
 };
 
 const ProductsTable: FC = function () {
+  const [allProducts, setAllProducts] = useState([]);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get(
+          "http://localhost/WriteResfulAPIPHP/api/product/read.php"
+        );
+        setAllProducts(response.data);
+      } catch (error) {}
+    }
+    fetchData();
+  }, []);
+
   return (
     <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
       <Table.Head className="bg-gray-100 dark:bg-gray-700">
@@ -384,6 +398,34 @@ const ProductsTable: FC = function () {
         <Table.HeadCell>Actions</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+        {allProducts.map((item, index) => (
+          <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
+            <Table.Cell className="w-4 p-4">
+              <Checkbox />
+            </Table.Cell>
+            <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+              <div className="text-base font-semibold text-gray-900 dark:text-white"></div>
+              <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                Html templates
+              </div>
+            </Table.Cell>
+            <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
+              Angular
+            </Table.Cell>
+            <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
+              #194556
+            </Table.Cell>
+            <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
+              $149
+            </Table.Cell>
+            <Table.Cell className="space-x-2 whitespace-nowrap p-4">
+              <div className="flex items-center gap-x-3">
+                <EditProductModal />
+                <DeleteProductModal />
+              </div>
+            </Table.Cell>
+          </Table.Row>
+        ))}
         <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
           <Table.Cell className="w-4 p-4">
             <Checkbox />

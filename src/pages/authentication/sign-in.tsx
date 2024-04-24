@@ -19,7 +19,7 @@ const SignInPage: FC = function () {
         className="w-full md:max-w-screen-sm [&>img]:hidden md:[&>img]:w-96 md:[&>img]:p-0 md:[&>*]:w-full md:[&>*]:p-16 lg:[&>img]:block"
       >
         <h1 className="mb-3 text-2xl font-bold dark:text-white md:text-3xl">
-          Sign in to platform
+          Sign in to dashboard
         </h1>
         <form>
           <div className="mb-4 flex flex-col gap-y-3">
@@ -45,24 +45,12 @@ const SignInPage: FC = function () {
               <Checkbox id="rememberMe" name="rememberMe" />
               <Label htmlFor="rememberMe">Remember me</Label>
             </div>
-            <a
-              href="#"
-              className="w-1/2 text-right text-sm text-primary-600 dark:text-primary-300"
-            >
-              Lost Password?
-            </a>
           </div>
           <div className="mb-6">
             <Button type="submit" className="w-full lg:w-auto">
               Login to your account
             </Button>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-300">
-            Not registered?&nbsp;
-            <a href="#" className="text-primary-600 dark:text-primary-300">
-              Create account
-            </a>
-          </p>
         </form>
       </Card>
     </div>

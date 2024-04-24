@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import {
   HiChartPie,
   HiLogin,
-  HiPencil,
   HiSearch,
   HiShoppingBag,
   HiUsers,
 } from "react-icons/hi";
+import { AiFillMedicineBox } from "react-icons/ai";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
@@ -65,11 +65,11 @@ const ExampleSidebar: FC = function () {
               >
                 Users list
               </Sidebar.Item>
+              <Sidebar.Item href="/" icon={AiFillMedicineBox}>
+                Orders
+              </Sidebar.Item>
               <Sidebar.Item href="/authentication/sign-in" icon={HiLogin}>
                 Sign in
-              </Sidebar.Item>
-              <Sidebar.Item href="/authentication/sign-up" icon={HiPencil}>
-                Sign up
               </Sidebar.Item>
             </Sidebar.ItemGroup>
           </Sidebar.Items>
