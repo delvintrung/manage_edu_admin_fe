@@ -9,6 +9,7 @@ import {
   HiUsers,
 } from "react-icons/hi";
 import { AiFillMedicineBox } from "react-icons/ai";
+import { FaUserLock } from "react-icons/fa";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
@@ -65,8 +66,27 @@ const ExampleSidebar: FC = function () {
               >
                 Users list
               </Sidebar.Item>
-              <Sidebar.Item href="/" icon={AiFillMedicineBox}>
+              <Sidebar.Item
+                href="/orders/list"
+                icon={AiFillMedicineBox}
+                className={
+                  "/orders/list" === currentPage
+                    ? "bg-gray-100 dark:bg-gray-700"
+                    : ""
+                }
+              >
                 Orders
+              </Sidebar.Item>
+              <Sidebar.Item
+                href="/permissions/list"
+                icon={FaUserLock}
+                className={
+                  "/permissions/list" === currentPage
+                    ? "bg-gray-100 dark:bg-gray-700"
+                    : ""
+                }
+              >
+                Permissions
               </Sidebar.Item>
               <Sidebar.Item href="/authentication/sign-in" icon={HiLogin}>
                 Sign in

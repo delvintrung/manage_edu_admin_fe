@@ -1,5 +1,10 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-import { Badge, Dropdown, Table, useTheme } from "flowbite-react";
+import { Badge, Table, useTheme, Accordion } from "flowbite-react";
+import { FaUsersViewfinder } from "react-icons/fa6";
+import { MdAdsClick } from "react-icons/md";
+import { FaCartPlus } from "react-icons/fa";
+import { IoIosCash } from "react-icons/io";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import type { FC } from "react";
 import Chart from "react-apexcharts";
 import NavbarSidebarLayout from "../layouts/navbar-sidebar";
@@ -51,7 +56,6 @@ const SalesThisWeek: FC = function () {
       </div>
       <SalesChart />
       <div className="mt-5 flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700 sm:pt-6">
-        <Datepicker />
         <div className="shrink-0">
           <a
             href="#"
@@ -87,6 +91,41 @@ const SalesChart: FC = function () {
   const labelColor = isDarkTheme ? "#93ACAF" : "#6B7280";
   const opacityFrom = isDarkTheme ? 0 : 1;
   const opacityTo = isDarkTheme ? 0 : 1;
+
+  function getRecentDays() {
+    const today = new Date();
+    const recentDays = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+
+      const formattedDate = `${day} ${getMonthName(date.getMonth())}`;
+      recentDays.push(formattedDate);
+    }
+
+    return recentDays;
+  }
+
+  function getMonthName(monthIndex: number) {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return months[monthIndex];
+  }
 
   const options: ApexCharts.ApexOptions = {
     stroke: {
@@ -135,15 +174,7 @@ const SalesChart: FC = function () {
       },
     },
     xaxis: {
-      categories: [
-        "01 Feb",
-        "02 Feb",
-        "03 Feb",
-        "04 Feb",
-        "05 Feb",
-        "06 Feb",
-        "07 Feb",
-      ],
+      categories: getRecentDays(),
       labels: {
         style: {
           colors: [labelColor],
@@ -205,8 +236,8 @@ const SalesChart: FC = function () {
   };
   const series = [
     {
-      name: "Revenue",
-      data: [6356, 6218, 6156, 6526, 6356, 6256, 6056],
+      name: "Doanh số",
+      data: [100, 110, 120, 150, 100, 170, 70],
       color: "#1A56DB",
     },
   ];
@@ -214,32 +245,80 @@ const SalesChart: FC = function () {
   return <Chart height={420} options={options} series={series} type="area" />;
 };
 
-const Datepicker: FC = function () {
-  return (
-    <span className="text-sm text-gray-600">
-      <Dropdown inline label="Last 7 days">
-        <Dropdown.Item>
-          <strong>Sep 16, 2021 - Sep 22, 2021</strong>
-        </Dropdown.Item>
-        <Dropdown.Divider />
-        <Dropdown.Item>Yesterday</Dropdown.Item>
-        <Dropdown.Item>Today</Dropdown.Item>
-        <Dropdown.Item>Last 7 days</Dropdown.Item>
-        <Dropdown.Item>Last 30 days</Dropdown.Item>
-        <Dropdown.Item>Last 90 days</Dropdown.Item>
-        <Dropdown.Divider />
-        <Dropdown.Item>Custom...</Dropdown.Item>
-      </Dropdown>
-    </span>
-  );
-};
-
 const LatestCustomers: FC = function () {
+  interface info {
+    success: boolean;
+    total_revenue: string;
+    total_orders: number;
+  }
+  const [selectDay, setSelectDay] = useState(1);
+  const [fromDay, setFromDay] = useState("");
+  const [toDay, setToDay] = useState("");
+  const [report, setReport] = useState<info>({
+    success: true,
+    total_revenue: "0",
+    total_orders: 0,
+  });
+
+  useEffect(() => {
+    const handleReport = async function () {
+      if (fromDay != "" && toDay != "") {
+        const res = await axios.post(
+          "http://localhost/WriteResfulAPIPHP/admin/order/totalDtoD.php",
+          {
+            startDate: fromDay,
+            endDate: toDay,
+          }
+        );
+
+        setReport(res.data);
+      }
+    };
+    handleReport();
+  }, [fromDay, toDay]);
+  console.log(report);
+
+  useEffect(() => {
+    const getInfo = async (selectDay: number) => {
+      if (selectDay == 1) {
+        const res = await axios.get(
+          "http://localhost/WriteResfulAPIPHP/admin/order/total1D.php"
+        );
+        setReport(res.data);
+      } else if (selectDay == 2) {
+        const res = await axios.get(
+          "http://localhost/WriteResfulAPIPHP/admin/order/total3D.php"
+        );
+        setReport(res.data);
+      } else if (selectDay == 3) {
+        const res = await axios.get(
+          "http://localhost/WriteResfulAPIPHP/admin/order/total7D.php"
+        );
+        setReport(res.data);
+      } else {
+        const res = await axios.get(
+          "http://localhost/WriteResfulAPIPHP/admin/order/total30D.php"
+        );
+        setReport(res.data);
+      }
+    };
+    getInfo(selectDay);
+  }, [selectDay]);
+
+  function convertToCurrencyFormat(amount: number) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }
+
   return (
     <div className="mb-4 h-full rounded-lg bg-white p-4 shadow dark:bg-gray-800 sm:p-6">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
-          Latest Customers
+          Thống kê chi tiết
         </h3>
         <a
           href="#"
@@ -249,142 +328,87 @@ const LatestCustomers: FC = function () {
         </a>
       </div>
       <div className="flow-root">
-        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center space-x-4">
-              <div className="shrink-0">
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src="/images/users/neil-sims.png"
-                  alt=""
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  Neil Sims
-                </p>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                  email@flowbite.com
-                </p>
-              </div>
-              <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                $320
-              </div>
+        <div className="flex justify-between items-center mb-5">
+          <div className="w-[200px] h-[80px] bg-red-600 text-white rounded p-4">
+            <div className="flex items-center gap-2">
+              <FaUsersViewfinder />
+              <p className="text-sm"> Lượt khách tiếp cận</p>
             </div>
-          </li>
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center space-x-4">
-              <div className="shrink-0">
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src="/images/users/bonnie-green.png"
-                  alt=""
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  Bonnie Green
-                </p>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                  email@flowbite.com
-                </p>
-              </div>
-              <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                $3467
-              </div>
+            <p className="text-center">888</p>
+          </div>
+          <div className="w-[200px] h-[80px] bg-yellow-600 text-white rounded p-4">
+            <div className="flex items-center gap-2">
+              <MdAdsClick />
+              <p className="text-sm">Click xem sản phẩm</p>
             </div>
-          </li>
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center space-x-4">
-              <div className="shrink-0">
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src="/images/users/michael-gough.png"
-                  alt=""
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  Michael Gough
-                </p>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                  email@flowbite.com
-                </p>
-              </div>
-              <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                $67
-              </div>
+            <p className="text-center">6000</p>
+          </div>
+          <div className="w-[200px] h-[80px] bg-green-600 text-white rounded p-4">
+            <div className="flex items-center gap-2">
+              <FaCartPlus />
+              <p className="text-sm">Đơn hàng mới</p>
             </div>
-          </li>
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center space-x-4">
-              <div className="shrink-0">
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src="/images/users/thomas-lean.png"
-                  alt=""
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  Thomes Lean
-                </p>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                  email@flowbite.com
-                </p>
-              </div>
-              <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                $2367
-              </div>
+            <p className="text-center">{report.total_orders}</p>
+          </div>
+          <div className="w-[200px] h-[80px] bg-blue-600 text-white rounded p-4">
+            <div className="flex items-center gap-2">
+              <IoIosCash />
+              <p className="text-sm">Doanh số</p>
             </div>
-          </li>
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center space-x-4">
-              <div className="shrink-0">
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src="/images/users/lana-byrd.png"
-                  alt=""
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  Lana Byrd
-                </p>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                  email@flowbite.com
-                </p>
-              </div>
-              <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                $367
-              </div>
-            </div>
-          </li>
-        </ul>
+            <p className="text-center">
+              {convertToCurrencyFormat(parseFloat(report.total_revenue))}
+            </p>
+          </div>
+        </div>
       </div>
       <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700 sm:pt-6">
-        <Datepicker />
         <div className="shrink-0">
-          <a
-            href="#"
-            className="inline-flex items-center rounded-lg p-2 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
-          >
-            Sales Report
-            <svg
-              className="ml-1 h-4 w-4 sm:h-5 sm:w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </a>
+          <div className="flex">
+            <div className="mr-10">
+              <select
+                name=""
+                id=""
+                className="bring-0 rounded"
+                onChange={(e) => {
+                  setSelectDay(parseInt(e.target.value));
+                }}
+              >
+                <option value="1" selected>
+                  Hôm nay
+                </option>
+                <option value="2">3 ngày gần nhất</option>
+                <option value="3">7 ngày gần nhất</option>
+                <option value="4">30 ngày gần nhất</option>
+              </select>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1">
+                <label htmlFor="">Từ</label>
+                <input
+                  type="date"
+                  name=""
+                  id=""
+                  className="bring-0 rounded"
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setFromDay(e.target.value);
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <label htmlFor="">Đến</label>
+                <input
+                  type="date"
+                  name=""
+                  id=""
+                  className="bring-0 rounded"
+                  onChange={(e) => {
+                    setToDay(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -395,7 +419,7 @@ const AcquisitionOverview: FC = function () {
   return (
     <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800 sm:p-6 xl:p-8">
       <h3 className="mb-6 text-xl font-bold leading-none text-gray-900 dark:text-white">
-        Acquisition Overview
+        Doanh số theo ngày
       </h3>
       <div className="flex flex-col">
         <div className="overflow-x-auto rounded-lg">
@@ -547,7 +571,6 @@ const AcquisitionOverview: FC = function () {
         </div>
       </div>
       <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700 sm:pt-6">
-        <Datepicker />
         <div className="shrink-0">
           <a
             href="#"
@@ -581,10 +604,10 @@ const LatestTransactions: FC = function () {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-            Latest Transactions
+            Đơn hàng gần đây
           </h3>
           <span className="text-base font-normal text-gray-600 dark:text-gray-400">
-            This is a list of latest transactions
+            Đây là những đơn hàng mới nhất
           </span>
         </div>
         <div className="shrink-0">
@@ -605,166 +628,97 @@ const LatestTransactions: FC = function () {
                 className="min-w-full divide-y divide-gray-200 dark:divide-gray-600"
               >
                 <Table.Head className="bg-gray-50 dark:bg-gray-700">
-                  <Table.HeadCell>Transaction</Table.HeadCell>
-                  <Table.HeadCell>Date &amp; Time</Table.HeadCell>
-                  <Table.HeadCell>Amount</Table.HeadCell>
-                  <Table.HeadCell>Status</Table.HeadCell>
+                  <Table.HeadCell className="flex justify-between">
+                    <div>Mã đơn</div> <div>Tên sản phẩm</div>{" "}
+                    <div>Ngày đặt</div> <div>Tổng</div>
+                    <div>Trạng thái</div>
+                    <div></div>
+                  </Table.HeadCell>
                 </Table.Head>
+
                 <Table.Body className="bg-white dark:bg-gray-800">
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment from{" "}
-                      <span className="font-semibold">Bonnie Green</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 23, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $2300
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="success">Completed</Badge>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment refund to{" "}
-                      <span className="font-semibold">#00910</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 23, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      -$670
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="success">Completed</Badge>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment failed from{" "}
-                      <span className="font-semibold">#087651</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 18, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $234
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="failure">Cancelled</Badge>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment from{" "}
-                      <span className="font-semibold">Lana Byrd</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 15, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $5000
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <span className="mr-2 rounded-md bg-purple-100 py-0.5 px-2.5 text-xs font-medium text-purple-800 dark:bg-purple-200">
-                        In progress
-                      </span>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment from{" "}
-                      <span className="font-semibold">Jese Leos</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 15, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $2300
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="success">Completed</Badge>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment from{" "}
-                      <span className="font-semibold">THEMESBERG LLC</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 11, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $560
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="success">Completed</Badge>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment from{" "}
-                      <span className="font-semibold">Lana Lysle</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 6, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $1437
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="success">Completed</Badge>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment to{" "}
-                      <span className="font-semibold">Joseph Mcfall</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Apr 1, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $980
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="success">Completed</Badge>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment from{" "}
-                      <span className="font-semibold">Alphabet LLC</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Mar 23, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $11,436
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <span className="mr-2 rounded-md bg-purple-100 py-0.5 px-2.5 text-xs font-medium text-purple-800 dark:bg-purple-200">
-                        In progress
-                      </span>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                      Payment from{" "}
-                      <span className="font-semibold">Bonnie Green</span>
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      Mar 23, 2021
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      $560
-                    </Table.Cell>
-                    <Table.Cell className="flex whitespace-nowrap p-4">
-                      <Badge color="success">Completed</Badge>
-                    </Table.Cell>
-                  </Table.Row>
+                  <Accordion>
+                    <Accordion.Panel>
+                      <Accordion.Title>
+                        <div className="flex justify-between gap-x-[130px]">
+                          <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
+                            1
+                          </div>
+                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            Truuện kỳ tích
+                          </div>
+                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            20/05/2024
+                          </div>
+                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            900000
+                          </div>
+                          <div className="flex whitespace-nowrap p-4">
+                            <Badge color="success">Completed</Badge>
+                          </div>
+                        </div>
+                      </Accordion.Title>
+
+                      <Accordion.Content>
+                        <p className="mb-2 text-gray-500 dark:text-gray-400">
+                          Flowbite is an open-source library of interactive
+                          components built on top of Tailwind CSS including
+                          buttons, dropdowns, modals, navbars, and more.
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          Check out this guide to learn how to&nbsp;
+                          <a
+                            href="https://flowbite.com/docs/getting-started/introduction/"
+                            className="text-cyan-600 hover:underline dark:text-cyan-500"
+                          >
+                            get started&nbsp;
+                          </a>
+                          and start developing websites even faster with
+                          components on top of Tailwind CSS.
+                        </p>
+                      </Accordion.Content>
+                    </Accordion.Panel>
+                    <Accordion.Panel>
+                      <Accordion.Title>
+                        <div className="flex justify-between gap-x-[130px]">
+                          <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
+                            1
+                          </div>
+                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            Truuện kỳ tích
+                          </div>
+                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            20/05/2024
+                          </div>
+                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            900000
+                          </div>
+                          <div className="flex whitespace-nowrap p-4">
+                            <Badge color="success">Completed</Badge>
+                          </div>
+                        </div>
+                      </Accordion.Title>
+
+                      <Accordion.Content>
+                        <p className="mb-2 text-gray-500 dark:text-gray-400">
+                          Flowbite is an open-source library of interactive
+                          components built on top of Tailwind CSS including
+                          buttons, dropdowns, modals, navbars, and more.
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          Check out this guide to learn how to&nbsp;
+                          <a
+                            href="https://flowbite.com/docs/getting-started/introduction/"
+                            className="text-cyan-600 hover:underline dark:text-cyan-500"
+                          >
+                            get started&nbsp;
+                          </a>
+                          and start developing websites even faster with
+                          components on top of Tailwind CSS.
+                        </p>
+                      </Accordion.Content>
+                    </Accordion.Panel>
+                  </Accordion>
                 </Table.Body>
               </Table>
             </div>
@@ -772,7 +726,6 @@ const LatestTransactions: FC = function () {
         </div>
       </div>
       <div className="flex items-center justify-between pt-3 sm:pt-6">
-        <Datepicker />
         <div className="shrink-0">
           <a
             href="#"

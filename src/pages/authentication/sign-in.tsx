@@ -1,8 +1,32 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
 import type { FC } from "react";
+import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router";
 
 const SignInPage: FC = function () {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleLoginAdmin = async () => {
+    try {
+      const res = await axios.post(
+        "http://localhost/WriteResfulAPIPHP/admin/auth/loginWithAdmin.php",
+        { email: email, password: password }
+      );
+      if (res.data.success) {
+        navigate("/");
+      } else {
+        setMessage(res.data.message);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center px-6 lg:h-screen lg:gap-y-12">
       <div className="my-6 flex items-center gap-x-1 lg:my-0">
@@ -29,6 +53,10 @@ const SignInPage: FC = function () {
               name="email"
               placeholder="name@company.com"
               type="email"
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+              value={email}
             />
           </div>
           <div className="mb-6 flex flex-col gap-y-3">
@@ -38,6 +66,10 @@ const SignInPage: FC = function () {
               name="password"
               placeholder="••••••••"
               type="password"
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+              value={password}
             />
           </div>
           <div className="mb-6 flex items-center justify-between">
@@ -47,11 +79,12 @@ const SignInPage: FC = function () {
             </div>
           </div>
           <div className="mb-6">
-            <Button type="submit" className="w-full lg:w-auto">
+            <Button onClick={handleLoginAdmin} className="w-full lg:w-auto">
               Login to your account
             </Button>
           </div>
         </form>
+        <p className="text-red-500 font-light">{message ? message : null}</p>
       </Card>
     </div>
   );

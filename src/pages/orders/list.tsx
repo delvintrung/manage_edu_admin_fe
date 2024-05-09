@@ -3,10 +3,12 @@ import {
   Breadcrumb,
   Button,
   Checkbox,
+  Badge,
   Label,
   Modal,
   Table,
   TextInput,
+  Accordion,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
@@ -27,8 +29,8 @@ import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "axios";
 
 interface User {
-  userId: number;
-  roleId: number;
+  id: number;
+  role_id: number;
   address: string;
   fullName: string;
   phone_number: string;
@@ -49,11 +51,11 @@ const UserListPage: FC = function () {
                   <span className="dark:text-white">Home</span>
                 </div>
               </Breadcrumb.Item>
-              <Breadcrumb.Item href="/users/list">Users</Breadcrumb.Item>
+              <Breadcrumb.Item href="/orders/list">Orders</Breadcrumb.Item>
               <Breadcrumb.Item>List</Breadcrumb.Item>
             </Breadcrumb>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-              All users
+              All orders
             </h1>
           </div>
           <div className="sm:flex">
@@ -122,7 +124,6 @@ const UserListPage: FC = function () {
           </div>
         </div>
       </div>
-      <Pagination />
     </NavbarSidebarLayout>
   );
 };
@@ -215,6 +216,7 @@ const AddUserModal: FC = function () {
 };
 
 const AllUsersTable: FC = function () {
+  const [status, setStatus] = useState(1);
   const [allUsers, setAllUsers] = useState([]);
   useEffect(() => {
     const getAllUsers = async () => {
@@ -226,74 +228,209 @@ const AllUsersTable: FC = function () {
     getAllUsers();
   }, []);
 
+  const url =
+    "https://imagedelivery.net/qUfEtSOHlgMQ8zObLoE0pg/ef280a01-24ac-4894-843f-3ccef4fc3f00/w=705";
+
   return (
-    <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-      <Table.Head className="bg-gray-100 dark:bg-gray-700">
-        <Table.HeadCell>
-          <Label htmlFor="select-all" className="sr-only">
-            Select all
-          </Label>
-          <Checkbox id="select-all" name="select-all" />
+    <Table
+      striped
+      className="min-w-full divide-y divide-gray-200 dark:divide-gray-600"
+    >
+      <Table.Head className="bg-gray-50 dark:bg-gray-700">
+        <Table.HeadCell className="flex justify-between">
+          <div>Mã đơn</div> <div>Tên sản phẩm</div> <div>Ngày đặt</div>{" "}
+          <div>Tổng</div>
+          <div>Trạng thái</div>
+          <div>Mã nhân viên</div>
+          <div></div>
         </Table.HeadCell>
-        <Table.HeadCell>Name</Table.HeadCell>
-        <Table.HeadCell>Role</Table.HeadCell>
-        <Table.HeadCell>Phone</Table.HeadCell>
-        <Table.HeadCell>Status</Table.HeadCell>
-        <Table.HeadCell>Actions</Table.HeadCell>
       </Table.Head>
-      <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-        {allUsers.map((user: User) => (
-          <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Table.Cell className="w-4 p-4">
-              <div className="flex items-center">
-                <Checkbox aria-describedby="checkbox-1" id="checkbox-1" />
-                <label htmlFor="checkbox-1" className="sr-only">
-                  checkbox
-                </label>
+
+      <Table.Body className="bg-white dark:bg-gray-800">
+        <Accordion>
+          <Accordion.Panel>
+            <Accordion.Title>
+              <div className="flex justify-between gap-x-[110px] h-[40px]">
+                <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
+                  1
+                </div>
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  Truuện kỳ tích
+                </div>
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  20/05/2024
+                </div>
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  900000
+                </div>
+
+                <div className="flex whitespace-nowrap p-4">
+                  <Badge color="success">Completed</Badge>
+                </div>
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  6
+                </div>
               </div>
-            </Table.Cell>
-            <Table.Cell className="mr-12 flex items-center space-x-6 whitespace-nowrap p-4 lg:mr-0">
-              <img
-                className="h-10 w-10 rounded-full"
-                src="/images/users/neil-sims.png"
-                alt="Neil Sims avatar"
-              />
-              <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                <div className="text-base font-semibold text-gray-900 dark:text-white max-w-[200px]">
-                  {user.fullName}
+            </Accordion.Title>
+
+            <Accordion.Content>
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <img src={url} alt="" className="w-[80px] " />
+                  <p className="w-[400px]">Ten san pham</p>
+                  <span>x1</span>
+                  <span>89000</span>
+                  <span>89000</span>
+                  <div></div>
                 </div>
-                <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  {user.email}
+                <div className="flex items-center justify-between">
+                  <img src={url} alt="" className="w-[80px] " />
+                  <p className="w-[400px]">Ten san pham</p>
+                  <span>x1</span>
+                  <span>89000</span>
+                  <span>89000</span>
+                  <div></div>
+                </div>
+                <div className="flex justify-between px-20 ">
+                  <div></div>
+                  <div className="flex w-[260px] mb-10">
+                    <p>Nội dung ghi chú:</p>
+                    <p> giao lẹ lên</p>
+                  </div>
+                </div>
+                <div className="flex justify-between px-20">
+                  <div></div>
+                  <div className="flex items-center gap-5">
+                    <select
+                      name=""
+                      id=""
+                      onChange={(e) => {
+                        setStatus(parseInt(e.target.value));
+                      }}
+                    >
+                      <option value="1" selected>
+                        Vừa tiếp nhận
+                      </option>
+                      <option value="2">Đã liên hệ</option>
+                      <option value="3">Đang giao hàng</option>
+                      <option value="4">Giao thành công</option>
+                      <option value="5">Đã hủy</option>
+                    </select>
+                    <Button color="success">Xác nhận</Button>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-10 px-20">
+                  <div></div>
+                  <div>
+                    <div className="flex items-center gap-8">
+                      <p>Mã đơn hàng:</p> <span>45</span>{" "}
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <p>Tổng tiền thanh toán:</p> <span>890000</span>{" "}
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <p>Ngày đặt hàng:</p> <span>29-09-2024</span>{" "}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </Table.Cell>
-            <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
-              {user.roleId == 2 ? "Khách hàng" : "Admin"}
-            </Table.Cell>
-            <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
-              {user.phone_number}
-            </Table.Cell>
-            <Table.Cell className="whitespace-nowrap p-4 text-base font-normal text-gray-900 dark:text-white">
-              {user.status == 1 ? (
-                <div className="flex items-center">
-                  <div className="mr-2 h-2.5 w-2.5 rounded-full bg-green-400"></div>{" "}
-                  Active
+            </Accordion.Content>
+          </Accordion.Panel>
+          <Accordion.Panel>
+            <Accordion.Title>
+              <div className="flex justify-between gap-x-[110px] h-[40px]">
+                <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
+                  1
                 </div>
-              ) : (
-                <div className="flex items-center">
-                  <div className="mr-2 h-2.5 w-2.5 rounded-full bg-red-500"></div>{" "}
-                  Offline
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  Truuện kỳ tích
                 </div>
-              )}
-            </Table.Cell>
-            <Table.Cell>
-              <div className="flex items-center gap-x-3 whitespace-nowrap">
-                <EditUserModal />
-                <DeleteUserModal id={user.userId} />
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  20/05/2024
+                </div>
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  900000
+                </div>
+
+                <div className="flex whitespace-nowrap p-4">
+                  <Badge color="success">Completed</Badge>
+                </div>
+                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  6
+                </div>
               </div>
-            </Table.Cell>
-          </Table.Row>
-        ))}
+            </Accordion.Title>
+
+            <Accordion.Content>
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <img src={url} alt="" className="w-[80px] " />
+                  <p className="w-[400px]">Ten san pham</p>
+                  <span>x1</span>
+                  <span>89000</span>
+                  <span>89000</span>
+                  <div></div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <img src={url} alt="" className="w-[80px] " />
+                  <p className="w-[400px]">Ten san pham</p>
+                  <span>x1</span>
+                  <span>89000</span>
+                  <span>89000</span>
+                  <div></div>
+                </div>
+                <div className="flex justify-between px-20 ">
+                  <div></div>
+                  <div className="flex w-[260px] mb-10">
+                    <p>Nội dung ghi chú:</p>
+                    <p> giao lẹ lên</p>
+                  </div>
+                </div>
+                <div className="flex justify-between px-20">
+                  <div></div>
+                  <div className="flex items-center gap-5">
+                    <select
+                      name=""
+                      id=""
+                      onChange={(e) => {
+                        setStatus(parseInt(e.target.value));
+                      }}
+                    >
+                      <option value="1" selected>
+                        Vừa tiếp nhận
+                      </option>
+                      <option value="2">Đã liên hệ</option>
+                      <option value="3">Đang giao hàng</option>
+                      <option value="4">Giao thành công</option>
+                      <option value="5">Đã hủy</option>
+                    </select>
+                    <Button color="success">Xác nhận</Button>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-10 px-20">
+                  <div></div>
+                  <div>
+                    <div className="flex items-center gap-8">
+                      <p>Mã đơn hàng:</p> <span>45</span>{" "}
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <p>Tổng tiền thanh toán:</p> <span>890000</span>{" "}
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <p>Ngày đặt hàng:</p> <span>29-09-2024</span>{" "}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Accordion.Content>
+          </Accordion.Panel>
+        </Accordion>
       </Table.Body>
     </Table>
   );
@@ -408,9 +545,7 @@ const EditUserModal: FC = function () {
   );
 };
 
-const DeleteUserModal: FC<{
-  id: number;
-}> = function (props): JSX.Element {
+const DeleteUserModal: FC<{ id: number }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
   const handleDeleteUser = (userId: number) => {
     const sendRequest = async () => {
@@ -418,11 +553,10 @@ const DeleteUserModal: FC<{
         "http://localhost/WriteResfulAPIPHP/admin/user/deleteUser.php",
         { userId: userId }
       );
-      console.log(res.data);
+      console.log(userId);
     };
     sendRequest();
   };
-
   return (
     <>
       <Button color="failure" onClick={() => setOpen(true)}>

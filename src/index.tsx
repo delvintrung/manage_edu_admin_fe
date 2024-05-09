@@ -8,9 +8,10 @@ import { Routes, Route } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import DashboardPage from "./pages";
 import SignInPage from "./pages/authentication/sign-in";
-import SignUpPage from "./pages/authentication/sign-up";
 import EcommerceProductsPage from "./pages/e-commerce/products";
 import UserListPage from "./pages/users/list";
+import OrderListPage from "./pages/orders/list";
+import PermissionPage from "./pages/permissions/list";
 
 const container = document.getElementById("root");
 
@@ -25,14 +26,15 @@ root.render(
     <Flowbite theme={{ theme }}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<DashboardPage />} index />
           <Route path="/authentication/sign-in" element={<SignInPage />} />
-          <Route path="/authentication/sign-up" element={<SignUpPage />} />
+          <Route path="/" element={<DashboardPage />} index />
           <Route
             path="/e-commerce/products"
             element={<EcommerceProductsPage />}
           />
           <Route path="/users/list" element={<UserListPage />} />
+          <Route path="/orders/list" element={<OrderListPage />} />
+          <Route path="/permissions/list" element={<PermissionPage />} />
         </Routes>
       </BrowserRouter>
     </Flowbite>
