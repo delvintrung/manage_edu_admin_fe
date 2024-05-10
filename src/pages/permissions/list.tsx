@@ -39,6 +39,16 @@ interface User {
 }
 
 const PermissionPage: FC = function () {
+  const [search, setSearch] = useState("");
+
+  const handleSearchEmployee = (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      console.log(search);
+    }
+  };
   return (
     <NavbarSidebarLayout isFooter={false}>
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
@@ -51,11 +61,11 @@ const PermissionPage: FC = function () {
                   <span className="dark:text-white">Home</span>
                 </div>
               </Breadcrumb.Item>
-              <Breadcrumb.Item href="/orders/list">Orders</Breadcrumb.Item>
+              <Breadcrumb.Item href="/orders/list">Employees</Breadcrumb.Item>
               <Breadcrumb.Item>List</Breadcrumb.Item>
             </Breadcrumb>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-              All orders
+              All employees
             </h1>
           </div>
           <div className="sm:flex">
@@ -68,7 +78,10 @@ const PermissionPage: FC = function () {
                   <TextInput
                     id="users-search"
                     name="users-search"
-                    placeholder="Search for users"
+                    placeholder="Search for employees"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => handleSearchEmployee(e)}
                   />
                 </div>
               </form>
@@ -103,15 +116,6 @@ const PermissionPage: FC = function () {
                 </a>
               </div>
             </div>
-            <div className="ml-auto flex items-center space-x-2 sm:space-x-3">
-              <AddUserModal />
-              <Button color="gray">
-                <div className="flex items-center gap-x-3">
-                  <HiDocumentDownload className="text-xl" />
-                  <span>Export</span>
-                </div>
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -119,7 +123,7 @@ const PermissionPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllUsersTable />
+              <AllEmployeesTable />
             </div>
           </div>
         </div>
@@ -128,94 +132,7 @@ const PermissionPage: FC = function () {
   );
 };
 
-const AddUserModal: FC = function () {
-  const [isOpen, setOpen] = useState(false);
-
-  return (
-    <>
-      <Button color="primary" onClick={() => setOpen(true)}>
-        <div className="flex items-center gap-x-3">
-          <HiPlus className="text-xl" />
-          Add user
-        </div>
-      </Button>
-      <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700">
-          <strong>Add new user</strong>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="firstName">First name</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="firstName"
-                  name="firstName"
-                  placeholder="Bonnie"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="lastName">Last name</Label>
-              <div className="mt-1">
-                <TextInput id="lastName" name="lastName" placeholder="Green" />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="email"
-                  name="email"
-                  placeholder="example@company.com"
-                  type="email"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone number</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="phone"
-                  name="phone"
-                  placeholder="e.g., +(12)3456 789"
-                  type="tel"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="department">Department</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="department"
-                  name="department"
-                  placeholder="Development"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="company">Company</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="company"
-                  name="company"
-                  placeholder="Somewhere"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button color="primary" onClick={() => setOpen(false)}>
-            Add user
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
-  );
-};
-
-const AllUsersTable: FC = function () {
+const AllEmployeesTable: FC = function () {
   const [status, setStatus] = useState(1);
   const [allUsers, setAllUsers] = useState([]);
   useEffect(() => {
@@ -238,199 +155,37 @@ const AllUsersTable: FC = function () {
     >
       <Table.Head className="bg-gray-50 dark:bg-gray-700">
         <Table.HeadCell className="flex justify-between">
-          <div>Mã đơn</div> <div>Tên sản phẩm</div> <div>Ngày đặt</div>{" "}
-          <div>Tổng</div>
-          <div>Trạng thái</div>
           <div>Mã nhân viên</div>
-          <div></div>
         </Table.HeadCell>
+        <Table.HeadCell>Tên đăng nhập</Table.HeadCell>
+        <Table.HeadCell>Chức vụ</Table.HeadCell>
+        <Table.HeadCell>Điều chỉnh</Table.HeadCell>
+        <Table.HeadCell>Hành động</Table.HeadCell>
+        <Table.HeadCell></Table.HeadCell>
       </Table.Head>
 
       <Table.Body className="bg-white dark:bg-gray-800">
-        <Accordion>
-          <Accordion.Panel>
-            <Accordion.Title>
-              <div className="flex justify-between gap-x-[110px] h-[40px]">
-                <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                  1
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  Truuện kỳ tích
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  20/05/2024
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  900000
-                </div>
-
-                <div className="flex whitespace-nowrap p-4">
-                  <Badge color="success">Completed</Badge>
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  6
-                </div>
-              </div>
-            </Accordion.Title>
-
-            <Accordion.Content>
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex justify-between px-20 ">
-                  <div></div>
-                  <div className="flex w-[260px] mb-10">
-                    <p>Nội dung ghi chú:</p>
-                    <p> giao lẹ lên</p>
-                  </div>
-                </div>
-                <div className="flex justify-between px-20">
-                  <div></div>
-                  <div className="flex items-center gap-5">
-                    <select
-                      name=""
-                      id=""
-                      onChange={(e) => {
-                        setStatus(parseInt(e.target.value));
-                      }}
-                    >
-                      <option value="1" selected>
-                        Vừa tiếp nhận
-                      </option>
-                      <option value="2">Đã liên hệ</option>
-                      <option value="3">Đang giao hàng</option>
-                      <option value="4">Giao thành công</option>
-                      <option value="5">Đã hủy</option>
-                    </select>
-                    <Button color="success">Xác nhận</Button>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-10 px-20">
-                  <div></div>
-                  <div>
-                    <div className="flex items-center gap-8">
-                      <p>Mã đơn hàng:</p> <span>45</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Tổng tiền thanh toán:</p> <span>890000</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Ngày đặt hàng:</p> <span>29-09-2024</span>{" "}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Accordion.Content>
-          </Accordion.Panel>
-          <Accordion.Panel>
-            <Accordion.Title>
-              <div className="flex justify-between gap-x-[110px] h-[40px]">
-                <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                  1
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  Truuện kỳ tích
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  20/05/2024
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  900000
-                </div>
-
-                <div className="flex whitespace-nowrap p-4">
-                  <Badge color="success">Completed</Badge>
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  6
-                </div>
-              </div>
-            </Accordion.Title>
-
-            <Accordion.Content>
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex justify-between px-20 ">
-                  <div></div>
-                  <div className="flex w-[260px] mb-10">
-                    <p>Nội dung ghi chú:</p>
-                    <p> giao lẹ lên</p>
-                  </div>
-                </div>
-                <div className="flex justify-between px-20">
-                  <div></div>
-                  <div className="flex items-center gap-5">
-                    <select
-                      name=""
-                      id=""
-                      onChange={(e) => {
-                        setStatus(parseInt(e.target.value));
-                      }}
-                    >
-                      <option value="1" selected>
-                        Vừa tiếp nhận
-                      </option>
-                      <option value="2">Đã liên hệ</option>
-                      <option value="3">Đang giao hàng</option>
-                      <option value="4">Giao thành công</option>
-                      <option value="5">Đã hủy</option>
-                    </select>
-                    <Button color="success">Xác nhận</Button>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-10 px-20">
-                  <div></div>
-                  <div>
-                    <div className="flex items-center gap-8">
-                      <p>Mã đơn hàng:</p> <span>45</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Tổng tiền thanh toán:</p> <span>890000</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Ngày đặt hàng:</p> <span>29-09-2024</span>{" "}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Accordion.Content>
-          </Accordion.Panel>
-        </Accordion>
+        <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+            1
+          </Table.Cell>
+          <Table.Cell className="font-bold">Hhsyduwhu</Table.Cell>
+          <Table.Cell className="font-bold">Tiểu đội trường</Table.Cell>
+          <Table.Cell>
+            <select className="rounded">
+              <option value="0" selected>
+                Chọn mới
+              </option>
+              <option value="1">Nhân Viên</option>
+              <option value="2">Quản Lý</option>
+              <option value="3">Người dùng </option>
+            </select>
+          </Table.Cell>
+          <Table.Cell>
+            <Button color="success">Xác nhận</Button>
+          </Table.Cell>
+          <Table.Cell></Table.Cell>
+        </Table.Row>
       </Table.Body>
     </Table>
   );

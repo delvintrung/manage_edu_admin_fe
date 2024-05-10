@@ -8,7 +8,6 @@ import {
   Modal,
   Table,
   TextInput,
-  Accordion,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
@@ -214,22 +213,189 @@ const AddUserModal: FC = function () {
     </>
   );
 };
+type Product = {
+  productName: string;
+  quantity: number;
+  unitPrice: string;
+  thumbnail: string;
+};
+interface Order {
+  orderId: string;
+  products: Product[];
+  total: string;
+  orderDate: string;
+  status: number;
+  employeeId: null | string;
+}
+
+function convertToCurrencyFormat(amount: number) {
+  return amount.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
+
+function Accordion({ order }: { order: Order }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleAccordion = () => {
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <div>
+      <div onClick={toggleAccordion}>
+        <div className="flex justify-between gap-x-[80px] h-[50px] items-center border-2 border-slate-300">
+          <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
+            {order.orderId}
+          </div>
+          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white w-[200px] max-w-[210px]">
+            {order.products[0]?.productName}
+          </div>
+          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+            {order.orderDate}
+          </div>
+          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+            {convertToCurrencyFormat(parseFloat(order.total))}
+          </div>
+
+          <div className="flex whitespace-nowrap p-4">
+            {order.status == 1 ? (
+              <Badge color="info">Chờ xử lý</Badge>
+            ) : order.status == 2 ? (
+              <Badge color="indigo">Đã liên hệ</Badge>
+            ) : order.status == 3 ? (
+              <Badge color="gray">Đang giao hàng</Badge>
+            ) : order.status == 4 ? (
+              <Badge color="success">Giao thành công</Badge>
+            ) : (
+              <Badge color="failure">Đã hủy</Badge>
+            )}
+          </div>
+          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
+            {order.employeeId}
+          </div>
+          <div></div>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="mb-5 p-3">
+          <div>
+            {order.products.map((product) => (
+              <div className="flex items-center justify-between my-3">
+                <img src={product.thumbnail} alt="" className="w-[80px] " />
+                <p className="w-[400px]">{product.productName}</p>
+                <span>x{product.quantity}</span>
+                <span>
+                  {convertToCurrencyFormat(parseFloat(product.unitPrice))}
+                </span>
+                <span>
+                  {convertToCurrencyFormat(
+                    product.quantity * parseInt(product.unitPrice)
+                  )}{" "}
+                </span>
+                <div></div>
+              </div>
+            ))}
+
+            <div className="flex justify-between px-20 ">
+              <div></div>
+              <div className="flex w-[260px] mb-10">
+                <p>Nội dung ghi chú:</p>
+                <p>{}</p>
+              </div>
+            </div>
+            <div className="flex justify-between px-20">
+              <div></div>
+              <div className="flex items-center gap-5">
+                <select
+                  name=""
+                  id=""
+                  onChange={(e) => {
+                    // setStatus(parseInt(e.target.value));
+                  }}
+                >
+                  <option value="1" selected>
+                    Vừa tiếp nhận
+                  </option>
+                  <option value="2">Đã liên hệ</option>
+                  <option value="3">Đang giao hàng</option>
+                  <option value="4">Giao thành công</option>
+                  <option value="5">Đã hủy</option>
+                </select>
+                <Button color="success">Xác nhận</Button>
+              </div>
+            </div>
+            <div className="flex justify-between mt-10 px-20">
+              <div></div>
+              <div>
+                <div className="flex items-center gap-8">
+                  <p>Mã đơn hàng:</p> <span>{order.orderId}</span>{" "}
+                </div>
+                <div className="flex items-center gap-8">
+                  <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
+                </div>
+                <div className="flex items-center gap-8">
+                  <p>Tổng tiền thanh toán:</p>{" "}
+                  <span>
+                    {convertToCurrencyFormat(parseFloat(order.total))}
+                  </span>{" "}
+                </div>
+                <div className="flex items-center gap-8">
+                  <p>Ngày đặt hàng:</p> <span>{order.orderDate}</span>{" "}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const AllUsersTable: FC = function () {
-  const [status, setStatus] = useState(1);
-  const [allUsers, setAllUsers] = useState([]);
-  useEffect(() => {
-    const getAllUsers = async () => {
-      const res = await axios.get(
-        "http://localhost/WriteResfulAPIPHP/admin/user/getAllUser.php"
-      );
-      setAllUsers(res.data);
-    };
-    getAllUsers();
-  }, []);
+  const initValue: Order = {
+    orderId: "123",
+    products: [
+      {
+        productName: "50 Sắc Màu Tập 2",
+        quantity: 3,
+        unitPrice: "45000.00",
+        thumbnail:
+          "https://imagedelivery.net/qUfEtSOHlgMQ8zObLoE0pg/56b0b4b6-f833-46d6-47e7-08ba5a4d2100/w=705",
+      },
+      {
+        productName: "Truyện Kiều và Tarot",
+        quantity: 1,
+        unitPrice: "250000.00",
+        thumbnail:
+          "https://imagedelivery.net/qUfEtSOHlgMQ8zObLoE0pg/ef280a01-24ac-4894-843f-3ccef4fc3f00/w=705",
+      },
+    ],
+    total: "1000.00",
+    orderDate: "2024-05-10",
+    status: 1,
+    employeeId: null,
+  };
 
-  const url =
-    "https://imagedelivery.net/qUfEtSOHlgMQ8zObLoE0pg/ef280a01-24ac-4894-843f-3ccef4fc3f00/w=705";
+  const [orders, setOrders] = useState<Order[]>([initValue]);
+
+  useEffect(() => {
+    const getOrders = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost/WriteResfulAPIPHP/admin/order/getAllOrder.php"
+        );
+        setOrders(res.data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+    getOrders();
+  }, []);
 
   return (
     <Table
@@ -242,195 +408,15 @@ const AllUsersTable: FC = function () {
           <div>Tổng</div>
           <div>Trạng thái</div>
           <div>Mã nhân viên</div>
-          <div></div>
         </Table.HeadCell>
       </Table.Head>
 
       <Table.Body className="bg-white dark:bg-gray-800">
-        <Accordion>
-          <Accordion.Panel>
-            <Accordion.Title>
-              <div className="flex justify-between gap-x-[110px] h-[40px]">
-                <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                  1
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  Truuện kỳ tích
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  20/05/2024
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  900000
-                </div>
-
-                <div className="flex whitespace-nowrap p-4">
-                  <Badge color="success">Completed</Badge>
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  6
-                </div>
-              </div>
-            </Accordion.Title>
-
-            <Accordion.Content>
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex justify-between px-20 ">
-                  <div></div>
-                  <div className="flex w-[260px] mb-10">
-                    <p>Nội dung ghi chú:</p>
-                    <p> giao lẹ lên</p>
-                  </div>
-                </div>
-                <div className="flex justify-between px-20">
-                  <div></div>
-                  <div className="flex items-center gap-5">
-                    <select
-                      name=""
-                      id=""
-                      onChange={(e) => {
-                        setStatus(parseInt(e.target.value));
-                      }}
-                    >
-                      <option value="1" selected>
-                        Vừa tiếp nhận
-                      </option>
-                      <option value="2">Đã liên hệ</option>
-                      <option value="3">Đang giao hàng</option>
-                      <option value="4">Giao thành công</option>
-                      <option value="5">Đã hủy</option>
-                    </select>
-                    <Button color="success">Xác nhận</Button>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-10 px-20">
-                  <div></div>
-                  <div>
-                    <div className="flex items-center gap-8">
-                      <p>Mã đơn hàng:</p> <span>45</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Tổng tiền thanh toán:</p> <span>890000</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Ngày đặt hàng:</p> <span>29-09-2024</span>{" "}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Accordion.Content>
-          </Accordion.Panel>
-          <Accordion.Panel>
-            <Accordion.Title>
-              <div className="flex justify-between gap-x-[110px] h-[40px]">
-                <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                  1
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  Truuện kỳ tích
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  20/05/2024
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  900000
-                </div>
-
-                <div className="flex whitespace-nowrap p-4">
-                  <Badge color="success">Completed</Badge>
-                </div>
-                <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  6
-                </div>
-              </div>
-            </Accordion.Title>
-
-            <Accordion.Content>
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <img src={url} alt="" className="w-[80px] " />
-                  <p className="w-[400px]">Ten san pham</p>
-                  <span>x1</span>
-                  <span>89000</span>
-                  <span>89000</span>
-                  <div></div>
-                </div>
-                <div className="flex justify-between px-20 ">
-                  <div></div>
-                  <div className="flex w-[260px] mb-10">
-                    <p>Nội dung ghi chú:</p>
-                    <p> giao lẹ lên</p>
-                  </div>
-                </div>
-                <div className="flex justify-between px-20">
-                  <div></div>
-                  <div className="flex items-center gap-5">
-                    <select
-                      name=""
-                      id=""
-                      onChange={(e) => {
-                        setStatus(parseInt(e.target.value));
-                      }}
-                    >
-                      <option value="1" selected>
-                        Vừa tiếp nhận
-                      </option>
-                      <option value="2">Đã liên hệ</option>
-                      <option value="3">Đang giao hàng</option>
-                      <option value="4">Giao thành công</option>
-                      <option value="5">Đã hủy</option>
-                    </select>
-                    <Button color="success">Xác nhận</Button>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-10 px-20">
-                  <div></div>
-                  <div>
-                    <div className="flex items-center gap-8">
-                      <p>Mã đơn hàng:</p> <span>45</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Tổng tiền thanh toán:</p> <span>890000</span>{" "}
-                    </div>
-                    <div className="flex items-center gap-8">
-                      <p>Ngày đặt hàng:</p> <span>29-09-2024</span>{" "}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Accordion.Content>
-          </Accordion.Panel>
-        </Accordion>
+        <div>
+          {orders.map((order) => (
+            <Accordion order={order} />
+          ))}
+        </div>
       </Table.Body>
     </Table>
   );

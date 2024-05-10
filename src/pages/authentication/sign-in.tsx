@@ -18,6 +18,9 @@ const SignInPage: FC = function () {
         { email: email, password: password }
       );
       if (res.data.success) {
+        localStorage.setItem("id", res.data.roleId);
+        localStorage.setItem("employeeId", res.data.employeeId);
+        localStorage.setItem("isLogin", "yes");
         navigate("/");
       } else {
         setMessage(res.data.message);

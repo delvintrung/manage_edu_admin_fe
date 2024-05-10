@@ -1,4 +1,6 @@
 import { Sidebar, TextInput } from "flowbite-react";
+import { Button, Modal } from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import {
@@ -19,6 +21,8 @@ const ExampleSidebar: FC = function () {
 
     setCurrentPage(newPage);
   }, [setCurrentPage]);
+
+  const [openModal, setOpenModal] = useState(false);
 
   return (
     <Sidebar aria-label="Sidebar with multi-level dropdown example">
@@ -88,12 +92,56 @@ const ExampleSidebar: FC = function () {
               >
                 Permissions
               </Sidebar.Item>
-              <Sidebar.Item href="/authentication/sign-in" icon={HiLogin}>
+              <Sidebar.Item
+                href={
+                  localStorage.getItem("isLogin") == "yes"
+                    ? ""
+                    : "/authentication/sign-in"
+                }
+                icon={HiLogin}
+              >
                 Sign in
               </Sidebar.Item>
+              {localStorage.getItem("isLogin") == "yes" && (
+                <Sidebar.Item icon={HiLogin} onClick={() => setOpenModal(true)}>
+                  Out
+                </Sidebar.Item>
+              )}
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </div>
+        <Modal
+          show={openModal}
+          size="md"
+          onClose={() => setOpenModal(false)}
+          popup
+        >
+          <Modal.Header />
+          <Modal.Body>
+            <div className="text-center">
+              <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+              <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                Đăng xuất tài khoản này?
+              </h3>
+              <div className="flex justify-center gap-4">
+                <Button
+                  color="failure"
+                  onClick={() => {
+                    localStorage.removeItem("isLogin");
+                    localStorage.removeItem("id");
+                    localStorage.removeItem("employeeId");
+                    setOpenModal(false);
+                  }}
+                >
+                  {"Yes, I'm sure"}
+                </Button>
+                <Button color="gray" onClick={() => setOpenModal(false)}>
+                  No, cancel
+                </Button>
+              </div>
+            </div>
+          </Modal.Body>
+        </Modal>
       </div>
     </Sidebar>
   );
