@@ -13,8 +13,10 @@ const NavbarSidebarLayout: FC<PropsWithChildren<NavbarSidebarLayoutProps>> =
   function ({ children, isFooter = true }) {
     return (
       <div className="relative">
-        <Navbar />
-        <div className="flex items-start pt-16">
+        <div className=" sticky top-0">
+          <Navbar />
+        </div>
+        <div className="flex items-start ">
           <Sidebar />
           <MainContent isFooter={isFooter}>{children}</MainContent>
         </div>

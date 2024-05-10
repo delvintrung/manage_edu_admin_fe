@@ -134,19 +134,39 @@ const PermissionPage: FC = function () {
 
 const AllEmployeesTable: FC = function () {
   const [status, setStatus] = useState(1);
-  const [allUsers, setAllUsers] = useState([]);
+  const [allEmployee, setAllEmployee] = useState([]);
   useEffect(() => {
     const getAllUsers = async () => {
       const res = await axios.get(
-        "http://localhost/WriteResfulAPIPHP/admin/user/getAllUser.php"
+        "http://localhost/WriteResfulAPIPHP/admin/permission/showAllEmployee.php"
       );
-      setAllUsers(res.data);
+      setAllEmployee(res.data);
     };
     getAllUsers();
-  }, []);
+  }, [allEmployee]);
 
-  const url =
-    "https://imagedelivery.net/qUfEtSOHlgMQ8zObLoE0pg/ef280a01-24ac-4894-843f-3ccef4fc3f00/w=705";
+  interface Employee {
+    id: string;
+    email: string;
+    name: string;
+  }
+
+  const handleChangeStatus = (us: string) => {
+    const changeStatus = async (us: string) => {
+      if (status === 0) {
+        return;
+      }
+      const res = await axios.post(
+        "http://localhost/WriteResfulAPIPHP/admin/permission/changeRole.php",
+        {
+          email: us,
+          role_id: status,
+        }
+      );
+      console.log(res.data);
+    };
+    changeStatus(us);
+  };
 
   return (
     <Table
@@ -165,189 +185,40 @@ const AllEmployeesTable: FC = function () {
       </Table.Head>
 
       <Table.Body className="bg-white dark:bg-gray-800">
-        <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-            1
-          </Table.Cell>
-          <Table.Cell className="font-bold">Hhsyduwhu</Table.Cell>
-          <Table.Cell className="font-bold">Tiểu đội trường</Table.Cell>
-          <Table.Cell>
-            <select className="rounded">
-              <option value="0" selected>
-                Chọn mới
-              </option>
-              <option value="1">Nhân Viên</option>
-              <option value="2">Quản Lý</option>
-              <option value="3">Người dùng </option>
-            </select>
-          </Table.Cell>
-          <Table.Cell>
-            <Button color="success">Xác nhận</Button>
-          </Table.Cell>
-          <Table.Cell></Table.Cell>
-        </Table.Row>
-      </Table.Body>
-    </Table>
-  );
-};
-
-const EditUserModal: FC = function () {
-  const [isOpen, setOpen] = useState(false);
-
-  return (
-    <>
-      <Button color="primary" onClick={() => setOpen(true)}>
-        <div className="flex items-center gap-x-2">
-          <HiOutlinePencilAlt className="text-lg" />
-          Edit user
-        </div>
-      </Button>
-      <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700">
-          <strong>Edit user</strong>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="firstName">First name</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="firstName"
-                  name="firstName"
-                  placeholder="Bonnie"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="lastName">Last name</Label>
-              <div className="mt-1">
-                <TextInput id="lastName" name="lastName" placeholder="Green" />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="email"
-                  name="email"
-                  placeholder="example@company.com"
-                  type="email"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone number</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="phone"
-                  name="phone"
-                  placeholder="e.g., +(12)3456 789"
-                  type="tel"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="department">Department</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="department"
-                  name="department"
-                  placeholder="Development"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="company">Company</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="company"
-                  name="company"
-                  placeholder="Somewhere"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="passwordCurrent">Current password</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="passwordCurrent"
-                  name="passwordCurrent"
-                  placeholder="••••••••"
-                  type="password"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="passwordNew">New password</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="passwordNew"
-                  name="passwordNew"
-                  placeholder="••••••••"
-                  type="password"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button color="primary" onClick={() => setOpen(false)}>
-            Save all
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
-  );
-};
-
-const DeleteUserModal: FC<{ id: number }> = function (props): JSX.Element {
-  const [isOpen, setOpen] = useState(false);
-  const handleDeleteUser = (userId: number) => {
-    const sendRequest = async () => {
-      const res = await axios.put(
-        "http://localhost/WriteResfulAPIPHP/admin/user/deleteUser.php",
-        { userId: userId }
-      );
-      console.log(userId);
-    };
-    sendRequest();
-  };
-  return (
-    <>
-      <Button color="failure" onClick={() => setOpen(true)}>
-        <div className="flex items-center gap-x-2">
-          <HiTrash className="text-lg" />
-          Delete user
-        </div>
-      </Button>
-      <Modal onClose={() => setOpen(false)} show={isOpen} size="md">
-        <Modal.Header className="px-6 pt-6 pb-0">
-          <span className="sr-only">Delete user</span>
-        </Modal.Header>
-        <Modal.Body className="px-6 pt-0 pb-6">
-          <div className="flex flex-col items-center gap-y-6 text-center">
-            <HiOutlineExclamationCircle className="text-7xl text-red-500" />
-            <p className="text-xl text-gray-500">
-              Are you sure you want to delete this user?
-            </p>
-            <div className="flex items-center gap-x-3">
-              <Button
-                color="failure"
-                onClick={() => {
-                  handleDeleteUser(props.id);
-                  setOpen(false);
+        {allEmployee.map((employee: Employee) => (
+          <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+            <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+              {employee.id}
+            </Table.Cell>
+            <Table.Cell className="font-bold">{employee.email}</Table.Cell>
+            <Table.Cell className="font-bold">{employee.name}</Table.Cell>
+            <Table.Cell>
+              <select
+                className="rounded"
+                onChange={(e) => {
+                  setStatus(parseInt(e.target.value));
                 }}
               >
-                Yes, I'm sure
+                <option value="0" selected>
+                  Chọn mới
+                </option>
+                <option value="3">Nhân Viên</option>
+                <option value="4">Quản Lý</option>
+              </select>
+            </Table.Cell>
+            <Table.Cell>
+              <Button
+                color="success"
+                onClick={() => handleChangeStatus(employee.email)}
+              >
+                Xác nhận
               </Button>
-              <Button color="gray" onClick={() => setOpen(false)}>
-                No, cancel
-              </Button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-    </>
+            </Table.Cell>
+            <Table.Cell></Table.Cell>
+          </Table.Row>
+        ))}
+      </Table.Body>
+    </Table>
   );
 };
 

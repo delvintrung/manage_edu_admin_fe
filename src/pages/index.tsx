@@ -1,4 +1,4 @@
-import { Badge, Table, useTheme, Accordion } from "flowbite-react";
+import { Badge, Table, useTheme, Accordion, Alert } from "flowbite-react";
 import { FaUsersViewfinder } from "react-icons/fa6";
 import { MdAdsClick } from "react-icons/md";
 import { FaCartPlus } from "react-icons/fa";
@@ -14,9 +14,7 @@ const DashboardPage: FC = function () {
     <NavbarSidebarLayout>
       <div className="px-4 pt-6">
         <SalesThisWeek />
-        <div className="my-6">
-          <LatestTransactions />
-        </div>
+        <div className="my-6"></div>
         <LatestCustomers />
         <div className="my-6">
           <AcquisitionOverview />
@@ -56,28 +54,7 @@ const SalesThisWeek: FC = function () {
       </div>
       <SalesChart />
       <div className="mt-5 flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700 sm:pt-6">
-        <div className="shrink-0">
-          <a
-            href="#"
-            className="inline-flex items-center rounded-lg p-2 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
-          >
-            Sales Report
-            <svg
-              className="ml-1 h-4 w-4 sm:h-5 sm:w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </a>
-        </div>
+        <div className="shrink-0"></div>
       </div>
     </div>
   );
@@ -91,6 +68,45 @@ const SalesChart: FC = function () {
   const labelColor = isDarkTheme ? "#93ACAF" : "#6B7280";
   const opacityFrom = isDarkTheme ? 0 : 1;
   const opacityTo = isDarkTheme ? 0 : 1;
+  const [value7Days, setValue7Days] = useState<any>([]);
+  const [total7Days, setTotal7Days] = useState<any>([]);
+  const [change, setChange] = useState(false);
+  useEffect(() => {
+    setValue7Days(getRecent7Days());
+  }, []);
+
+  const getValue = async () => {
+    let result = [];
+    let tmp = 0;
+    const get = async (date: string) => {
+      const res = await axios.post(
+        "http://localhost/WriteResfulAPIPHP/admin/order/totalDate.php",
+        { date }
+      );
+      if (res.data.total_revenue == null) {
+        return 0;
+      } else {
+        return parseFloat(res.data.total_revenue);
+      }
+    };
+
+    for (let i = 0; i < 7; i++) {
+      tmp = await get(value7Days[i]);
+      result.push(tmp);
+    }
+    return result;
+  };
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getValue();
+      if (data.length > 0) {
+        setChange(true);
+      }
+      setTotal7Days(data);
+      console.log(data);
+    };
+    fetchData();
+  }, [change]);
 
   function getRecentDays() {
     const today = new Date();
@@ -107,6 +123,18 @@ const SalesChart: FC = function () {
     }
 
     return recentDays;
+  }
+  function getRecent7Days() {
+    var result = [];
+    var today = new Date();
+    for (var i = 6; i >= 0; i--) {
+      var day = new Date(today);
+      day.setDate(today.getDate() - i);
+      var formattedDate = day.toISOString().slice(0, 10);
+      result.push(formattedDate);
+    }
+
+    return result;
   }
 
   function getMonthName(monthIndex: number) {
@@ -237,7 +265,7 @@ const SalesChart: FC = function () {
   const series = [
     {
       name: "Doanh số",
-      data: [100, 110, 120, 150, 100, 170, 70],
+      data: total7Days,
       color: "#1A56DB",
     },
   ];
@@ -276,7 +304,6 @@ const LatestCustomers: FC = function () {
     };
     handleReport();
   }, [fromDay, toDay]);
-  console.log(report);
 
   useEffect(() => {
     const getInfo = async (selectDay: number) => {
@@ -320,12 +347,6 @@ const LatestCustomers: FC = function () {
         <h3 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
           Thống kê chi tiết
         </h3>
-        <a
-          href="#"
-          className="inline-flex items-center rounded-lg p-2 text-sm font-medium text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700"
-        >
-          View all
-        </a>
       </div>
       <div className="flow-root">
         <div className="flex justify-between items-center mb-5">
@@ -390,7 +411,6 @@ const LatestCustomers: FC = function () {
                   id=""
                   className="bring-0 rounded"
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setFromDay(e.target.value);
                   }}
                 />
@@ -416,10 +436,20 @@ const LatestCustomers: FC = function () {
 };
 
 const AcquisitionOverview: FC = function () {
+  const [top, setTop] = useState([]);
+  useEffect(() => {
+    const getProduct = async () => {
+      const res = await axios.get(
+        "http://localhost/WriteResfulAPIPHP/admin/order/bsl.php"
+      );
+      setTop(res.data.products);
+    };
+    getProduct();
+  }, []);
   return (
     <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800 sm:p-6 xl:p-8">
       <h3 className="mb-6 text-xl font-bold leading-none text-gray-900 dark:text-white">
-        Doanh số theo ngày
+        Sản phẩm bán chạy nhất
       </h3>
       <div className="flex flex-col">
         <div className="overflow-x-auto rounded-lg">
@@ -428,142 +458,34 @@ const AcquisitionOverview: FC = function () {
               <Table className="min-w-full table-fixed">
                 <Table.Head>
                   <Table.HeadCell className="whitespace-nowrap rounded-l border-x-0 bg-gray-50 py-3 px-4 text-left align-middle text-xs font-semibold uppercase text-gray-700 dark:bg-gray-700 dark:text-white">
-                    Top Channels
+                    Thumbnail
                   </Table.HeadCell>
                   <Table.HeadCell className="whitespace-nowrap border-x-0 bg-gray-50 py-3 px-4 text-left align-middle text-xs font-semibold uppercase text-gray-700 dark:bg-gray-700 dark:text-white">
-                    Users
+                    Name
                   </Table.HeadCell>
                   <Table.HeadCell className="min-w-[140px] whitespace-nowrap rounded-r border-x-0 bg-gray-50 py-3 px-4 text-left align-middle text-xs font-semibold uppercase text-gray-700 dark:bg-gray-700 dark:text-white">
-                    Acquisition
+                    Top Sale
                   </Table.HeadCell>
                 </Table.Head>
                 <Table.Body className="divide-y divide-gray-100 dark:divide-gray-700">
-                  <Table.Row className="text-gray-500 dark:text-gray-400">
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">
-                      Organic Search
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs font-medium text-gray-900 dark:text-white">
-                      5,649
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs">
-                      <div className="flex items-center">
-                        <span className="mr-2 text-xs font-medium">30%</span>
-                        <div className="relative w-full">
-                          <div className="h-2 w-full rounded-sm bg-gray-200 dark:bg-gray-700">
-                            <div
-                              className="h-2 rounded-sm bg-primary-700"
-                              style={{ width: "30%" }}
-                            />
+                  {top.length > 0 &&
+                    top.map((product: any) => (
+                      <Table.Row className="text-gray-500 dark:text-gray-400">
+                        <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">
+                          <img className="w-[80px]" src={product.thumbnail} />
+                        </Table.Cell>
+                        <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs font-medium text-gray-900 dark:text-white">
+                          {product.title}
+                        </Table.Cell>
+                        <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs">
+                          <div className="flex items-center">
+                            <span className="mr-2 text-md font-medium">
+                              Đã bán {product.total_sales}
+                            </span>
                           </div>
-                        </div>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row className="text-gray-500 dark:text-gray-400">
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">
-                      Referral
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs font-medium text-gray-900 dark:text-white">
-                      4,025
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs">
-                      <div className="flex items-center">
-                        <span className="mr-2 text-xs font-medium">24%</span>
-                        <div className="relative w-full">
-                          <div className="h-2 w-full rounded-sm bg-gray-200 dark:bg-gray-700">
-                            <div
-                              className="h-2 rounded-sm bg-orange-300"
-                              style={{ width: "24%" }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row className="text-gray-500 dark:text-gray-400">
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">
-                      Direct
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs font-medium text-gray-900 dark:text-white">
-                      3,105
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs">
-                      <div className="flex items-center">
-                        <span className="mr-2 text-xs font-medium">18%</span>
-                        <div className="relative w-full">
-                          <div className="h-2 w-full rounded-sm bg-gray-200 dark:bg-gray-700">
-                            <div
-                              className="h-2 rounded-sm bg-teal-400"
-                              style={{ width: "18%" }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row className="text-gray-500 dark:text-gray-400">
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">
-                      Social
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs font-medium text-gray-900 dark:text-white">
-                      1251
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs">
-                      <div className="flex items-center">
-                        <span className="mr-2 text-xs font-medium">12%</span>
-                        <div className="relative w-full">
-                          <div className="h-2 w-full rounded-sm bg-gray-200 dark:bg-gray-700">
-                            <div
-                              className="h-2 rounded-sm bg-pink-600"
-                              style={{ width: "12%" }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row className="text-gray-500 dark:text-gray-400">
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">
-                      Other
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs font-medium text-gray-900 dark:text-white">
-                      734
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs">
-                      <div className="flex items-center">
-                        <span className="mr-2 text-xs font-medium">9%</span>
-                        <div className="relative w-full">
-                          <div className="h-2 w-full rounded-sm bg-gray-200 dark:bg-gray-700">
-                            <div
-                              className="h-2 rounded-sm bg-indigo-600"
-                              style={{ width: "9%" }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                  <Table.Row className="text-gray-500 dark:text-gray-400">
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">
-                      Email
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs font-medium text-gray-900 dark:text-white">
-                      456
-                    </Table.Cell>
-                    <Table.Cell className="whitespace-nowrap border-t-0 p-4 align-middle text-xs">
-                      <div className="flex items-center">
-                        <span className="mr-2 text-xs font-medium">7%</span>
-                        <div className="relative w-full">
-                          <div className="h-2 w-full rounded-sm bg-gray-200 dark:bg-gray-700">
-                            <div
-                              className="h-2 rounded-sm bg-purple-500"
-                              style={{ width: "7%" }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
                 </Table.Body>
               </Table>
             </div>
@@ -571,183 +493,7 @@ const AcquisitionOverview: FC = function () {
         </div>
       </div>
       <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700 sm:pt-6">
-        <div className="shrink-0">
-          <a
-            href="#"
-            className="inline-flex items-center rounded-lg p-2 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
-          >
-            Acquisition Report
-            <svg
-              className="ml-1 h-4 w-4 sm:h-5 sm:w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const LatestTransactions: FC = function () {
-  return (
-    <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800 sm:p-6 xl:p-8">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-            Đơn hàng gần đây
-          </h3>
-          <span className="text-base font-normal text-gray-600 dark:text-gray-400">
-            Đây là những đơn hàng mới nhất
-          </span>
-        </div>
-        <div className="shrink-0">
-          <a
-            href="#"
-            className="rounded-lg p-2 text-sm font-medium text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700"
-          >
-            View all
-          </a>
-        </div>
-      </div>
-      <div className="mt-8 flex flex-col">
-        <div className="overflow-x-auto rounded-lg">
-          <div className="inline-block min-w-full align-middle">
-            <div className="overflow-hidden shadow sm:rounded-lg">
-              <Table
-                striped
-                className="min-w-full divide-y divide-gray-200 dark:divide-gray-600"
-              >
-                <Table.Head className="bg-gray-50 dark:bg-gray-700">
-                  <Table.HeadCell className="flex justify-between">
-                    <div>Mã đơn</div> <div>Tên sản phẩm</div>{" "}
-                    <div>Ngày đặt</div> <div>Tổng</div>
-                    <div>Trạng thái</div>
-                    <div></div>
-                  </Table.HeadCell>
-                </Table.Head>
-
-                <Table.Body className="bg-white dark:bg-gray-800">
-                  <Accordion>
-                    <Accordion.Panel>
-                      <Accordion.Title>
-                        <div className="flex justify-between gap-x-[130px]">
-                          <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                            1
-                          </div>
-                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                            Truuện kỳ tích
-                          </div>
-                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                            20/05/2024
-                          </div>
-                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                            900000
-                          </div>
-                          <div className="flex whitespace-nowrap p-4">
-                            <Badge color="success">Completed</Badge>
-                          </div>
-                        </div>
-                      </Accordion.Title>
-
-                      <Accordion.Content>
-                        <p className="mb-2 text-gray-500 dark:text-gray-400">
-                          Flowbite is an open-source library of interactive
-                          components built on top of Tailwind CSS including
-                          buttons, dropdowns, modals, navbars, and more.
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400">
-                          Check out this guide to learn how to&nbsp;
-                          <a
-                            href="https://flowbite.com/docs/getting-started/introduction/"
-                            className="text-cyan-600 hover:underline dark:text-cyan-500"
-                          >
-                            get started&nbsp;
-                          </a>
-                          and start developing websites even faster with
-                          components on top of Tailwind CSS.
-                        </p>
-                      </Accordion.Content>
-                    </Accordion.Panel>
-                    <Accordion.Panel>
-                      <Accordion.Title>
-                        <div className="flex justify-between gap-x-[130px]">
-                          <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
-                            1
-                          </div>
-                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                            Truuện kỳ tích
-                          </div>
-                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                            20/05/2024
-                          </div>
-                          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-                            900000
-                          </div>
-                          <div className="flex whitespace-nowrap p-4">
-                            <Badge color="success">Completed</Badge>
-                          </div>
-                        </div>
-                      </Accordion.Title>
-
-                      <Accordion.Content>
-                        <p className="mb-2 text-gray-500 dark:text-gray-400">
-                          Flowbite is an open-source library of interactive
-                          components built on top of Tailwind CSS including
-                          buttons, dropdowns, modals, navbars, and more.
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400">
-                          Check out this guide to learn how to&nbsp;
-                          <a
-                            href="https://flowbite.com/docs/getting-started/introduction/"
-                            className="text-cyan-600 hover:underline dark:text-cyan-500"
-                          >
-                            get started&nbsp;
-                          </a>
-                          and start developing websites even faster with
-                          components on top of Tailwind CSS.
-                        </p>
-                      </Accordion.Content>
-                    </Accordion.Panel>
-                  </Accordion>
-                </Table.Body>
-              </Table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center justify-between pt-3 sm:pt-6">
-        <div className="shrink-0">
-          <a
-            href="#"
-            className="inline-flex items-center rounded-lg p-2 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
-          >
-            Transactions Report
-            <svg
-              className="ml-1 h-4 w-4 sm:h-5 sm:w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </a>
-        </div>
+        <div className="shrink-0"></div>
       </div>
     </div>
   );

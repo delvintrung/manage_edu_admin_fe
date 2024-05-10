@@ -1,4 +1,4 @@
-import { Sidebar, TextInput } from "flowbite-react";
+import { Sidebar, TextInput, Toast } from "flowbite-react";
 import { Button, Modal } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import type { FC } from "react";
@@ -23,6 +23,7 @@ const ExampleSidebar: FC = function () {
   }, [setCurrentPage]);
 
   const [openModal, setOpenModal] = useState(false);
+  const [permission, setPermission] = useState(false);
 
   return (
     <Sidebar aria-label="Sidebar with multi-level dropdown example">
@@ -82,7 +83,12 @@ const ExampleSidebar: FC = function () {
                 Orders
               </Sidebar.Item>
               <Sidebar.Item
-                href="/permissions/list"
+                onClick={() => {
+                  localStorage.getItem("employeeId") != "2"
+                    ? setPermission(true)
+                    : setPermission(false);
+                }}
+                href={permission ? "/permissions/list" : ""}
                 icon={FaUserLock}
                 className={
                   "/permissions/list" === currentPage
@@ -110,6 +116,24 @@ const ExampleSidebar: FC = function () {
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </div>
+        {!permission && (
+          <>
+            <Modal show={openModal} onClose={() => setOpenModal(false)}>
+              <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
+              <Modal.Body>
+                <div className="space-y-6">
+                  <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button onClick={() => setOpenModal(false)}>I accept</Button>
+                <Button color="gray" onClick={() => setOpenModal(false)}>
+                  Decline
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </>
+        )}
         <Modal
           show={openModal}
           size="md"

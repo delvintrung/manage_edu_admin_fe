@@ -15,7 +15,6 @@ import {
   HiChevronLeft,
   HiChevronRight,
   HiCog,
-  HiDocumentDownload,
   HiDotsVertical,
   HiExclamationCircle,
   HiHome,
@@ -67,7 +66,7 @@ const UserListPage: FC = function () {
                   <TextInput
                     id="users-search"
                     name="users-search"
-                    placeholder="Search for users"
+                    placeholder="Search for orders"
                   />
                 </div>
               </form>
@@ -101,15 +100,6 @@ const UserListPage: FC = function () {
                   <HiDotsVertical className="text-2xl" />
                 </a>
               </div>
-            </div>
-            <div className="ml-auto flex items-center space-x-2 sm:space-x-3">
-              <AddUserModal />
-              <Button color="gray">
-                <div className="flex items-center gap-x-3">
-                  <HiDocumentDownload className="text-xl" />
-                  <span>Export</span>
-                </div>
-              </Button>
             </div>
           </div>
         </div>
@@ -221,6 +211,8 @@ type Product = {
 };
 interface Order {
   orderId: string;
+  shipFee: number;
+  note: string;
   products: Product[];
   total: string;
   orderDate: string;
@@ -239,9 +231,25 @@ function convertToCurrencyFormat(amount: number) {
 
 function Accordion({ order }: { order: Order }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [status, setStatus] = useState(1);
 
   const toggleAccordion = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleChangeStatus = (od: string) => {
+    const changeStatus = async (od: string) => {
+      const res = await axios.post(
+        "http://localhost/WriteResfulAPIPHP/admin/order/changeStatus.php",
+        {
+          orderId: parseInt(od),
+          status: status,
+          employeeId: localStorage.getItem("employeeId"),
+        }
+      );
+      console.log(res.data);
+    };
+    changeStatus(od);
   };
 
   return (
@@ -258,7 +266,7 @@ function Accordion({ order }: { order: Order }) {
             {order.orderDate}
           </div>
           <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-            {convertToCurrencyFormat(parseFloat(order.total))}
+            {convertToCurrencyFormat(parseFloat(order.total) + order.shipFee)}
           </div>
 
           <div className="flex whitespace-nowrap p-4">
@@ -305,7 +313,7 @@ function Accordion({ order }: { order: Order }) {
               <div></div>
               <div className="flex w-[260px] mb-10">
                 <p>Nội dung ghi chú:</p>
-                <p>{}</p>
+                <p>{order.note}</p>
               </div>
             </div>
             <div className="flex justify-between px-20">
@@ -315,7 +323,7 @@ function Accordion({ order }: { order: Order }) {
                   name=""
                   id=""
                   onChange={(e) => {
-                    // setStatus(parseInt(e.target.value));
+                    setStatus(parseInt(e.target.value));
                   }}
                 >
                   <option value="1" selected>
@@ -326,7 +334,12 @@ function Accordion({ order }: { order: Order }) {
                   <option value="4">Giao thành công</option>
                   <option value="5">Đã hủy</option>
                 </select>
-                <Button color="success">Xác nhận</Button>
+                <Button
+                  color="success"
+                  onClick={() => handleChangeStatus(order.orderId)}
+                >
+                  Xác nhận
+                </Button>
               </div>
             </div>
             <div className="flex justify-between mt-10 px-20">
@@ -339,9 +352,15 @@ function Accordion({ order }: { order: Order }) {
                   <p>Phương thức giao hàng:</p> <span>COD</span>{" "}
                 </div>
                 <div className="flex items-center gap-8">
+                  <p>Phí Ship:</p>{" "}
+                  <span>{convertToCurrencyFormat(order.shipFee)}</span>{" "}
+                </div>
+                <div className="flex items-center gap-8">
                   <p>Tổng tiền thanh toán:</p>{" "}
                   <span>
-                    {convertToCurrencyFormat(parseFloat(order.total))}
+                    {convertToCurrencyFormat(
+                      parseFloat(order.total) + order.shipFee
+                    )}
                   </span>{" "}
                 </div>
                 <div className="flex items-center gap-8">
@@ -378,6 +397,8 @@ const AllUsersTable: FC = function () {
     total: "1000.00",
     orderDate: "2024-05-10",
     status: 1,
+    shipFee: 35000,
+    note: "le",
     employeeId: null,
   };
 

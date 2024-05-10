@@ -8,6 +8,7 @@ import {
   Table,
   Textarea,
   TextInput,
+  Alert,
   Dropdown,
 } from "flowbite-react";
 import type { FC } from "react";
@@ -150,7 +151,7 @@ const AddProductModal: FC = function () {
     formData.append("name", nameProduct);
     formData.append("category", cateProduct);
     formData.append("quantity", quantityProduct);
-    formData.append("author", authorProduct);
+    formData.append("author", "5");
     formData.append("price", priceProduct);
     formData.append("description", desctiptionProduct);
     for (let i = 0; i < fileList.length; i++) {
@@ -168,20 +169,23 @@ const AddProductModal: FC = function () {
         }
       )
       .then((res) => {
-        console.log(res.data);
+        if (res.data.success == true) {
+          setOpen(false);
+          alert(res.data.message);
+        }
       });
   };
 
   const files = fileList ? [...fileList] : [];
 
   return (
-    <>
+    <div>
       <Button color="primary" onClick={() => setOpen(!isOpen)}>
         <FaPlus className="mr-3 text-sm" />
         Add product
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700">
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-40">
           <strong>Add product</strong>
         </Modal.Header>
         <Modal.Body>
@@ -309,7 +313,7 @@ const AddProductModal: FC = function () {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </div>
   );
 };
 
