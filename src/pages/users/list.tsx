@@ -103,12 +103,6 @@ const UserListPage: FC = function () {
             </div>
             <div className="ml-auto flex items-center space-x-2 sm:space-x-3">
               <AddUserModal />
-              <Button color="gray">
-                <div className="flex items-center gap-x-3">
-                  <HiDocumentDownload className="text-xl" />
-                  <span>Export</span>
-                </div>
-              </Button>
             </div>
           </div>
         </div>
@@ -122,7 +116,6 @@ const UserListPage: FC = function () {
           </div>
         </div>
       </div>
-      <Pagination />
     </NavbarSidebarLayout>
   );
 };
@@ -288,7 +281,7 @@ const AllUsersTable: FC = function () {
             </Table.Cell>
             <Table.Cell>
               <div className="flex items-center gap-x-3 whitespace-nowrap">
-                <EditUserModal />
+                <EditUserModal email={user.email} />
                 <DeleteUserModal id={user.userId} />
               </div>
             </Table.Cell>
@@ -299,8 +292,21 @@ const AllUsersTable: FC = function () {
   );
 };
 
-const EditUserModal: FC = function () {
+const EditUserModal: FC<{ email: string }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
+
+  const handleChange = (email: string) => {
+    const change = async (email: string) => {
+      const res = await axios.post(
+        "http://localhost/WriteResfulAPIPHP/admin/user/changeRoleUser.php",
+        {
+          email: email,
+        }
+      );
+      console.log(res.data);
+    };
+    change(email);
+  };
 
   return (
     <>
@@ -338,7 +344,7 @@ const EditUserModal: FC = function () {
                 <TextInput
                   id="email"
                   name="email"
-                  placeholder="example@company.com"
+                  placeholder="email"
                   type="email"
                 />
               </div>
@@ -349,31 +355,12 @@ const EditUserModal: FC = function () {
                 <TextInput
                   id="phone"
                   name="phone"
-                  placeholder="e.g., +(12)3456 789"
+                  placeholder="+84 378787328"
                   type="tel"
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="department">Department</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="department"
-                  name="department"
-                  placeholder="Development"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="company">Company</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="company"
-                  name="company"
-                  placeholder="Somewhere"
-                />
-              </div>
-            </div>
+
             <div>
               <Label htmlFor="passwordCurrent">Current password</Label>
               <div className="mt-1">
@@ -401,6 +388,15 @@ const EditUserModal: FC = function () {
         <Modal.Footer>
           <Button color="primary" onClick={() => setOpen(false)}>
             Save all
+          </Button>
+          <Button
+            color="gray"
+            onClick={() => {
+              handleChange(props.email);
+              setOpen(false);
+            }}
+          >
+            Pass Employee
           </Button>
         </Modal.Footer>
       </Modal>

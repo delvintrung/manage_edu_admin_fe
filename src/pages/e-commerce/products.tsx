@@ -26,6 +26,7 @@ import {
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "axios";
+import { FaAngleDown } from "react-icons/fa";
 
 interface Product {
   id: number;
@@ -134,6 +135,8 @@ const AddProductModal: FC = function () {
   const [priceProduct, setPriceProduct] = useState("");
   const [authorProduct, setAuthorProduct] = useState("");
   const [desctiptionProduct, setDescriptionProduct] = useState("");
+  const [permission, setPermission] = useState(false);
+
   const [fileList, setFileList] = useState<FileList | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -180,7 +183,21 @@ const AddProductModal: FC = function () {
 
   return (
     <div>
-      <Button color="primary" onClick={() => setOpen(!isOpen)}>
+      <Button
+        color="primary"
+        onClick={() => {
+          if (
+            localStorage.getItem("id") == "2" ||
+            localStorage.getItem("id") == "" ||
+            localStorage.getItem("id") == "4"
+          ) {
+            setPermission(false);
+            setOpen(!isOpen);
+          } else {
+            setPermission(true);
+          }
+        }}
+      >
         <FaPlus className="mr-3 text-sm" />
         Add product
       </Button>
@@ -313,6 +330,17 @@ const AddProductModal: FC = function () {
           </Button>
         </Modal.Footer>
       </Modal>
+      <Modal show={permission} onClose={() => setPermission(false)}>
+        <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
+        <Modal.Body>
+          <div className="space-y-6">
+            <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setPermission(false)}>I accept</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
@@ -320,15 +348,32 @@ const AddProductModal: FC = function () {
 const EditProductModal: FC = function () {
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
+  const [quantityProduct, setQuantity] = useState("");
   const [cateProduct, setCateProduct] = useState("");
   const [priceProduct, setPriceProduct] = useState("");
   const [authorProduct, setAuthorProduct] = useState("");
   const [desctiptionProduct, setDescriptionProduct] = useState("");
+  const [permission, setPermission] = useState(false);
+
   const [files, setFiles] = useState<string[]>([]);
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(!isOpen)}>
+      <Button
+        color="primary"
+        onClick={() => {
+          if (
+            localStorage.getItem("id") == "2" ||
+            localStorage.getItem("id") == "" ||
+            localStorage.getItem("id") == "4"
+          ) {
+            setPermission(false);
+            setOpen(!isOpen);
+          } else {
+            setPermission(true);
+          }
+        }}
+      >
         <HiPencilAlt className="mr-2 text-lg" />
         Edit item
       </Button>
@@ -352,13 +397,39 @@ const EditProductModal: FC = function () {
               </div>
               <div>
                 <Label htmlFor="category">Category</Label>
-                <TextInput
-                  id="category"
+                <select
+                  className="border-slate-400 rounded"
                   name="category"
-                  placeholder="Loại truyện"
+                  id=""
+                  onChange={(e) => {
+                    setCateProduct(e.target.value);
+                  }}
+                >
+                  <option value="0" selected>
+                    Chọn loại truyện
+                  </option>
+                  <option value="1" selected>
+                    Truyện tranh Việt Nam
+                  </option>
+                  <option value="2" selected>
+                    Truyện tranh nước ngoài
+                  </option>
+                  <option value="3" selected>
+                    Chọn loại truyện
+                  </option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="brand">Quantity</Label>
+                <TextInput
+                  id="brand"
+                  name="brand"
+                  placeholder="Số lượng"
                   className="mt-1"
-                  onChange={(e) => setCateProduct(e.target.value)}
-                  value={cateProduct}
+                  onChange={(e) => {
+                    setQuantity(e.target.value);
+                  }}
+                  value={quantityProduct}
                 />
               </div>
               <div>
@@ -378,7 +449,7 @@ const EditProductModal: FC = function () {
                   id="price"
                   name="price"
                   type="number"
-                  placeholder="Giá bá lẻ"
+                  placeholder="Giá bán lẻ"
                   className="mt-1"
                   onChange={(e) => setPriceProduct(e.target.value)}
                   value={priceProduct}
@@ -396,19 +467,7 @@ const EditProductModal: FC = function () {
                   value={desctiptionProduct}
                 />
               </div>
-              <div className="flex space-x-5">
-                <div>
-                  <img
-                    alt="Apple iMac 1"
-                    src="/images/products/apple-imac-1.png"
-                    className="h-24"
-                  />
-                  <a href="#" className="cursor-pointer">
-                    <span className="sr-only">Delete</span>
-                    <HiTrash className="-mt-5 text-2xl text-red-600" />
-                  </a>
-                </div>
-              </div>
+              <div className="flex space-x-5"></div>
               <div className="lg:col-span-2">
                 <div className="flex w-full items-center justify-center">
                   <label className="flex h-32 w-full cursor-pointer flex-col rounded border-2 border-dashed border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700">
@@ -446,6 +505,17 @@ const EditProductModal: FC = function () {
           <Button color="primary" onClick={() => setOpen(false)}>
             Save all
           </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={permission} onClose={() => setPermission(false)}>
+        <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
+        <Modal.Body>
+          <div className="space-y-6">
+            <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setPermission(false)}>I accept</Button>
         </Modal.Footer>
       </Modal>
     </>
@@ -500,6 +570,7 @@ const DeleteProductModal: FC<{ id: number }> = function (props) {
 
 const ProductsTable: FC = function () {
   const [allProducts, setAllProducts] = useState([]);
+  const [clickTitle, setClickTitle] = useState(false);
   useEffect(() => {
     async function fetchData() {
       try {
@@ -511,6 +582,21 @@ const ProductsTable: FC = function () {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetch = async () => {
+      if (clickTitle) {
+        try {
+          const response = await axios.get(
+            "http://localhost/WriteResfulAPIPHP/admin/product/sortTitle.php"
+          );
+          setAllProducts(response.data);
+        } catch (error) {}
+        return;
+      }
+    };
+    fetch();
+  }, [clickTitle]);
 
   const formatPrice: (currentPrice: number) => string = (
     currenPrice: number
@@ -529,7 +615,19 @@ const ProductsTable: FC = function () {
           <span className="sr-only">Toggle selected</span>
           <Checkbox />
         </Table.HeadCell>
-        <Table.HeadCell>Product Name</Table.HeadCell>
+        <Table.HeadCell
+          className="flex items-center gap-2"
+          onClick={() => {
+            setClickTitle(!clickTitle);
+          }}
+        >
+          Product Name{" "}
+          {clickTitle && (
+            <div>
+              <FaAngleDown />
+            </div>
+          )}
+        </Table.HeadCell>
         <Table.HeadCell>Thumbnail</Table.HeadCell>
         <Table.HeadCell>ID</Table.HeadCell>
         <Table.HeadCell>Price</Table.HeadCell>

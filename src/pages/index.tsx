@@ -29,11 +29,8 @@ const SalesThisWeek: FC = function () {
     <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800 sm:p-6 xl:p-8">
       <div className="mb-4 flex items-center justify-between">
         <div className="shrink-0">
-          <span className="text-2xl font-bold leading-none text-gray-900 dark:text-white sm:text-3xl">
-            $45,385
-          </span>
           <h3 className="text-base font-normal text-gray-600 dark:text-gray-400">
-            Sales this week
+            Thống kê trong tuần
           </h3>
         </div>
         <div className="flex flex-1 items-center justify-end text-base font-bold text-green-600 dark:text-green-400">
@@ -369,7 +366,9 @@ const LatestCustomers: FC = function () {
               <FaCartPlus />
               <p className="text-sm">Đơn hàng mới</p>
             </div>
-            <p className="text-center">{report.total_orders}</p>
+            <p className="text-center">
+              {report.total_orders ? report.total_orders : 0}
+            </p>
           </div>
           <div className="w-[200px] h-[80px] bg-blue-600 text-white rounded p-4">
             <div className="flex items-center gap-2">

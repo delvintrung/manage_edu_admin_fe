@@ -247,7 +247,7 @@ function Accordion({ order }: { order: Order }) {
           employeeId: localStorage.getItem("employeeId"),
         }
       );
-      console.log(res.data);
+      alert(res.data.message);
     };
     changeStatus(od);
   };

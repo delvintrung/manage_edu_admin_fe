@@ -84,11 +84,13 @@ const ExampleSidebar: FC = function () {
               </Sidebar.Item>
               <Sidebar.Item
                 onClick={() => {
-                  localStorage.getItem("employeeId") != "2"
+                  localStorage.getItem("id") != "2"
                     ? setPermission(true)
                     : setPermission(false);
                 }}
-                href={permission ? "/permissions/list" : ""}
+                href={
+                  localStorage.getItem("id") == "2" ? "/permissions/list" : null
+                }
                 icon={FaUserLock}
                 className={
                   "/permissions/list" === currentPage
@@ -116,24 +118,19 @@ const ExampleSidebar: FC = function () {
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </div>
-        {!permission && (
-          <>
-            <Modal show={openModal} onClose={() => setOpenModal(false)}>
-              <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
-              <Modal.Body>
-                <div className="space-y-6">
-                  <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
-                </div>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button onClick={() => setOpenModal(false)}>I accept</Button>
-                <Button color="gray" onClick={() => setOpenModal(false)}>
-                  Decline
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </>
-        )}
+
+        <Modal show={permission} onClose={() => setPermission(false)}>
+          <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
+          <Modal.Body>
+            <div className="space-y-6">
+              <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={() => setPermission(false)}>I accept</Button>
+          </Modal.Footer>
+        </Modal>
+
         <Modal
           show={openModal}
           size="md"

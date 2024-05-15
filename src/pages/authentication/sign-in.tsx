@@ -54,7 +54,7 @@ const SignInPage: FC = function () {
             <TextInput
               id="email"
               name="email"
-              placeholder="name@company.com"
+              placeholder="email"
               type="email"
               onChange={(e) => {
                 setEmail(e.target.value);
