@@ -12,6 +12,8 @@ import EcommerceProductsPage from "./pages/e-commerce/products";
 import UserListPage from "./pages/users/list";
 import OrderListPage from "./pages/orders/list";
 import PermissionPage from "./pages/permissions/list";
+import DeliveryReceivedPage from "./pages/delivery-received";
+import CreateTempProduct from "./pages/delivery-received/createTempProduct";
 
 const container = document.getElementById("root");
 
@@ -35,6 +37,11 @@ root.render(
           <Route path="/users/list" element={<UserListPage />} />
           <Route path="/orders/list" element={<OrderListPage />} />
           <Route path="/permissions/list" element={<PermissionPage />} />
+          <Route path="/delivery-received" element={<DeliveryReceivedPage />} />
+          <Route
+            path="/delivery-received/create-temporary-product"
+            element={<CreateTempProduct />}
+          />
         </Routes>
       </BrowserRouter>
     </Flowbite>

@@ -1,4 +1,4 @@
-import { Sidebar, TextInput, Toast } from "flowbite-react";
+import { Sidebar, TextInput } from "flowbite-react";
 import { Button, Modal } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import type { FC } from "react";
@@ -12,6 +12,7 @@ import {
 } from "react-icons/hi";
 import { AiFillMedicineBox } from "react-icons/ai";
 import { FaUserLock } from "react-icons/fa";
+import { GrStorage } from "react-icons/gr";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
@@ -99,6 +100,22 @@ const ExampleSidebar: FC = function () {
                 }
               >
                 Permissions
+              </Sidebar.Item>
+              <Sidebar.Item
+                className="max-w-20"
+                icon={GrStorage}
+                onClick={() => {
+                  localStorage.getItem("id") != "2"
+                    ? setPermission(true)
+                    : setPermission(false);
+                }}
+                href={
+                  localStorage.getItem("id") == "2"
+                    ? "/delivery-received"
+                    : null
+                }
+              >
+                Delivery & Received
               </Sidebar.Item>
               <Sidebar.Item
                 href={
