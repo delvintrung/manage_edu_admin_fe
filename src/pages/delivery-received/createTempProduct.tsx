@@ -1,8 +1,10 @@
 import type { FC } from "react";
 import { Button } from "flowbite-react";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { Link } from "react-router-dom";
+import axios from "axios";
 
 interface Values {
   name: string;
@@ -37,26 +39,49 @@ const CreateTempProduct: FC = () => {
                     initialValues={initialValues}
                     validationSchema={validateSchema}
                     onSubmit={(values, actions) => {
-                      console.log({ values, actions });
-                      alert(JSON.stringify(values, null, 2));
+                      const result = axios.post("", values);
                       actions.setSubmitting(false);
                     }}
                   >
                     <Form>
-                      <label htmlFor="name">Name Product</label>
-                      <Field id="name" name="name" placeholder="Name" />
-                      <label htmlFor="author">Author</label>
-                      <Field id="author" name="author" placeholder="author" />
-                      <button type="submit">Submit</button>
+                      <div className="mb-5 flex">
+                        <label htmlFor="name">Name Product</label>
+                        <Field
+                          id="name"
+                          name="name"
+                          placeholder="Name"
+                          className="ml-3"
+                        />
+                        <ErrorMessage
+                          name="name"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </div>
+                      <div className="mb-10 flex">
+                        <label htmlFor="author">Author</label>
+                        <Field
+                          id="author"
+                          name="author"
+                          placeholder="Author"
+                          className="ml-3"
+                        />
+                        <ErrorMessage
+                          name="author"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </div>
+                      <div className="w-full flex justify-between">
+                        <Link to="/delivery-received">
+                          <Button color="light">Hủy</Button>
+                        </Link>
+                        <div></div>
+                        <Button type="submit">Gửi yêu cầu</Button>
+                      </div>
                     </Form>
                   </Formik>
                 </div>
-              </div>
-
-              <div className="w-full flex justify-between">
-                <Button color="light">Hủy</Button>
-                <div></div>
-                <Button>Gửi yêu cầu</Button>
               </div>
             </div>
           </div>

@@ -8,8 +8,6 @@ import {
   Table,
   Textarea,
   TextInput,
-  Alert,
-  Dropdown,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect, ChangeEvent } from "react";
@@ -27,6 +25,8 @@ import {
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "axios";
 import { FaAngleDown } from "react-icons/fa";
+import { Editor, EditorTextChangeEvent } from "primereact/editor";
+import Select, { MultiValue } from "react-select";
 
 interface Product {
   id: number;
@@ -128,16 +128,28 @@ const SearchForProducts: FC = function () {
 };
 
 const AddProductModal: FC = function () {
+  type Author = {
+    value: number;
+    label: string;
+  };
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
-  const [cateProduct, setCateProduct] = useState("");
-  const [quantityProduct, setQuantity] = useState("");
-  const [priceProduct, setPriceProduct] = useState("");
+  const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
   const [authorProduct, setAuthorProduct] = useState("");
-  const [desctiptionProduct, setDescriptionProduct] = useState("");
+  const [desctiptionProduct, setDescriptionProduct] = useState<string>("");
+
   const [permission, setPermission] = useState(false);
 
   const [fileList, setFileList] = useState<FileList | null>(null);
+  const [authors, setAuthors] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get("http://localhost:3006/api/author");
+      setAuthors(response.data);
+    };
+    fetchData();
+  }, []);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFileList(e.target.files);
@@ -152,10 +164,8 @@ const AddProductModal: FC = function () {
     }
     let formData = new FormData();
     formData.append("name", nameProduct);
-    formData.append("category", cateProduct);
-    formData.append("quantity", quantityProduct);
+    formData.append("category", JSON.stringify(cateProduct));
     formData.append("author", "5");
-    formData.append("price", priceProduct);
     formData.append("description", desctiptionProduct);
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
@@ -178,6 +188,8 @@ const AddProductModal: FC = function () {
         }
       });
   };
+
+  const handleChange = (option: MultiValue<Author>) => setCateProduct(option);
 
   const files = fileList ? [...fileList] : [];
 
@@ -222,82 +234,55 @@ const AddProductModal: FC = function () {
                 />
               </div>
               <div>
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="brand">Author</Label>
                 <select
                   className="border-slate-400 rounded"
                   name="category"
                   id=""
                   onChange={(e) => {
-                    setCateProduct(e.target.value);
+                    setAuthorProduct(e.target.value);
                   }}
                 >
                   <option value="0" selected>
-                    Chọn loại truyện
+                    Chọn tác giả
                   </option>
-                  <option value="1" selected>
-                    Truyện tranh Việt Nam
-                  </option>
-                  <option value="2" selected>
-                    Truyện tranh nước ngoài
-                  </option>
-                  <option value="3" selected>
-                    Chọn loại truyện
-                  </option>
+                  {authors.map((author: Author) => (
+                    <option value={author.value}>{author.label}</option>
+                  ))}
                 </select>
               </div>
               <div>
-                <Label htmlFor="brand">Quantity</Label>
-                <TextInput
-                  id="brand"
-                  name="brand"
-                  placeholder="Số lượng"
-                  className="mt-1"
-                  onChange={(e) => {
-                    setQuantity(e.target.value);
-                  }}
-                  value={quantityProduct}
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  isMulti
+                  name="category"
+                  options={authors}
+                  className="basic-multi-select w-[500px]"
+                  classNamePrefix="select"
+                  onChange={handleChange}
                 />
               </div>
-              <div></div>
-              <div>
-                <Label htmlFor="brand">Author</Label>
-                <TextInput
-                  id="brand"
-                  name="brand"
-                  placeholder="Của tác giả nào"
-                  className="mt-1"
-                  onChange={(e) => {
-                    setAuthorProduct(e.target.value);
-                  }}
-                  value={authorProduct}
-                />
-              </div>
-              <div>
-                <Label htmlFor="price">Price</Label>
-                <TextInput
-                  id="price"
-                  name="price"
-                  type="number"
-                  placeholder="Giá bán lẻ"
-                  className="mt-1"
-                  onChange={(e) => {
-                    setPriceProduct(e.target.value);
-                  }}
-                  value={priceProduct}
-                />
-              </div>
+
+              {cateProduct.length > 0 && (
+                <div>
+                  Selected:
+                  <ul>
+                    {cateProduct.map((option: Author) => (
+                      <li key={option.value}>{option.label}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="lg:col-span-2">
                 <Label htmlFor="producTable.Celletails">Product details</Label>
-                <Textarea
-                  id="producTable.Celletails"
-                  name="producTable.Celletails"
-                  placeholder="Thêm nhưng thông tin liên quan cho sản phẩm"
-                  rows={6}
-                  className="mt-1"
-                  onChange={(e) => {
-                    setDescriptionProduct(e.target.value);
-                  }}
+                <Editor
                   value={desctiptionProduct}
+                  onTextChange={(e: EditorTextChangeEvent) => {
+                    setDescriptionProduct(e.htmlValue ?? "");
+                    console.log(e.htmlValue);
+                  }}
+                  style={{ height: "320px" }}
                 />
               </div>
               <div className="lg:col-span-2">
@@ -350,7 +335,6 @@ const EditProductModal: FC = function () {
   const [nameProduct, setNameProduct] = useState("");
   const [quantityProduct, setQuantity] = useState("");
   const [cateProduct, setCateProduct] = useState("");
-  const [priceProduct, setPriceProduct] = useState("");
   const [authorProduct, setAuthorProduct] = useState("");
   const [desctiptionProduct, setDescriptionProduct] = useState("");
   const [permission, setPermission] = useState(false);
@@ -443,28 +427,15 @@ const EditProductModal: FC = function () {
                   value={authorProduct}
                 />
               </div>
-              <div>
-                <Label htmlFor="price">Price</Label>
-                <TextInput
-                  id="price"
-                  name="price"
-                  type="number"
-                  placeholder="Giá bán lẻ"
-                  className="mt-1"
-                  onChange={(e) => setPriceProduct(e.target.value)}
-                  value={priceProduct}
-                />
-              </div>
               <div className="lg:col-span-2">
                 <Label htmlFor="productDetails">Product details</Label>
-                <Textarea
-                  id="productDetails"
-                  name="productDetails"
-                  placeholder="Thông tin liên quan cần để cho đoc giả biết thêm về sản phẩm này"
-                  rows={6}
-                  className="mt-1"
-                  onChange={(e) => setDescriptionProduct(e.target.value)}
+                <Editor
                   value={desctiptionProduct}
+                  onTextChange={(e: EditorTextChangeEvent) => {
+                    setDescriptionProduct(e.htmlValue ?? "");
+                    console.log(e.htmlValue);
+                  }}
+                  style={{ height: "320px" }}
                 />
               </div>
               <div className="flex space-x-5"></div>
@@ -525,10 +496,9 @@ const EditProductModal: FC = function () {
 const DeleteProductModal: FC<{ id: number }> = function (props) {
   const [isOpen, setOpen] = useState(false);
   const handleDeleteProduct = async (productId: number) => {
-    const res = await axios.put(
-      "http://localhost/WriteResfulAPIPHP/admin/product/deleteProduct.php",
-      { productId: productId }
-    );
+    const res = await axios.put("http://localhost:3006/api/product", {
+      productId: productId,
+    });
     console.log(res.data);
   };
   return (
@@ -574,9 +544,7 @@ const ProductsTable: FC = function () {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get(
-          "http://localhost/WriteResfulAPIPHP/api/product/read.php"
-        );
+        const response = await axios.get("http://localhost:3006/api/product");
         setAllProducts(response.data);
       } catch (error) {}
     }
@@ -588,7 +556,7 @@ const ProductsTable: FC = function () {
       if (clickTitle) {
         try {
           const response = await axios.get(
-            "http://localhost/WriteResfulAPIPHP/admin/product/sortTitle.php"
+            "http://localhost:3006/api/product/filter/title"
           );
           setAllProducts(response.data);
         } catch (error) {}

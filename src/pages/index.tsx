@@ -1,5 +1,4 @@
-import { Badge, Table, useTheme, Accordion, Alert } from "flowbite-react";
-import { FaUsersViewfinder } from "react-icons/fa6";
+import { Table, useTheme } from "flowbite-react";
 import { MdAdsClick } from "react-icons/md";
 import { FaCartPlus } from "react-icons/fa";
 import { IoIosCash } from "react-icons/io";
@@ -113,7 +112,6 @@ const SalesChart: FC = function () {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
 
       const formattedDate = `${day} ${getMonthName(date.getMonth())}`;
       recentDays.push(formattedDate);
@@ -349,7 +347,7 @@ const LatestCustomers: FC = function () {
         <div className="flex justify-between items-center mb-5">
           <div className="w-[200px] h-[80px] bg-red-600 text-white rounded p-4">
             <div className="flex items-center gap-2">
-              <FaUsersViewfinder />
+              ICON
               <p className="text-sm"> Lượt khách tiếp cận</p>
             </div>
             <p className="text-center">888</p>

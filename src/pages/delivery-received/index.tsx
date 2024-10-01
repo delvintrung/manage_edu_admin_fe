@@ -205,68 +205,61 @@ type Company = {
   description: string;
 };
 
+type Received = {
+  id: number;
+  dateReceived: string;
+  name_company: string;
+  noteReceived: string;
+  total_value: string;
+};
+
 const AllDeliveryTable: FC = function () {
+  const [received, setReceived] = useState([]);
+  useEffect(() => {
+    const fetch = async () => {
+      const result = await axios.get("http://localhost:3006/api/received");
+      setReceived(result.data);
+    };
+    fetch();
+  }, []);
+  const formatPrice: (currentPrice: number) => string = (
+    currenPrice: number
+  ) => {
+    const formatter = new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+    return formatter.format(currenPrice);
+  };
+
   return (
     <div className="overflow-x-auto">
       <Table hoverable>
         <Table.Head>
-          <Table.HeadCell>Product name</Table.HeadCell>
-          <Table.HeadCell>Color</Table.HeadCell>
-          <Table.HeadCell>Category</Table.HeadCell>
-          <Table.HeadCell>Price</Table.HeadCell>
-          <Table.HeadCell>
-            <span className="sr-only">Edit</span>
+          <Table.HeadCell className="w-[30px]">ID</Table.HeadCell>
+          <Table.HeadCell className="w-[250px]">Name Company</Table.HeadCell>
+          <Table.HeadCell className="w-[250px]">Date</Table.HeadCell>
+          <Table.HeadCell className="w-[150px]">Total Value</Table.HeadCell>
+          <Table.HeadCell className="w-[450px] text-center">
+            Note
           </Table.HeadCell>
         </Table.Head>
         <Table.Body className="divide-y">
-          <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-            <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-              {'Apple MacBook Pro 17"'}
-            </Table.Cell>
-            <Table.Cell>Sliver</Table.Cell>
-            <Table.Cell>Laptop</Table.Cell>
-            <Table.Cell>$2999</Table.Cell>
-            <Table.Cell>
-              <a
-                href="#"
-                className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-              >
-                Edit
-              </a>
-            </Table.Cell>
-          </Table.Row>
-          <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-            <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-              Microsoft Surface Pro
-            </Table.Cell>
-            <Table.Cell>White</Table.Cell>
-            <Table.Cell>Laptop PC</Table.Cell>
-            <Table.Cell>$1999</Table.Cell>
-            <Table.Cell>
-              <a
-                href="#"
-                className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-              >
-                Edit
-              </a>
-            </Table.Cell>
-          </Table.Row>
-          <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-            <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-              Magic Mouse 2
-            </Table.Cell>
-            <Table.Cell>Black</Table.Cell>
-            <Table.Cell>Accessories</Table.Cell>
-            <Table.Cell>$99</Table.Cell>
-            <Table.Cell>
-              <a
-                href="#"
-                className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-              >
-                Edit
-              </a>
-            </Table.Cell>
-          </Table.Row>
+          {received &&
+            received.map((item: Received) => (
+              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                <Table.Cell>{item.id}</Table.Cell>
+
+                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  {item.name_company}
+                </Table.Cell>
+                <Table.Cell>{item.dateReceived}</Table.Cell>
+                <Table.Cell>
+                  {formatPrice(parseInt(item.total_value))}
+                </Table.Cell>
+                <Table.Cell>{item.noteReceived}</Table.Cell>
+              </Table.Row>
+            ))}
         </Table.Body>
       </Table>
     </div>

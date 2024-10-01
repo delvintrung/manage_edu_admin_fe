@@ -14,7 +14,6 @@ import {
   HiChevronLeft,
   HiChevronRight,
   HiCog,
-  HiDocumentDownload,
   HiDotsVertical,
   HiExclamationCircle,
   HiHome,
@@ -211,9 +210,7 @@ const AllUsersTable: FC = function () {
   const [allUsers, setAllUsers] = useState([]);
   useEffect(() => {
     const getAllUsers = async () => {
-      const res = await axios.get(
-        "http://localhost/WriteResfulAPIPHP/admin/user/getAllUser.php"
-      );
+      const res = await axios.get("http://localhost:3006/api/user");
       setAllUsers(res.data);
     };
     getAllUsers();
