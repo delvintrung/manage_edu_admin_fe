@@ -142,7 +142,7 @@ const AllEmployeesTable: FC = function () {
   const [allEmployee, setAllEmployee] = useState([]);
   useEffect(() => {
     const getAllUsers = async () => {
-      const res = await axios.get("http://localhost:3006/api/permissions");
+      const res = await axios.get("http://localhost:3006/api/v2/permissions");
 
       const rawValue = res.data.reduce((acc: Role[], cur: PermissionItem) => {
         let role = acc.find((item) => {

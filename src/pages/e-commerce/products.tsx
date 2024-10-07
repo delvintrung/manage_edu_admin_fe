@@ -2,11 +2,9 @@
 import {
   Breadcrumb,
   Button,
-  Checkbox,
   Label,
   Modal,
   Table,
-  Textarea,
   TextInput,
 } from "flowbite-react";
 import type { FC } from "react";
@@ -142,10 +140,13 @@ const AddProductModal: FC = function () {
 
   const [fileList, setFileList] = useState<FileList | null>(null);
   const [authors, setAuthors] = useState([]);
+  const [categorys, setCategorys] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get("http://localhost:3006/api/author");
+      const response = await axios.get("http://localhost:3006/api/v2/author");
+      const cate = await axios.get("http://localhost:3006/api/v2/all-category");
+      setCategorys(cate.data);
       setAuthors(response.data);
     };
     fetchData();
@@ -167,20 +168,19 @@ const AddProductModal: FC = function () {
     formData.append("category", JSON.stringify(cateProduct));
     formData.append("author", "5");
     formData.append("description", desctiptionProduct);
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
-      if (file) {
-        formData.append(`image${i + 1}`, file);
-      }
-    }
+    formData.append("product", JSON.stringify(fileList));
+    // for (let i = 0; i < fileList.length; i++) {
+    //   const file = fileList[i];
+    //   if (file) {
+    //     formData.append(`image${i + 1}`, file);
+    //   }
+    // }
+
+    // console.log(fileList);
     axios
-      .post(
-        "http://localhost/WriteResfulAPIPHP/admin/product/addProduct.php",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      )
+      .post("http://localhost:3006/add-product", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
       .then((res) => {
         if (res.data.success == true) {
           setOpen(false);
@@ -256,23 +256,12 @@ const AddProductModal: FC = function () {
                 <Select
                   isMulti
                   name="category"
-                  options={authors}
+                  options={categorys}
                   className="basic-multi-select w-[500px]"
                   classNamePrefix="select"
                   onChange={handleChange}
                 />
               </div>
-
-              {cateProduct.length > 0 && (
-                <div>
-                  Selected:
-                  <ul>
-                    {cateProduct.map((option: Author) => (
-                      <li key={option.value}>{option.label}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
 
               <div className="lg:col-span-2">
                 <Label htmlFor="producTable.Celletails">Product details</Label>
@@ -331,15 +320,40 @@ const AddProductModal: FC = function () {
 };
 
 const EditProductModal: FC = function () {
+  type Author = {
+    value: number;
+    label: string;
+  };
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
   const [quantityProduct, setQuantity] = useState("");
-  const [cateProduct, setCateProduct] = useState("");
+  const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
+
   const [authorProduct, setAuthorProduct] = useState("");
   const [desctiptionProduct, setDescriptionProduct] = useState("");
+  const [fileList, setFileList] = useState<FileList | null>(null);
+
   const [permission, setPermission] = useState(false);
 
   const [files, setFiles] = useState<string[]>([]);
+
+  const [authors, setAuthors] = useState([]);
+  const [categorys, setCategorys] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get("http://localhost:3006/api/v2/author");
+      const cate = await axios.get("http://localhost:3006/api/v2/all-category");
+      setCategorys(cate.data);
+      setAuthors(response.data);
+    };
+    fetchData();
+  }, []);
+
+  const handleChange = (option: MultiValue<Author>) => setCateProduct(option);
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFileList(e.target.files);
+  };
 
   return (
     <>
@@ -373,62 +387,46 @@ const EditProductModal: FC = function () {
                 <TextInput
                   id="productName"
                   name="productName"
-                  placeholder='Tên mới"'
+                  placeholder='Truyện gì đó ...."'
                   className="mt-1"
-                  onChange={(e) => setNameProduct(e.target.value)}
+                  onChange={(e) => {
+                    setNameProduct(e.target.value);
+                  }}
                   value={nameProduct}
                 />
               </div>
               <div>
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="brand">Author</Label>
                 <select
                   className="border-slate-400 rounded"
                   name="category"
                   id=""
                   onChange={(e) => {
-                    setCateProduct(e.target.value);
+                    setAuthorProduct(e.target.value);
                   }}
                 >
                   <option value="0" selected>
-                    Chọn loại truyện
+                    Chọn tác giả
                   </option>
-                  <option value="1" selected>
-                    Truyện tranh Việt Nam
-                  </option>
-                  <option value="2" selected>
-                    Truyện tranh nước ngoài
-                  </option>
-                  <option value="3" selected>
-                    Chọn loại truyện
-                  </option>
+                  {authors.map((author: Author) => (
+                    <option value={author.value}>{author.label}</option>
+                  ))}
                 </select>
               </div>
               <div>
-                <Label htmlFor="brand">Quantity</Label>
-                <TextInput
-                  id="brand"
-                  name="brand"
-                  placeholder="Số lượng"
-                  className="mt-1"
-                  onChange={(e) => {
-                    setQuantity(e.target.value);
-                  }}
-                  value={quantityProduct}
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  isMulti
+                  name="category"
+                  options={categorys}
+                  className="basic-multi-select w-[500px]"
+                  classNamePrefix="select"
+                  onChange={handleChange}
                 />
               </div>
-              <div>
-                <Label htmlFor="brand">Author</Label>
-                <TextInput
-                  id="brand"
-                  name="brand"
-                  placeholder="Do ai viết"
-                  className="mt-1"
-                  onChange={(e) => setAuthorProduct(e.target.value)}
-                  value={authorProduct}
-                />
-              </div>
+
               <div className="lg:col-span-2">
-                <Label htmlFor="productDetails">Product details</Label>
+                <Label htmlFor="producTable.Celletails">Product details</Label>
                 <Editor
                   value={desctiptionProduct}
                   onTextChange={(e: EditorTextChangeEvent) => {
@@ -438,14 +436,13 @@ const EditProductModal: FC = function () {
                   style={{ height: "320px" }}
                 />
               </div>
-              <div className="flex space-x-5"></div>
               <div className="lg:col-span-2">
                 <div className="flex w-full items-center justify-center">
                   <label className="flex h-32 w-full cursor-pointer flex-col rounded border-2 border-dashed border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <HiUpload className="text-4xl text-gray-300" />
                       <p className="py-1 text-sm text-gray-600 dark:text-gray-500">
-                        Upload a file or drag and drop
+                        Thêm ảnh làm thumbnail cho sản phẩm
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         PNG, JPG, GIF up to 10MB
@@ -453,18 +450,9 @@ const EditProductModal: FC = function () {
                     </div>
                     <input
                       type="file"
+                      onChange={handleFileChange}
                       className="hidden"
                       multiple
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const fileList = e.target.files;
-                        if (fileList) {
-                          const fileNames = Array.from(fileList).map(
-                            (file) => file.name
-                          );
-                          setFiles(fileNames);
-                          console.log(files);
-                        }
-                      }}
                     />
                   </label>
                 </div>
@@ -496,7 +484,7 @@ const EditProductModal: FC = function () {
 const DeleteProductModal: FC<{ id: number }> = function (props) {
   const [isOpen, setOpen] = useState(false);
   const handleDeleteProduct = async (productId: number) => {
-    const res = await axios.put("http://localhost:3006/api/product", {
+    const res = await axios.put("http://localhost:3006/api/v2/product", {
       productId: productId,
     });
     console.log(res.data);
@@ -544,7 +532,9 @@ const ProductsTable: FC = function () {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get("http://localhost:3006/api/product");
+        const response = await axios.get(
+          "http://localhost:3006/api/v2/product"
+        );
         setAllProducts(response.data);
       } catch (error) {}
     }
@@ -556,7 +546,7 @@ const ProductsTable: FC = function () {
       if (clickTitle) {
         try {
           const response = await axios.get(
-            "http://localhost:3006/api/product/filter/title"
+            "http://localhost:3006/api/v2/product/filter/title"
           );
           setAllProducts(response.data);
         } catch (error) {}
@@ -579,10 +569,6 @@ const ProductsTable: FC = function () {
   return (
     <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
       <Table.Head className="bg-gray-100 dark:bg-gray-700">
-        <Table.HeadCell>
-          <span className="sr-only">Toggle selected</span>
-          <Checkbox />
-        </Table.HeadCell>
         <Table.HeadCell
           className="flex items-center gap-2"
           onClick={() => {
@@ -608,9 +594,6 @@ const ProductsTable: FC = function () {
             key={product.id}
             className="hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            <Table.Cell className="w-4 p-4">
-              <Checkbox />
-            </Table.Cell>
             <Table.Cell className="whitespace-nowrap p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
               <div className="text-base font-semibold text-gray-900 dark:text-white"></div>
               <div className="text-sm font-normal text-gray-500 dark:text-gray-400">

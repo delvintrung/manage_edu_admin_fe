@@ -13,6 +13,7 @@ import {
 import { AiFillMedicineBox } from "react-icons/ai";
 import { FaUserLock } from "react-icons/fa";
 import { GrStorage } from "react-icons/gr";
+import { GrUserManager } from "react-icons/gr";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
@@ -82,6 +83,17 @@ const ExampleSidebar: FC = function () {
                 }
               >
                 Orders
+              </Sidebar.Item>
+              <Sidebar.Item
+                href="/employee/list"
+                icon={GrUserManager}
+                className={
+                  "/employee/list" === currentPage
+                    ? "bg-gray-100 dark:bg-gray-700"
+                    : ""
+                }
+              >
+                Employee
               </Sidebar.Item>
               <Sidebar.Item
                 onClick={() => {

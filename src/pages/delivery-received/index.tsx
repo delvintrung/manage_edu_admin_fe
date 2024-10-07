@@ -20,10 +20,12 @@ const DeliveryPage: FC = function () {
 
   useEffect(() => {
     const fetch = async () => {
-      const allProducts = await axios.get("http://localhost:3006/api/product");
+      const allProducts = await axios.get(
+        "http://localhost:3006/api/v2/product"
+      );
       setProducts(allProducts.data);
 
-      const company = await axios.get("http://localhost:3006/api/company");
+      const company = await axios.get("http://localhost:3006/api/v2/company");
       setCompany(company.data);
     };
 
@@ -217,7 +219,7 @@ const AllDeliveryTable: FC = function () {
   const [received, setReceived] = useState([]);
   useEffect(() => {
     const fetch = async () => {
-      const result = await axios.get("http://localhost:3006/api/received");
+      const result = await axios.get("http://localhost:3006/api/v2/received");
       setReceived(result.data);
     };
     fetch();

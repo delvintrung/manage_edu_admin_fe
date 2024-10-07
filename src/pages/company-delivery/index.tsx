@@ -199,7 +199,7 @@ const AllDeliveryTable: FC = function () {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const result = await axios.get("http://localhost:3006/api/company");
+        const result = await axios.get("http://localhost:3006/api/v2/company");
         if (result) {
           setSuppliers(result.data);
         }
