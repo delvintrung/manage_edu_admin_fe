@@ -15,7 +15,6 @@ import {
   HiExclamationCircle,
   HiHome,
   HiOutlineExclamationCircle,
-  HiOutlinePencilAlt,
   HiPlus,
   HiTrash,
 } from "react-icons/hi";

@@ -13,14 +13,11 @@ const SignInPage: FC = function () {
 
   const handleLoginAdmin = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost/WriteResfulAPIPHP/admin/auth/loginWithAdmin.php",
-        { email: email, password: password }
-      );
-      if (res.data.success) {
-        localStorage.setItem("id", res.data.roleId);
-        localStorage.setItem("employeeId", res.data.employeeId);
-        localStorage.setItem("isLogin", "yes");
+      const res = await axios.post("http://localhost:3006/api/v1/auth/login", {
+        email: email,
+        password: password,
+      });
+      if (res.data) {
         navigate("/");
       } else {
         setMessage(res.data.message);

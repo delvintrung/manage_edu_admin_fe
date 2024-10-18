@@ -75,11 +75,15 @@ const SalesChart: FC = function () {
     let result = [];
     let tmp = 0;
     const get = async (date: string) => {
-      const res = await axios.post(
-        "http://localhost/WriteResfulAPIPHP/admin/order/totalDate.php",
-        { date }
-      );
-      if (res.data.total_revenue == null) {
+      console.log(date);
+      let res = null;
+      if (date != undefined) {
+        res = await axios.post("http://localhost:3006/api/v2/order/totalDate", {
+          date,
+        });
+      }
+
+      if (res?.data.total_revenue == null) {
         return 0;
       } else {
         return parseFloat(res.data.total_revenue);
@@ -287,7 +291,7 @@ const LatestCustomers: FC = function () {
     const handleReport = async function () {
       if (fromDay != "" && toDay != "") {
         const res = await axios.post(
-          "http://localhost/WriteResfulAPIPHP/admin/order/totalDtoD.php",
+          "http://localhost:3006/api/v2/order/date-to-date",
           {
             startDate: fromDay,
             endDate: toDay,
@@ -437,9 +441,10 @@ const AcquisitionOverview: FC = function () {
   useEffect(() => {
     const getProduct = async () => {
       const res = await axios.get(
-        "http://localhost/WriteResfulAPIPHP/admin/order/bsl.php"
+        "http://localhost:3006/api/v2/order/top-selling"
       );
-      setTop(res.data.products);
+      console.log(res.data);
+      setTop(res.data);
     };
     getProduct();
   }, []);
@@ -465,7 +470,7 @@ const AcquisitionOverview: FC = function () {
                   </Table.HeadCell>
                 </Table.Head>
                 <Table.Body className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {top.length > 0 &&
+                  {top &&
                     top.map((product: any) => (
                       <Table.Row className="text-gray-500 dark:text-gray-400">
                         <Table.Cell className="whitespace-nowrap border-t-0 p-4 text-left align-middle text-sm font-normal">

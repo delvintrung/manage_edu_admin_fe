@@ -139,6 +139,7 @@ const AddProductModal: FC = function () {
   const [permission, setPermission] = useState(false);
 
   const [fileList, setFileList] = useState<FileList | null>(null);
+  const [previewList, setPreviewList] = useState<string[]>([]);
   const [authors, setAuthors] = useState([]);
   const [categorys, setCategorys] = useState([]);
 
@@ -192,6 +193,18 @@ const AddProductModal: FC = function () {
   const handleChange = (option: MultiValue<Author>) => setCateProduct(option);
 
   const files = fileList ? [...fileList] : [];
+  useEffect(() => {
+    let preview = [];
+    let URLList: string[] = [];
+
+    if (files.length > 0) {
+      URLList = files.map((file) => {
+        preview.push(URL.createObjectURL(file));
+        return URL.createObjectURL(file);
+      });
+      setPreviewList(URLList);
+    }
+  }, [files]);
 
   return (
     <div>
@@ -291,9 +304,17 @@ const AddProductModal: FC = function () {
                       onChange={handleFileChange}
                       className="hidden"
                       multiple
+                      accept="image/*"
                     />
                   </label>
                 </div>
+                {previewList && (
+                  <div className="flex ml-[-10px] mt-4">
+                    {previewList?.map((file) => (
+                      <img src={file} className="w-[200px] object-cover" />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </form>

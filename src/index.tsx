@@ -16,6 +16,7 @@ import DeliveryReceivedPage from "./pages/delivery-received";
 import CreateTempProduct from "./pages/delivery-received/createTempProduct";
 import CompanyDeliveryPage from "./pages/company-delivery";
 import EmployeeListPage from "./pages/employee";
+import AuthorListPage from "./pages/author";
 
 const container = document.getElementById("root");
 
@@ -39,6 +40,7 @@ root.render(
           <Route path="/users/list" element={<UserListPage />} />
           <Route path="/orders/list" element={<OrderListPage />} />
           <Route path="/employee/list" element={<EmployeeListPage />} />
+          <Route path="/author/list" element={<AuthorListPage />} />
           <Route path="/permissions/list" element={<PermissionPage />} />
           <Route path="/delivery-received" element={<DeliveryReceivedPage />} />
           <Route

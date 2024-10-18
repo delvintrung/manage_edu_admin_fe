@@ -29,7 +29,7 @@ const ExampleSidebar: FC = function () {
 
   return (
     <Sidebar aria-label="Sidebar with multi-level dropdown example">
-      <div className="flex h-full flex-col justify-between py-2">
+      <div className="flex h-full flex-col justify-between py-2 relative">
         <div>
           <form className="pb-3 md:hidden">
             <TextInput
@@ -96,6 +96,17 @@ const ExampleSidebar: FC = function () {
                 Employee
               </Sidebar.Item>
               <Sidebar.Item
+                href="/author/list"
+                icon={GrUserManager}
+                className={
+                  "/author/list" === currentPage
+                    ? "bg-gray-100 dark:bg-gray-700"
+                    : ""
+                }
+              >
+                Author
+              </Sidebar.Item>
+              <Sidebar.Item
                 onClick={() => {
                   localStorage.getItem("id") != "2"
                     ? setPermission(true)
@@ -129,14 +140,8 @@ const ExampleSidebar: FC = function () {
               >
                 Delivery & Received
               </Sidebar.Item>
-              <Sidebar.Item
-                href={
-                  localStorage.getItem("isLogin") == "yes"
-                    ? ""
-                    : "/authentication/sign-in"
-                }
-                icon={HiLogin}
-              >
+
+              <Sidebar.Item href={"/authentication/sign-in"} icon={HiLogin}>
                 Sign in
               </Sidebar.Item>
               {localStorage.getItem("isLogin") == "yes" && (
