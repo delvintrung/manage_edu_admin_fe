@@ -21,10 +21,13 @@ import {
   HiUpload,
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+import axios from "../../config/axios";
 import { FaAngleDown } from "react-icons/fa";
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
 import Select, { MultiValue } from "react-select";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import CheckPermission from "../../function/checkPermission";
 
 interface Product {
   id: number;
@@ -142,6 +145,7 @@ const AddProductModal: FC = function () {
   const [previewList, setPreviewList] = useState<string[]>([]);
   const [authors, setAuthors] = useState([]);
   const [categorys, setCategorys] = useState([]);
+  const role = useSelector((state: RootState) => state.role.roleAction);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -211,17 +215,9 @@ const AddProductModal: FC = function () {
       <Button
         color="primary"
         onClick={() => {
-          if (
-            localStorage.getItem("id") == "2" ||
-            localStorage.getItem("id") == "" ||
-            localStorage.getItem("id") == "4"
-          ) {
-            setPermission(false);
-            setOpen(!isOpen);
-          } else {
-            setPermission(true);
-          }
+          setOpen(!isOpen);
         }}
+        disabled={CheckPermission(role, "CREATE")}
       >
         <FaPlus className="mr-3 text-sm" />
         Add product
@@ -347,7 +343,6 @@ const EditProductModal: FC = function () {
   };
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
-  const [quantityProduct, setQuantity] = useState("");
   const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
 
   const [authorProduct, setAuthorProduct] = useState("");
@@ -356,10 +351,9 @@ const EditProductModal: FC = function () {
 
   const [permission, setPermission] = useState(false);
 
-  const [files, setFiles] = useState<string[]>([]);
-
   const [authors, setAuthors] = useState([]);
   const [categorys, setCategorys] = useState([]);
+  const role = useSelector((state: RootState) => state.role.roleAction);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -381,17 +375,9 @@ const EditProductModal: FC = function () {
       <Button
         color="primary"
         onClick={() => {
-          if (
-            localStorage.getItem("id") == "2" ||
-            localStorage.getItem("id") == "" ||
-            localStorage.getItem("id") == "4"
-          ) {
-            setPermission(false);
-            setOpen(!isOpen);
-          } else {
-            setPermission(true);
-          }
+          setOpen(!isOpen);
         }}
+        disabled={CheckPermission(role, "EDIT")}
       >
         <HiPencilAlt className="mr-2 text-lg" />
         Edit item
@@ -504,15 +490,19 @@ const EditProductModal: FC = function () {
 
 const DeleteProductModal: FC<{ id: number }> = function (props) {
   const [isOpen, setOpen] = useState(false);
+  const role = useSelector((state: RootState) => state.role.roleAction);
   const handleDeleteProduct = async (productId: number) => {
     const res = await axios.put("http://localhost:3006/api/v2/product", {
       productId: productId,
     });
-    console.log(res.data);
   };
   return (
     <>
-      <Button color="failure" onClick={() => setOpen(!isOpen)}>
+      <Button
+        color="failure"
+        onClick={() => setOpen(!isOpen)}
+        disabled={CheckPermission(role, "DELETE")}
+      >
         <HiTrash className="mr-2 text-lg" />
         Delete item
       </Button>

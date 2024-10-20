@@ -13,17 +13,24 @@ const SignInPage: FC = function () {
 
   const handleLoginAdmin = async () => {
     try {
-      const res = await axios.post("http://localhost:3006/api/v1/auth/login", {
+      const res = await axios.post("http://localhost:3006/api/v2/auth/login", {
         email: email,
         password: password,
       });
-      if (res.data) {
+      if (res.data.code === 1) {
+        localStorage.setItem("token", res.data.accessToken);
         navigate("/");
       } else {
         setMessage(res.data.message);
       }
     } catch (error) {
       console.error("Login failed:", error);
+    }
+  };
+
+  const handlePressEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleLoginAdmin();
     }
   };
 
@@ -64,12 +71,13 @@ const SignInPage: FC = function () {
             <TextInput
               id="password"
               name="password"
-              placeholder="••••••••"
+              placeholder=""
               type="password"
               onChange={(e) => {
                 setPassword(e.target.value);
               }}
               value={password}
+              onKeyPress={handlePressEnter}
             />
           </div>
           <div className="mb-6 flex items-center justify-between">

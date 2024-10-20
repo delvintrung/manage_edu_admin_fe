@@ -14,7 +14,8 @@ import { HiHome } from "react-icons/hi";
 import { IoSearchSharp } from "react-icons/io5";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+
+import axios from "../../config/axios";
 
 const PermissionPage: FC = function () {
   const [search, setSearch] = useState("");
@@ -165,6 +166,7 @@ const AllEmployeesTable: FC<AllEmployeesTableProps> = function ({
   useEffect(() => {
     const getAllUsers = async () => {
       const res = await axios.get("http://localhost:3006/api/v2/permissions");
+      console.log(res.data);
 
       const rawValue = res.data.reduce((acc: Role[], cur: PermissionItem) => {
         let role = acc.find((item) => {
