@@ -23,7 +23,7 @@ import {
   HiTrash,
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+import axios from "../../config/configAxios";
 
 interface User {
   userId: number;
@@ -210,7 +210,7 @@ const AllUsersTable: FC = function () {
   const [allUsers, setAllUsers] = useState([]);
   useEffect(() => {
     const getAllUsers = async () => {
-      const res = await axios.get("http://localhost:3006/api/v2/user");
+      const res = await axios.get("/api/v2/user");
       setAllUsers(res.data);
     };
     getAllUsers();
