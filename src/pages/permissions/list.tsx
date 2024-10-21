@@ -14,11 +14,13 @@ import { HiHome } from "react-icons/hi";
 import { IoSearchSharp } from "react-icons/io5";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+
+import axios from "../../config/axios";
 
 const PermissionPage: FC = function () {
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
+  const [changePermissions, setChangePermissions] = useState<any[]>([]);
 
   const handleSearchEmployee = (
     event: React.KeyboardEvent<HTMLInputElement>
@@ -27,6 +29,18 @@ const PermissionPage: FC = function () {
       event.preventDefault();
       console.log(search);
     }
+  };
+
+  const handleSaveChange = async () => {
+    const result = await axios.put("http://localhost:3006/api/v2/role-change", {
+      change: JSON.stringify(changePermissions),
+    });
+
+    console.log(result);
+  };
+
+  const handleUpdateChangePermissions = (updatedPermissions: any[]) => {
+    setChangePermissions(updatedPermissions);
   };
   return (
     <NavbarSidebarLayout isFooter={false}>
@@ -75,7 +89,7 @@ const PermissionPage: FC = function () {
               </div>
             </div>
             <div>
-              <Button color="success" onClick={() => setOpenModal(true)}>
+              <Button color="success" onClick={handleSaveChange}>
                 Save Change
               </Button>
             </div>
@@ -86,7 +100,9 @@ const PermissionPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllEmployeesTable />
+              <AllEmployeesTable
+                onUpdateChangePermission={handleUpdateChangePermissions}
+              />
             </div>
           </div>
         </div>
@@ -119,7 +135,13 @@ const PermissionPage: FC = function () {
   );
 };
 
-const AllEmployeesTable: FC = function () {
+interface AllEmployeesTableProps {
+  onUpdateChangePermission: (updatedPermissions: any[]) => void;
+}
+
+const AllEmployeesTable: FC<AllEmployeesTableProps> = function ({
+  onUpdateChangePermission,
+}) {
   type PermissionItem = {
     id: number;
     name: string;
@@ -138,11 +160,13 @@ const AllEmployeesTable: FC = function () {
     permissions: Permission[];
   };
 
-  const [status, setStatus] = useState(1);
   const [allEmployee, setAllEmployee] = useState([]);
+  const [initPermission, setInitPermission] = useState<Role[]>([]);
+  const [changedPermissions, setChangedPermissions] = useState<any[]>([]);
   useEffect(() => {
     const getAllUsers = async () => {
       const res = await axios.get("http://localhost:3006/api/v2/permissions");
+      console.log(res.data);
 
       const rawValue = res.data.reduce((acc: Role[], cur: PermissionItem) => {
         let role = acc.find((item) => {
@@ -165,31 +189,55 @@ const AllEmployeesTable: FC = function () {
         return acc;
       }, []);
       setAllEmployee(rawValue);
+      setInitPermission(rawValue);
     };
     getAllUsers();
   }, []);
+  useEffect(() => {
+    onUpdateChangePermission(changedPermissions);
+  }, [changedPermissions, onUpdateChangePermission]);
 
-  interface Employee {
-    id: string;
-    email: string;
-    name: string;
-  }
+  const handleCheckboxChange = (
+    employeeId: number,
+    permission_code: string,
+    checked: boolean
+  ) => {
+    // Xử lý sự thay đổi checkbox ở đây
+    const updatedPermissions = [...initPermission];
+    const employeeIndex = updatedPermissions.findIndex(
+      (emp) => emp.role_id === employeeId
+    );
 
-  const handleChangeStatus = (us: string) => {
-    const changeStatus = async (us: string) => {
-      if (status === 0) {
-        return;
-      }
-      const res = await axios.post(
-        "http://localhost/WriteResfulAPIPHP/admin/permission/changeRole.php",
-        {
-          email: us,
-          role_id: status,
+    if (employeeIndex !== -1) {
+      const permissionIndex = updatedPermissions[
+        employeeIndex
+      ]?.permissions.findIndex((perm) => perm.action_code === permission_code);
+
+      if (permissionIndex !== -1 && permissionIndex !== undefined) {
+        const originalPermission =
+          updatedPermissions[employeeIndex]?.permissions[permissionIndex];
+        if (originalPermission?.check_action !== (checked ? 1 : 0)) {
+          console.log(
+            `Employee ID: ${employeeId}, Permission Code: ${permission_code}, Checked: ${checked}`
+          );
+          // Push the changed values to a new array
+          changedPermissions.push({
+            employeeId,
+            permission_code,
+            checked,
+          });
+        } else {
+          const updatedChangedPermissions = changedPermissions.filter(
+            (change) =>
+              !(
+                change.employeeId === employeeId &&
+                change.permission_code === permission_code
+              )
+          );
+          setChangedPermissions(updatedChangedPermissions);
         }
-      );
-      console.log(res.data);
-    };
-    changeStatus(us);
+      }
+    }
   };
 
   return (
@@ -219,6 +267,13 @@ const AllEmployeesTable: FC = function () {
                       id={`${permission.action_code}`}
                       defaultChecked={
                         permission.check_action === 1 ? true : false
+                      }
+                      onChange={(e) =>
+                        handleCheckboxChange(
+                          employee.role_id,
+                          permission.action_code,
+                          e.target.checked
+                        )
                       }
                     />
                   </div>

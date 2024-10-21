@@ -4,6 +4,7 @@ import Navbar from "../components/navbar";
 import Sidebar from "../components/sidebar";
 import { MdFacebook } from "react-icons/md";
 import { FaDribbble, FaGithub, FaInstagram, FaTwitter } from "react-icons/fa";
+import Chat from "../components/Chat";
 
 interface NavbarSidebarLayoutProps {
   isFooter?: boolean;
@@ -19,6 +20,9 @@ const NavbarSidebarLayout: FC<PropsWithChildren<NavbarSidebarLayoutProps>> =
         <div className="flex items-start ">
           <Sidebar />
           <MainContent isFooter={isFooter}>{children}</MainContent>
+        </div>
+        <div className="fixed top-[50px] right-[400px]">
+          <Chat />
         </div>
       </div>
     );

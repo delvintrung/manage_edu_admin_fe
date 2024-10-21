@@ -1,11 +1,13 @@
 import type { FC } from "react";
 import { DarkThemeToggle, Navbar } from "flowbite-react";
+import Chat from "./Chat";
+import { useState } from "react";
 
 const ExampleNavbar: FC = function () {
   return (
     <Navbar fluid>
       <div className="w-full p-3 lg:px-5 lg:pl-3 top-0">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between relative">
           <div className="flex items-center">
             <Navbar.Brand href="/">
               <img

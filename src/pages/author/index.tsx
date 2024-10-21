@@ -7,12 +7,11 @@ import {
   Modal,
   Table,
   TextInput,
+  FileInput,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 import {
-  HiChevronLeft,
-  HiChevronRight,
   HiCog,
   HiDotsVertical,
   HiExclamationCircle,
@@ -23,19 +22,20 @@ import {
   HiTrash,
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "../../config/axios";
+import axios from "axios";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
+import { Editor, EditorTextChangeEvent } from "primereact/editor";
 
-interface User {
-  userId: number;
-  roleId: number;
-  address: string;
-  fullName: string;
-  phone_number: string;
-  email: string;
+interface Author {
+  value: number;
+  label: string;
+  infomation: string;
+  thumbnail: string;
   status: number;
 }
 
-const UserListPage: FC = function () {
+const AuthorListPage: FC = function () {
   return (
     <NavbarSidebarLayout isFooter={false}>
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
@@ -101,7 +101,7 @@ const UserListPage: FC = function () {
               </div>
             </div>
             <div className="ml-auto flex items-center space-x-2 sm:space-x-3">
-              <AddUserModal />
+              <AddAuthorModal />
             </div>
           </div>
         </div>
@@ -110,7 +110,7 @@ const UserListPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllUsersTable />
+              <AllAuthorsTable />
             </div>
           </div>
         </div>
@@ -119,86 +119,132 @@ const UserListPage: FC = function () {
   );
 };
 
-const AddUserModal: FC = function () {
+const AddAuthorModal: FC = function () {
   const [isOpen, setOpen] = useState(false);
+  const [infomationAuthor, setInfomationAuthor] = useState<string>("");
+  const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
+  const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
+  const Schema = Yup.object().shape({
+    fullname: Yup.string()
+      .trim()
+      .min(2, "Quá ngắn!")
+      .max(70, "Quá dài!")
+      .required("Không được bỏ trống"),
+    email: Yup.string()
+      .trim()
+      .email("Email không hợp lệ")
+      .required("Email không được bỏ trống"),
+    password: Yup.string().required("Password không được bỏ trống"),
+    phone_number: Yup.string()
+      .trim()
+      .required("Số điện thoại không được bỏ trống"),
+    address: Yup.string().required("Địa chỉ không được bỏ trống"),
+  });
+
+  useEffect(() => {
+    if (thumbnail) {
+      const objectUrl = URL.createObjectURL(thumbnail);
+      setPreviewThumbnail(objectUrl);
+
+      return () => URL.revokeObjectURL(objectUrl);
+    } else {
+      setPreviewThumbnail("");
+      return;
+    }
+  }, [thumbnail]);
 
   return (
     <>
       <Button color="primary" onClick={() => setOpen(true)}>
         <div className="flex items-center gap-x-3">
           <HiPlus className="text-xl" />
-          Add user
+          Add Author
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
         <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700">
-          <strong>Add new user</strong>
+          <strong>Add new Author</strong>
         </Modal.Header>
         <Modal.Body>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="">
             <div>
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="name">Name Author</Label>
               <div className="mt-1">
-                <TextInput
-                  id="firstName"
-                  name="firstName"
-                  placeholder="Bonnie"
-                />
+                <TextInput id="firstName" name="firstName" placeholder="..." />
               </div>
             </div>
             <div>
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="infomation">Infomation</Label>
               <div className="mt-1">
-                <TextInput id="lastName" name="lastName" placeholder="Green" />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="email"
-                  name="email"
-                  placeholder="example@company.com"
-                  type="email"
+                <Editor
+                  value={infomationAuthor}
+                  onTextChange={(e: EditorTextChangeEvent) => {
+                    setInfomationAuthor(e.htmlValue ?? "");
+                  }}
+                  style={{ height: "320px" }}
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="phone">Phone number</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="phone"
-                  name="phone"
-                  placeholder="e.g., +(12)3456 789"
-                  type="tel"
-                />
+
+            <div className="flex space-x-2">
+              <div>
+                <Label htmlFor="thumbnail">Thumbnail</Label>
+                <div className="mt-1">
+                  <Label
+                    htmlFor="dropzone-file"
+                    className="flex h-[150px] w-[300px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+                  >
+                    <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                      <svg
+                        className="mb-4 h-8 w-8 text-gray-500 dark:text-gray-400"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 20 16"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                        />
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="font-semibold">Click to upload</span>{" "}
+                        or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        SVG, PNG, JPG or GIF (MAX. 800x400px)
+                      </p>
+                    </div>
+                    <FileInput
+                      id="dropzone-file"
+                      className="hidden"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          setThumbnail(e.target.files[0]);
+                        }
+                      }}
+                      accept="image/*"
+                    />
+                  </Label>
+                </div>
               </div>
-            </div>
-            <div>
-              <Label htmlFor="department">Department</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="department"
-                  name="department"
-                  placeholder="Development"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="company">Company</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="company"
-                  name="company"
-                  placeholder="Somewhere"
-                />
+              <div className="w-full">
+                {thumbnail && (
+                  <img
+                    src={previewThumbnail}
+                    className="w-[150px] ml-10 mt-5 object-cover rounded-lg"
+                  />
+                )}
               </div>
             </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
           <Button color="primary" onClick={() => setOpen(false)}>
-            Add user
+            Add Author
           </Button>
         </Modal.Footer>
       </Modal>
@@ -206,14 +252,14 @@ const AddUserModal: FC = function () {
   );
 };
 
-const AllUsersTable: FC = function () {
-  const [allUsers, setAllUsers] = useState([]);
+const AllAuthorsTable: FC = function () {
+  const [allAuthor, setAllAuthor] = useState([]);
   useEffect(() => {
-    const getAllUsers = async () => {
-      const res = await axios.get("/api/v2/user");
-      setAllUsers(res.data);
+    const getAllAuthor = async () => {
+      const res = await axios.get("http://localhost:3006/api/v2/author");
+      setAllAuthor(res.data);
     };
-    getAllUsers();
+    getAllAuthor();
   }, []);
 
   return (
@@ -226,13 +272,12 @@ const AllUsersTable: FC = function () {
           <Checkbox id="select-all" name="select-all" />
         </Table.HeadCell>
         <Table.HeadCell>Name</Table.HeadCell>
-        <Table.HeadCell>Role</Table.HeadCell>
-        <Table.HeadCell>Phone</Table.HeadCell>
+        <Table.HeadCell>Information</Table.HeadCell>
         <Table.HeadCell>Status</Table.HeadCell>
         <Table.HeadCell>Actions</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-        {allUsers.map((user: User) => (
+        {allAuthor.map((author: Author) => (
           <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
             <Table.Cell className="w-4 p-4">
               <div className="flex items-center">
@@ -245,26 +290,20 @@ const AllUsersTable: FC = function () {
             <Table.Cell className="mr-12 flex items-center space-x-6 whitespace-nowrap p-4 lg:mr-0">
               <img
                 className="h-10 w-10 rounded-full"
-                src="/images/users/neil-sims.png"
+                src={author.thumbnail}
                 alt="Neil Sims avatar"
               />
               <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
                 <div className="text-base font-semibold text-gray-900 dark:text-white max-w-[200px]">
-                  {user.fullName}
-                </div>
-                <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  {user.email}
+                  {author.label}
                 </div>
               </div>
             </Table.Cell>
-            <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
-              {user.roleId == 2 ? "Khách hàng" : "Admin"}
-            </Table.Cell>
-            <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
-              {user.phone_number}
+            <Table.Cell className="whitespace-nowrap p-4 text-base font-normal text-gray-900 dark:text-white">
+              {author.infomation}
             </Table.Cell>
             <Table.Cell className="whitespace-nowrap p-4 text-base font-normal text-gray-900 dark:text-white">
-              {user.status == 1 ? (
+              {author.status == 1 ? (
                 <div className="flex items-center">
                   <div className="mr-2 h-2.5 w-2.5 rounded-full bg-green-400"></div>{" "}
                   Active
@@ -278,8 +317,8 @@ const AllUsersTable: FC = function () {
             </Table.Cell>
             <Table.Cell>
               <div className="flex items-center gap-x-3 whitespace-nowrap">
-                <EditUserModal email={user.email} />
-                <DeleteUserModal id={user.userId} />
+                <EditAuthorModal id={author.value} />
+                <DeleteAuthorModal id={author.value} />
               </div>
             </Table.Cell>
           </Table.Row>
@@ -289,7 +328,7 @@ const AllUsersTable: FC = function () {
   );
 };
 
-const EditUserModal: FC<{ email: string }> = function (props): JSX.Element {
+const EditAuthorModal: FC<{ id: number }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
 
   const handleChange = (email: string) => {
@@ -310,12 +349,12 @@ const EditUserModal: FC<{ email: string }> = function (props): JSX.Element {
       <Button color="primary" onClick={() => setOpen(true)}>
         <div className="flex items-center gap-x-2">
           <HiOutlinePencilAlt className="text-lg" />
-          Edit user
+          Edit Author
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
         <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700">
-          <strong>Edit user</strong>
+          <strong>Edit Author</strong>
         </Modal.Header>
         <Modal.Body>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -389,7 +428,6 @@ const EditUserModal: FC<{ email: string }> = function (props): JSX.Element {
           <Button
             color="gray"
             onClick={() => {
-              handleChange(props.email);
               setOpen(false);
             }}
           >
@@ -401,15 +439,15 @@ const EditUserModal: FC<{ email: string }> = function (props): JSX.Element {
   );
 };
 
-const DeleteUserModal: FC<{
+const DeleteAuthorModal: FC<{
   id: number;
 }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
-  const handleDeleteUser = (userId: number) => {
+  const handleDeleteAuthor = (id: number) => {
     const sendRequest = async () => {
       const res = await axios.put(
         "http://localhost/WriteResfulAPIPHP/admin/user/deleteUser.php",
-        { userId: userId }
+        { authorId: id }
       );
       console.log(res.data);
     };
@@ -438,7 +476,7 @@ const DeleteUserModal: FC<{
               <Button
                 color="failure"
                 onClick={() => {
-                  handleDeleteUser(props.id);
+                  handleDeleteAuthor(props.id);
                   setOpen(false);
                 }}
               >
@@ -455,53 +493,4 @@ const DeleteUserModal: FC<{
   );
 };
 
-export const Pagination: FC = function () {
-  return (
-    <div className="sticky right-0 bottom-0 w-full items-center border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex sm:justify-between">
-      <div className="mb-4 flex items-center sm:mb-0">
-        <a
-          href="#"
-          className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-        >
-          <span className="sr-only">Previous page</span>
-          <HiChevronLeft className="text-2xl" />
-        </a>
-        <a
-          href="#"
-          className="mr-2 inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-        >
-          <span className="sr-only">Next page</span>
-          <HiChevronRight className="text-2xl" />
-        </a>
-        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-          Showing&nbsp;
-          <span className="font-semibold text-gray-900 dark:text-white">
-            1-20
-          </span>
-          &nbsp;of&nbsp;
-          <span className="font-semibold text-gray-900 dark:text-white">
-            2290
-          </span>
-        </span>
-      </div>
-      <div className="flex items-center space-x-3">
-        <a
-          href="#"
-          className="inline-flex flex-1 items-center justify-center rounded-lg bg-primary-700 py-2 px-3 text-center text-sm font-medium text-white hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-        >
-          <HiChevronLeft className="mr-1 text-base" />
-          Previous
-        </a>
-        <a
-          href="#"
-          className="inline-flex flex-1 items-center justify-center rounded-lg bg-primary-700 py-2 px-3 text-center text-sm font-medium text-white hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-        >
-          Next
-          <HiChevronRight className="ml-1 text-base" />
-        </a>
-      </div>
-    </div>
-  );
-};
-
-export default UserListPage;
+export default AuthorListPage;

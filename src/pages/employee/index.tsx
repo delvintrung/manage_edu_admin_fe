@@ -15,12 +15,11 @@ import {
   HiExclamationCircle,
   HiHome,
   HiOutlineExclamationCircle,
-  HiOutlinePencilAlt,
   HiPlus,
   HiTrash,
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+import axios from "../../config/axios";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 
@@ -297,15 +296,26 @@ const AllUsersTable: FC = function () {
     null
   );
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
+  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
 
   const openEditModal = (id: number) => {
     setProductIdSelected(id);
     setIsOpenEditModal(true);
   };
 
+  const openDeleteModal = (id: number) => {
+    setProductIdSelected(id);
+    setIsOpenDeleteModal(true);
+  };
+
   const closeEditModal = () => {
     setProductIdSelected(null);
     setIsOpenEditModal(false);
+  };
+
+  const closeDeleteModal = () => {
+    setProductIdSelected(null);
+    setIsOpenDeleteModal(false);
   };
   useEffect(() => {
     const getAllUsers = async () => {
@@ -372,8 +382,9 @@ const AllUsersTable: FC = function () {
                   >
                     Edit
                   </Button>
-                  <Button>Delete</Button>
-                  <DeleteUserModal id={employee.id} />
+                  <Button onClick={() => openDeleteModal(employee.id)}>
+                    Delete
+                  </Button>
                 </div>
               </Table.Cell>
             </Table.Row>
@@ -383,6 +394,12 @@ const AllUsersTable: FC = function () {
 
       {isOpenEditModal && (
         <EditUserModal productId={productIdSelected} onClose={closeEditModal} />
+      )}
+      {isOpenDeleteModal && (
+        <DeleteUserModal
+          productId={productIdSelected}
+          onClose={closeDeleteModal}
+        />
       )}
     </div>
   );
@@ -588,7 +605,8 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
   };
 
 const DeleteUserModal: FC<{
-  id: number;
+  productId: number | null;
+  onClose: VoidFunction;
 }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
   const handleDeleteUser = (userId: number) => {
@@ -603,13 +621,7 @@ const DeleteUserModal: FC<{
 
   return (
     <>
-      <Button color="failure" onClick={() => setOpen(true)}>
-        <div className="flex items-center gap-x-2">
-          <HiTrash className="text-lg" />
-          Delete user
-        </div>
-      </Button>
-      <Modal onClose={() => setOpen(false)} show={isOpen} size="md">
+      <Modal onClose={props.onClose} show={isOpen} size="md">
         <Modal.Header className="px-6 pt-6 pb-0">
           <span className="sr-only">Delete user</span>
         </Modal.Header>
@@ -623,8 +635,10 @@ const DeleteUserModal: FC<{
               <Button
                 color="failure"
                 onClick={() => {
-                  handleDeleteUser(props.id);
-                  setOpen(false);
+                  if (props.productId) {
+                    handleDeleteUser(props.productId);
+                    setOpen(false);
+                  }
                 }}
               >
                 Yes, I'm sure

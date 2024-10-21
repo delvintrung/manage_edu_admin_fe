@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-
+import { Provider } from "react-redux";
+import store from "./store";
 import "./index.css";
 import theme from "./flowbite-theme";
 import { Flowbite } from "flowbite-react";
@@ -16,6 +17,7 @@ import DeliveryReceivedPage from "./pages/delivery-received";
 import CreateTempProduct from "./pages/delivery-received/createTempProduct";
 import CompanyDeliveryPage from "./pages/company-delivery";
 import EmployeeListPage from "./pages/employee";
+import AuthorListPage from "./pages/author";
 
 const container = document.getElementById("root");
 
@@ -27,27 +29,33 @@ const root = createRoot(container);
 
 root.render(
   <StrictMode>
-    <Flowbite theme={{ theme }}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/authentication/sign-in" element={<SignInPage />} />
-          <Route path="/" element={<DashboardPage />} index />
-          <Route
-            path="/e-commerce/products"
-            element={<EcommerceProductsPage />}
-          />
-          <Route path="/users/list" element={<UserListPage />} />
-          <Route path="/orders/list" element={<OrderListPage />} />
-          <Route path="/employee/list" element={<EmployeeListPage />} />
-          <Route path="/permissions/list" element={<PermissionPage />} />
-          <Route path="/delivery-received" element={<DeliveryReceivedPage />} />
-          <Route
-            path="/delivery-received/create-temporary-product"
-            element={<CreateTempProduct />}
-          />
-          <Route path="/company-delivery" element={<CompanyDeliveryPage />} />
-        </Routes>
-      </BrowserRouter>
-    </Flowbite>
+    <Provider store={store}>
+      <Flowbite theme={{ theme }}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/authentication/sign-in" element={<SignInPage />} />
+            <Route path="/" element={<DashboardPage />} index />
+            <Route
+              path="/e-commerce/products"
+              element={<EcommerceProductsPage />}
+            />
+            <Route path="/users/list" element={<UserListPage />} />
+            <Route path="/orders/list" element={<OrderListPage />} />
+            <Route path="/employee/list" element={<EmployeeListPage />} />
+            <Route path="/author/list" element={<AuthorListPage />} />
+            <Route path="/permissions/list" element={<PermissionPage />} />
+            <Route
+              path="/delivery-received"
+              element={<DeliveryReceivedPage />}
+            />
+            <Route
+              path="/delivery-received/create-temporary-product"
+              element={<CreateTempProduct />}
+            />
+            <Route path="/company-delivery" element={<CompanyDeliveryPage />} />
+          </Routes>
+        </BrowserRouter>
+      </Flowbite>
+    </Provider>
   </StrictMode>
 );

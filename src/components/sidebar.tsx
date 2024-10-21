@@ -14,9 +14,19 @@ import { AiFillMedicineBox } from "react-icons/ai";
 import { FaUserLock } from "react-icons/fa";
 import { GrStorage } from "react-icons/gr";
 import { GrUserManager } from "react-icons/gr";
+import axios from "../config/axios";
+
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store";
+import { fetchUserRole } from "../Slice/role";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
+
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    dispatch(fetchUserRole());
+  }, [dispatch]);
 
   useEffect(() => {
     const newPage = window.location.pathname;
@@ -27,9 +37,15 @@ const ExampleSidebar: FC = function () {
   const [openModal, setOpenModal] = useState(false);
   const [permission, setPermission] = useState(false);
 
+  const handleLogout = async () => {
+    await axios.post("/api/v2/auth/logout");
+    localStorage.clear();
+    window.location.href = "/authentication/sign-in";
+  };
+
   return (
     <Sidebar aria-label="Sidebar with multi-level dropdown example">
-      <div className="flex h-full flex-col justify-between py-2">
+      <div className="flex h-full flex-col justify-between py-2 relative">
         <div>
           <form className="pb-3 md:hidden">
             <TextInput
@@ -96,14 +112,18 @@ const ExampleSidebar: FC = function () {
                 Employee
               </Sidebar.Item>
               <Sidebar.Item
-                onClick={() => {
-                  localStorage.getItem("id") != "2"
-                    ? setPermission(true)
-                    : setPermission(false);
-                }}
-                href={
-                  localStorage.getItem("id") == "2" ? "/permissions/list" : null
+                href="/author/list"
+                icon={GrUserManager}
+                className={
+                  "/author/list" === currentPage
+                    ? "bg-gray-100 dark:bg-gray-700"
+                    : ""
                 }
+              >
+                Author
+              </Sidebar.Item>
+              <Sidebar.Item
+                href="/permissions/list"
                 icon={FaUserLock}
                 className={
                   "/permissions/list" === currentPage
@@ -116,11 +136,6 @@ const ExampleSidebar: FC = function () {
               <Sidebar.Item
                 className="max-w-20"
                 icon={GrStorage}
-                onClick={() => {
-                  localStorage.getItem("id") != "2"
-                    ? setPermission(true)
-                    : setPermission(false);
-                }}
                 href={
                   localStorage.getItem("id") == "2"
                     ? "/delivery-received"
@@ -129,21 +144,14 @@ const ExampleSidebar: FC = function () {
               >
                 Delivery & Received
               </Sidebar.Item>
-              <Sidebar.Item
-                href={
-                  localStorage.getItem("isLogin") == "yes"
-                    ? ""
-                    : "/authentication/sign-in"
-                }
-                icon={HiLogin}
-              >
+
+              <Sidebar.Item href={"/authentication/sign-in"} icon={HiLogin}>
                 Sign in
               </Sidebar.Item>
-              {localStorage.getItem("isLogin") == "yes" && (
-                <Sidebar.Item icon={HiLogin} onClick={() => setOpenModal(true)}>
-                  Out
-                </Sidebar.Item>
-              )}
+
+              <Sidebar.Item icon={HiLogin} onClick={() => setOpenModal(true)}>
+                Out
+              </Sidebar.Item>
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </div>
@@ -177,10 +185,7 @@ const ExampleSidebar: FC = function () {
                 <Button
                   color="failure"
                   onClick={() => {
-                    localStorage.removeItem("isLogin");
-                    localStorage.removeItem("id");
-                    localStorage.removeItem("employeeId");
-                    setOpenModal(false);
+                    handleLogout();
                   }}
                 >
                   {"Yes, I'm sure"}
