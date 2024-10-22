@@ -2,7 +2,7 @@
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
 import type { FC } from "react";
 import { useState } from "react";
-import axios from "axios";
+import axios from "../../config/axios";
 import { useNavigate } from "react-router";
 
 const SignInPage: FC = function () {
@@ -13,7 +13,7 @@ const SignInPage: FC = function () {
 
   const handleLoginAdmin = async () => {
     try {
-      const res = await axios.post("http://localhost:3006/api/v2/auth/login", {
+      const res = await axios.post("/api/v2/auth/login", {
         email: email,
         password: password,
       });

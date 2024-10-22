@@ -22,7 +22,7 @@ import {
   HiTrash,
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+import axios from "../../config/axios";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
@@ -121,9 +121,10 @@ const AuthorListPage: FC = function () {
 
 const AddAuthorModal: FC = function () {
   const [isOpen, setOpen] = useState(false);
-  const [infomationAuthor, setInfomationAuthor] = useState<string>("");
+  const [informationAuthor, setInformationAuthor] = useState<string>("");
   const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
   const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const Schema = Yup.object().shape({
     fullname: Yup.string()
       .trim()
@@ -153,6 +154,19 @@ const AddAuthorModal: FC = function () {
     }
   }, [thumbnail]);
 
+  const handleAddAuthor = () => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("information", informationAuthor);
+    formData.append("author", thumbnail as Blob);
+
+    const sendRequest = async () => {
+      const res = await axios.post("/api/v2/author/add", formData);
+      console.log(res.data);
+    };
+    sendRequest();
+  };
+
   return (
     <>
       <Button color="primary" onClick={() => setOpen(true)}>
@@ -170,16 +184,22 @@ const AddAuthorModal: FC = function () {
             <div>
               <Label htmlFor="name">Name Author</Label>
               <div className="mt-1">
-                <TextInput id="firstName" name="firstName" placeholder="..." />
+                <TextInput
+                  id="firstName"
+                  name="firstName"
+                  placeholder="..."
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
             </div>
             <div>
               <Label htmlFor="infomation">Infomation</Label>
               <div className="mt-1">
                 <Editor
-                  value={infomationAuthor}
+                  value={informationAuthor}
                   onTextChange={(e: EditorTextChangeEvent) => {
-                    setInfomationAuthor(e.htmlValue ?? "");
+                    setInformationAuthor(e.htmlValue ?? "");
+                    console.log(e.htmlValue);
                   }}
                   style={{ height: "320px" }}
                 />
@@ -243,7 +263,7 @@ const AddAuthorModal: FC = function () {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="primary" onClick={() => setOpen(false)}>
+          <Button color="primary" onClick={handleAddAuthor}>
             Add Author
           </Button>
         </Modal.Footer>
@@ -256,7 +276,7 @@ const AllAuthorsTable: FC = function () {
   const [allAuthor, setAllAuthor] = useState([]);
   useEffect(() => {
     const getAllAuthor = async () => {
-      const res = await axios.get("http://localhost:3006/api/v2/author");
+      const res = await axios.get("/api/v2/author");
       setAllAuthor(res.data);
     };
     getAllAuthor();

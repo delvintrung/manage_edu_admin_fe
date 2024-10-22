@@ -137,7 +137,7 @@ const AddProductModal: FC = function () {
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
   // const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
-  const [cateProduct, setCateProduct] = useState([5,6]);
+  const [cateProduct, setCateProduct] = useState([5, 6]);
   const [authorProduct, setAuthorProduct] = useState("");
   const [desctiptionProduct, setDescriptionProduct] = useState<string>("");
 
@@ -175,7 +175,7 @@ const AddProductModal: FC = function () {
     }
     let formData = new FormData();
     formData.append("name", nameProduct);
-    formData.append("category", JSON.stringify([5,6]));
+    formData.append("category", JSON.stringify([5, 6]));
     formData.append("author", "5");
     formData.append("description", desctiptionProduct);
     for (let i = 0; i < fileList.length; i++) {
@@ -188,7 +188,7 @@ const AddProductModal: FC = function () {
       .post("/api/v2/product/add-product", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-        }
+        },
       })
       .then((res) => {
         if (res.data.success == true) {
@@ -554,7 +554,9 @@ const ProductsTable: FC = function () {
       try {
         const response = await axios.get("/api/v2/product");
         setAllProducts(response.data);
-      } catch (error) {}
+      } catch (error) {
+        console.log(error);
+      }
     }
     fetchData();
   }, []);
