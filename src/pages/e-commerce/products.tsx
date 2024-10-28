@@ -130,12 +130,14 @@ const SearchForProducts: FC = function () {
 
 const AddProductModal: FC = function () {
   type Author = {
+    id: number;
     value: number;
     label: string;
   };
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
-  const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
+  // const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
+  const [cateProduct, setCateProduct] = useState([5, 6]);
   const [authorProduct, setAuthorProduct] = useState("");
   const [desctiptionProduct, setDescriptionProduct] = useState<string>("");
 
@@ -149,10 +151,12 @@ const AddProductModal: FC = function () {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get("http://localhost:3006/api/v2/author");
-      const cate = await axios.get("http://localhost:3006/api/v2/all-category");
-      setCategorys(cate.data);
-      setAuthors(response.data);
+      await axios.get("/api/v2/author").then((res) => {
+        setAuthors(res.data);
+      });
+      await axios.get("/api/v2/category").then((res) => {
+        setCategorys(res.data);
+      });
     };
     fetchData();
   }, []);
@@ -160,8 +164,9 @@ const AddProductModal: FC = function () {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFileList(e.target.files);
   };
-  const handleUploadClick = () => {
+  const handleUploadClick = async () => {
     if (!fileList) {
+      alert("Chưa chọn ảnh cho sản phẩm");
       return;
     }
     if (fileList.length > 5) {
@@ -170,21 +175,20 @@ const AddProductModal: FC = function () {
     }
     let formData = new FormData();
     formData.append("name", nameProduct);
-    formData.append("category", JSON.stringify(cateProduct));
+    formData.append("category", JSON.stringify([5, 6]));
     formData.append("author", "5");
     formData.append("description", desctiptionProduct);
-    formData.append("product", JSON.stringify(fileList));
-    // for (let i = 0; i < fileList.length; i++) {
-    //   const file = fileList[i];
-    //   if (file) {
-    //     formData.append(`image${i + 1}`, file);
-    //   }
-    // }
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      if (file) formData.append("product", file);
+    }
 
     // console.log(fileList);
-    axios
-      .post("http://localhost:3006/add-product", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+    await axios
+      .post("/api/v2/product/add-product", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       })
       .then((res) => {
         if (res.data.success == true) {
@@ -255,9 +259,12 @@ const AddProductModal: FC = function () {
                   <option value="0" selected>
                     Chọn tác giả
                   </option>
-                  {authors.map((author: Author) => (
-                    <option value={author.value}>{author.label}</option>
-                  ))}
+                  {authors.map(
+                    (author: Author) => (
+                      console.log(author),
+                      (<option value={author.value}>{author.label}</option>)
+                    )
+                  )}
                 </select>
               </div>
               <div>
@@ -303,6 +310,7 @@ const AddProductModal: FC = function () {
                       accept="image/*"
                     />
                   </label>
+                  <div className="mt-4 flex flex-wrap justify-center"></div>
                 </div>
                 {previewList && (
                   <div className="flex ml-[-10px] mt-4">
@@ -338,6 +346,7 @@ const AddProductModal: FC = function () {
 
 const EditProductModal: FC = function () {
   type Author = {
+    id: number;
     value: number;
     label: string;
   };
@@ -357,8 +366,8 @@ const EditProductModal: FC = function () {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get("http://localhost:3006/api/v2/author");
-      const cate = await axios.get("http://localhost:3006/api/v2/all-category");
+      const response = await axios.get("/api/v2/author");
+      const cate = await axios.get("/api/v2/all-category");
       setCategorys(cate.data);
       setAuthors(response.data);
     };
@@ -543,11 +552,11 @@ const ProductsTable: FC = function () {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get(
-          "http://localhost:3006/api/v2/product"
-        );
+        const response = await axios.get("/api/v2/product");
         setAllProducts(response.data);
-      } catch (error) {}
+      } catch (error) {
+        console.log(error);
+      }
     }
     fetchData();
   }, []);
@@ -556,9 +565,7 @@ const ProductsTable: FC = function () {
     const fetch = async () => {
       if (clickTitle) {
         try {
-          const response = await axios.get(
-            "http://localhost:3006/api/v2/product/filter/title"
-          );
+          const response = await axios.get("/api/v2/product/filter/title");
           setAllProducts(response.data);
         } catch (error) {}
         return;

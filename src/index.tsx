@@ -7,7 +7,7 @@ import theme from "./flowbite-theme";
 import { Flowbite } from "flowbite-react";
 import { Routes, Route } from "react-router";
 import { BrowserRouter } from "react-router-dom";
-import DashboardPage from "./pages";
+import DashboardPage from "./pages/index";
 import SignInPage from "./pages/authentication/sign-in";
 import EcommerceProductsPage from "./pages/e-commerce/products";
 import UserListPage from "./pages/users/list";

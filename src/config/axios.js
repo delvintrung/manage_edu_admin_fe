@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:3006",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     token: `Bearer ${localStorage.getItem("token")}`,
   },
@@ -18,7 +18,7 @@ axiosInstance.interceptors.response.use(
       window.location.href = "/authentication/sign-in";
     }
     return Promise.reject(error);
-  }
+  } 
 );
 
 export default axiosInstance;

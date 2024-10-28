@@ -13,7 +13,7 @@ const SignInPage: FC = function () {
 
   const handleLoginAdmin = async () => {
     try {
-      const res = await axios.post("http://localhost:3006/api/v2/auth/login", {
+      const res = await axios.post("/api/v2/auth/login", {
         email: email,
         password: password,
       });
