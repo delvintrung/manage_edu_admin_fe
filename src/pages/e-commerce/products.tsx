@@ -145,7 +145,7 @@ const AddProductModal: FC = function () {
   const [previewList, setPreviewList] = useState<string[]>([]);
   const [authors, setAuthors] = useState([]);
   const [categorys, setCategorys] = useState([]);
-  const role = useSelector((state: RootState) => state.role.roleAction);
+  const role = useSelector((state: RootState) => state.role.old.roleAction);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -353,7 +353,7 @@ const EditProductModal: FC = function () {
 
   const [authors, setAuthors] = useState([]);
   const [categorys, setCategorys] = useState([]);
-  const role = useSelector((state: RootState) => state.role.roleAction);
+  const role = useSelector((state: RootState) => state.role.old.roleAction);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -490,7 +490,7 @@ const EditProductModal: FC = function () {
 
 const DeleteProductModal: FC<{ id: number }> = function (props) {
   const [isOpen, setOpen] = useState(false);
-  const role = useSelector((state: RootState) => state.role.roleAction);
+  const role = useSelector((state: RootState) => state.role.old.roleAction);
   const handleDeleteProduct = async (productId: number) => {
     const res = await axios.put("http://localhost:3006/api/v2/product", {
       productId: productId,

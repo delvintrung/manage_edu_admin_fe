@@ -16,17 +16,21 @@ import { GrStorage } from "react-icons/gr";
 import { GrUserManager } from "react-icons/gr";
 import axios from "../config/axios";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store";
-import { fetchUserRole } from "../Slice/role";
+import { fetchPermissionView } from "../Slice/role";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
-    dispatch(fetchUserRole());
+    dispatch(fetchPermissionView());
   }, [dispatch]);
+
+  const permissionView = useSelector(
+    (state: any) => state.role.actionView.list
+  );
 
   useEffect(() => {
     const newPage = window.location.pathname;
@@ -56,102 +60,123 @@ const ExampleSidebar: FC = function () {
               size={32}
             />
           </form>
+
           <Sidebar.Items>
             <Sidebar.ItemGroup>
-              <Sidebar.Item
-                href="/"
-                icon={HiChartPie}
-                className={
-                  "/" === currentPage ? "bg-gray-100 dark:bg-gray-700" : ""
-                }
-              >
-                Dashboard
-              </Sidebar.Item>
-              <Sidebar.Item
-                href="/e-commerce/products"
-                icon={HiShoppingBag}
-                className={
-                  "/e-commerce/products" === currentPage
-                    ? "bg-gray-100 dark:bg-gray-700"
-                    : ""
-                }
-              >
-                Products
-              </Sidebar.Item>
-              <Sidebar.Item
-                href="/users/list"
-                icon={HiUsers}
-                className={
-                  "/users/list" === currentPage
-                    ? "bg-gray-100 dark:bg-gray-700"
-                    : ""
-                }
-              >
-                Users list
-              </Sidebar.Item>
-              <Sidebar.Item
-                href="/orders/list"
-                icon={AiFillMedicineBox}
-                className={
-                  "/orders/list" === currentPage
-                    ? "bg-gray-100 dark:bg-gray-700"
-                    : ""
-                }
-              >
-                Orders
-              </Sidebar.Item>
-              <Sidebar.Item
-                href="/employee/list"
-                icon={GrUserManager}
-                className={
-                  "/employee/list" === currentPage
-                    ? "bg-gray-100 dark:bg-gray-700"
-                    : ""
-                }
-              >
-                Employee
-              </Sidebar.Item>
-              <Sidebar.Item
-                href="/author/list"
-                icon={GrUserManager}
-                className={
-                  "/author/list" === currentPage
-                    ? "bg-gray-100 dark:bg-gray-700"
-                    : ""
-                }
-              >
-                Author
-              </Sidebar.Item>
-              <Sidebar.Item
-                href="/permissions/list"
-                icon={FaUserLock}
-                className={
-                  "/permissions/list" === currentPage
-                    ? "bg-gray-100 dark:bg-gray-700"
-                    : ""
-                }
-              >
-                Permissions
-              </Sidebar.Item>
-              <Sidebar.Item
-                className="max-w-20"
-                icon={GrStorage}
-                href={
-                  localStorage.getItem("id") == "2"
-                    ? "/delivery-received"
-                    : null
-                }
-              >
-                Delivery & Received
-              </Sidebar.Item>
+              {permissionView?.dashboard && (
+                <Sidebar.Item
+                  href="/"
+                  icon={HiChartPie}
+                  className={
+                    "/" === currentPage ? "bg-gray-100 dark:bg-gray-700" : ""
+                  }
+                >
+                  Dashboard
+                </Sidebar.Item>
+              )}
+              {permissionView?.products && (
+                <Sidebar.Item
+                  href="/e-commerce/products"
+                  icon={HiShoppingBag}
+                  className={
+                    "/e-commerce/products" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Products
+                </Sidebar.Item>
+              )}
+              {permissionView?.users && (
+                <Sidebar.Item
+                  href="/users/list"
+                  icon={HiUsers}
+                  className={
+                    "/users/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Users
+                </Sidebar.Item>
+              )}
+              {permissionView?.orders && (
+                <Sidebar.Item
+                  href="/orders/list"
+                  icon={AiFillMedicineBox}
+                  className={
+                    "/orders/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Orders
+                </Sidebar.Item>
+              )}
+              {permissionView?.employee && (
+                <Sidebar.Item
+                  href="/employee/list"
+                  icon={GrUserManager}
+                  className={
+                    "/employee/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Employee
+                </Sidebar.Item>
+              )}
+              {permissionView?.author && (
+                <Sidebar.Item
+                  href="/author/list"
+                  icon={GrUserManager}
+                  className={
+                    "/author/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Author
+                </Sidebar.Item>
+              )}
+              {permissionView?.permissions && (
+                <Sidebar.Item
+                  href="/permissions/list"
+                  icon={FaUserLock}
+                  className={
+                    "/permissions/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Permissions
+                </Sidebar.Item>
+              )}
+              {permissionView?.delivery && (
+                <Sidebar.Item
+                  className={
+                    "/permissions/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                  icon={GrStorage}
+                  href="/delivery-received"
+                >
+                  Delivery & Received
+                </Sidebar.Item>
+              )}
 
-              <Sidebar.Item href={"/authentication/sign-in"} icon={HiLogin}>
-                Sign in
-              </Sidebar.Item>
+              {localStorage.getItem("token") ? null : (
+                <Sidebar.Item href={"/authentication/sign-in"} icon={HiLogin}>
+                  Sign in
+                </Sidebar.Item>
+              )}
 
-              <Sidebar.Item icon={HiLogin} onClick={() => setOpenModal(true)}>
-                Out
-              </Sidebar.Item>
+              {localStorage.getItem("token") ? (
+                <Sidebar.Item icon={HiLogin} onClick={() => setOpenModal(true)}>
+                  Out
+                </Sidebar.Item>
+              ) : null}
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </div>

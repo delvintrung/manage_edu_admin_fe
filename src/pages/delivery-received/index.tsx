@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { IoMdAddCircleOutline, IoIosSearch } from "react-icons/io";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+import axios from "../../config/axios";
 import { Link } from "react-router-dom";
 
 const DeliveryPage: FC = function () {

@@ -1,14 +1,38 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../config/axios";
 
-const initialState = { roleAction: [], error: "", loading: false };
+const initialState = {
+  role: { list: [], loading: false },
+  actionView: { list: [], loading: false },
+  allPermission: { list: [], loading: false },
+};
 
-// Thunk để fetch role từ API
-export const fetchUserRole = createAsyncThunk(
-  "user/fetchUserRole",
+export const fetchPermission = createAsyncThunk(
+  "role/fetchPermission",
   async () => {
-    const response = await axios.get("http://localhost:3006/api/v2/role-by-id");
-    console.log(response.data);
+    const response = await axios.get(
+      "http://localhost:3006/api/v2/permissions"
+    );
+    return response.data;
+  }
+);
+
+export const fetchPermissionView = createAsyncThunk(
+  "role/fetchPermissionView",
+  async () => {
+    const response = await axios.get(
+      "http://localhost:3006/api/v2/action-view"
+    );
+    return response.data;
+  }
+);
+
+export const fetchAllPermission = createAsyncThunk(
+  "role/fetchAllPermission",
+  async () => {
+    const response = await axios.get(
+      "http://localhost:3006/api/v2/all-permissions"
+    );
     return response.data;
   }
 );
@@ -19,15 +43,35 @@ const roleSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserRole.pending, (state) => {
-        state.loading = true;
+      .addCase(fetchPermissionView.pending, (state) => {
+        state.actionView.loading = true;
       })
-      .addCase(fetchUserRole.fulfilled, (state, action) => {
-        state.roleAction = action.payload;
-        state.loading = false;
+      .addCase(fetchPermissionView.fulfilled, (state, action) => {
+        state.actionView.list = action.payload;
+        state.actionView.loading = false;
       })
-      .addCase(fetchUserRole.rejected, (state, action) => {
-        state.error = action.error.message || "Failed to fetch user role";
+      .addCase(fetchPermissionView.rejected, (state, action) => {
+        state.actionView.loading = true;
+      })
+      .addCase(fetchAllPermission.pending, (state) => {
+        state.allPermission.loading = true;
+      })
+      .addCase(fetchAllPermission.fulfilled, (state, action) => {
+        state.allPermission.list = action.payload;
+        state.allPermission.loading = false;
+      })
+      .addCase(fetchAllPermission.rejected, (state, action) => {
+        state.allPermission.loading = false;
+      })
+      .addCase(fetchPermission.pending, (state) => {
+        state.role.loading = true;
+      })
+      .addCase(fetchPermission.fulfilled, (state, action) => {
+        state.role.list = action.payload;
+        state.role.loading = false;
+      })
+      .addCase(fetchPermission.rejected, (state, action) => {
+        state.role.loading = false;
       });
   },
 });

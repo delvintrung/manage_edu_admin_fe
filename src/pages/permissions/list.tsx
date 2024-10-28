@@ -17,6 +17,11 @@ import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 
 import axios from "../../config/axios";
 
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../store";
+import { fetchAllPermission, fetchPermission } from "../../Slice/role";
+import CheckPermission from "../../function/checkPermission";
+
 const PermissionPage: FC = function () {
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
@@ -27,7 +32,6 @@ const PermissionPage: FC = function () {
   ) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      console.log(search);
     }
   };
 
@@ -35,8 +39,7 @@ const PermissionPage: FC = function () {
     const result = await axios.put("http://localhost:3006/api/v2/role-change", {
       change: JSON.stringify(changePermissions),
     });
-
-    console.log(result);
+    console.log(result.data);
   };
 
   const handleUpdateChangePermissions = (updatedPermissions: any[]) => {
@@ -143,67 +146,34 @@ const AllEmployeesTable: FC<AllEmployeesTableProps> = function ({
   onUpdateChangePermission,
 }) {
   type PermissionItem = {
-    id: number;
-    name: string;
-    action_code: string;
-    check_action: number;
+    permission_id: number;
+    action: string;
   };
 
-  type Permission = {
-    action_code: string;
-    check_action: number;
-  };
-
-  type Role = {
-    role_id: number;
-    role_name: string;
-    permissions: Permission[];
-  };
-
-  const [allEmployee, setAllEmployee] = useState([]);
-  const [initPermission, setInitPermission] = useState<Role[]>([]);
-  const [changedPermissions, setChangedPermissions] = useState<any[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
-    const getAllUsers = async () => {
-      const res = await axios.get("http://localhost:3006/api/v2/permissions");
-      console.log(res.data);
+    dispatch(fetchAllPermission());
+    dispatch(fetchPermission());
+  }, [dispatch]);
 
-      const rawValue = res.data.reduce((acc: Role[], cur: PermissionItem) => {
-        let role = acc.find((item) => {
-          return item.role_id === cur.id;
-        });
-        if (role) {
-          role.permissions.push({
-            action_code: cur.action_code,
-            check_action: cur.check_action,
-          });
-        } else {
-          acc.push({
-            role_id: cur.id,
-            role_name: cur.name,
-            permissions: [
-              { action_code: cur.action_code, check_action: cur.check_action },
-            ],
-          });
-        }
-        return acc;
-      }, []);
-      setAllEmployee(rawValue);
-      setInitPermission(rawValue);
-    };
-    getAllUsers();
-  }, []);
+  const allPermission = useSelector(
+    (state: any) => state.role.allPermission.list
+  );
+
+  const permission = useSelector((state: any) => state.role.role.list);
+
+  const [changedPermissions, setChangedPermissions] = useState<any[]>([]);
+
   useEffect(() => {
     onUpdateChangePermission(changedPermissions);
   }, [changedPermissions, onUpdateChangePermission]);
 
   const handleCheckboxChange = (
     employeeId: number,
-    permission_code: string,
+    permission_id: number,
     checked: boolean
   ) => {
-    // Xử lý sự thay đổi checkbox ở đây
-    const updatedPermissions = [...initPermission];
+    const updatedPermissions = [...permission];
     const employeeIndex = updatedPermissions.findIndex(
       (emp) => emp.role_id === employeeId
     );
@@ -211,19 +181,15 @@ const AllEmployeesTable: FC<AllEmployeesTableProps> = function ({
     if (employeeIndex !== -1) {
       const permissionIndex = updatedPermissions[
         employeeIndex
-      ]?.permissions.findIndex((perm) => perm.action_code === permission_code);
+      ]?.listAction.findIndex(
+        (perm: any) => perm.permission_id === permission_id
+      );
 
-      if (permissionIndex !== -1 && permissionIndex !== undefined) {
-        const originalPermission =
-          updatedPermissions[employeeIndex]?.permissions[permissionIndex];
-        if (originalPermission?.check_action !== (checked ? 1 : 0)) {
-          console.log(
-            `Employee ID: ${employeeId}, Permission Code: ${permission_code}, Checked: ${checked}`
-          );
-          // Push the changed values to a new array
+      if (permissionIndex === -1) {
+        if (checked === true) {
           changedPermissions.push({
             employeeId,
-            permission_code,
+            permission_id,
             checked,
           });
         } else {
@@ -231,11 +197,45 @@ const AllEmployeesTable: FC<AllEmployeesTableProps> = function ({
             (change) =>
               !(
                 change.employeeId === employeeId &&
-                change.permission_code === permission_code
+                change.permission_id === permission_id
               )
           );
           setChangedPermissions(updatedChangedPermissions);
         }
+      } else {
+        if (checked === false) {
+          changedPermissions.push({
+            employeeId,
+            permission_id,
+            checked,
+          });
+        } else {
+          const updatedChangedPermissions = changedPermissions.filter(
+            (change) =>
+              !(
+                change.employeeId === employeeId &&
+                change.permission_id === permission_id
+              )
+          );
+          setChangedPermissions(updatedChangedPermissions);
+        }
+      }
+    } else {
+      if (checked === true) {
+        changedPermissions.push({
+          employeeId,
+          permission_id,
+          checked,
+        });
+      } else {
+        const updatedChangedPermissions = changedPermissions.filter(
+          (change) =>
+            !(
+              change.employeeId === employeeId &&
+              change.permission_id === permission_id
+            )
+        );
+        setChangedPermissions(updatedChangedPermissions);
       }
     }
   };
@@ -253,35 +253,45 @@ const AllEmployeesTable: FC<AllEmployeesTableProps> = function ({
       </Table.Head>
 
       <Table.Body className="bg-white dark:bg-gray-800">
-        {allEmployee.map((employee: Role) => (
-          <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-            <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-              {employee.role_name}
-            </Table.Cell>
-            <Table.Cell className="font-bold">
-              <div className="flex justify-evenly">
-                {employee.permissions.map((permission: Permission) => (
-                  <div className="flex space-x-1 items-center">
-                    <p>{permission.action_code}</p>
-                    <Checkbox
-                      id={`${permission.action_code}`}
-                      defaultChecked={
-                        permission.check_action === 1 ? true : false
-                      }
-                      onChange={(e) =>
-                        handleCheckboxChange(
-                          employee.role_id,
-                          permission.action_code,
-                          e.target.checked
-                        )
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-            </Table.Cell>
-          </Table.Row>
-        ))}
+        {allPermission &&
+          allPermission.map((item: any) => (
+            <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800 mb-3">
+              <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                {item.role_name}
+              </Table.Cell>
+              <Table.Cell className="font-bold">
+                {item.list &&
+                  item.list.map((line: any) => (
+                    <div className="flex justify-between mb-1">
+                      <div className="w-18">
+                        <p>{line.entity}</p>
+                      </div>
+                      <div className="flex space-x-[150px]">
+                        {line.listAction.map((action: PermissionItem) => (
+                          <div key={action.permission_id}>
+                            <span>{action.action}</span>
+                            <Checkbox
+                              defaultChecked={CheckPermission(
+                                permission,
+                                item.role_id,
+                                action.permission_id
+                              )}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  item.role_id,
+                                  action.permission_id,
+                                  e.target.checked
+                                );
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </Table.Cell>
+            </Table.Row>
+          ))}
       </Table.Body>
     </Table>
   );

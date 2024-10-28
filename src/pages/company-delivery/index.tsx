@@ -9,7 +9,7 @@ import { MdDeleteForever } from "react-icons/md";
 import { IoAddCircle } from "react-icons/io5";
 import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../config/axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 

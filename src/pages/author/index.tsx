@@ -22,7 +22,7 @@ import {
   HiTrash,
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
-import axios from "axios";
+import axios from "../../config/axios";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Editor, EditorTextChangeEvent } from "primereact/editor";

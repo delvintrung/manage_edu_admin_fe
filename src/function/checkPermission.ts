@@ -1,16 +1,22 @@
-interface RoleAction {
-  check_action: number;
-  action_code: string;
-}
-
-const CheckPermission = (permission: RoleAction[], action: string) => {
-  console.log(permission, action);
-  const thisPermission = permission.find((p) => p.action_code === action);
-
-  if (thisPermission?.check_action == 1) {
-    return false;
+const CheckPermission = (
+  permission: any,
+  role_id: number,
+  permission_id: number
+) => {
+  const existing = permission.find((item: any) => {
+    return item.role_id === role_id;
+  });
+  if (existing?.listAction) {
+    const action = existing.listAction.find(
+      (item: any) => item.permission_id === permission_id
+    );
+    if (action) {
+      return true;
+    } else {
+      return false;
+    }
   } else {
-    return true;
+    return false;
   }
 };
 
