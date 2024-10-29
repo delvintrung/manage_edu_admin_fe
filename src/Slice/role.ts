@@ -5,6 +5,7 @@ const initialState = {
   role: { list: [], loading: false },
   actionView: { list: [], loading: false },
   allPermission: { list: [], loading: false },
+  currentAction: { list: [], loading: false },
 };
 
 export const fetchPermission = createAsyncThunk(
@@ -22,6 +23,16 @@ export const fetchPermissionView = createAsyncThunk(
   async () => {
     const response = await axios.get(
       "http://localhost:3006/api/v2/action-view"
+    );
+    return response.data;
+  }
+);
+
+export const fetchCurrentAction = createAsyncThunk(
+  "role/fetchCurrentAction",
+  async () => {
+    const response = await axios.get(
+      "http://localhost:3006/api/v2/current-action"
     );
     return response.data;
   }
@@ -72,6 +83,16 @@ const roleSlice = createSlice({
       })
       .addCase(fetchPermission.rejected, (state, action) => {
         state.role.loading = false;
+      })
+      .addCase(fetchCurrentAction.pending, (state) => {
+        state.currentAction.loading = true;
+      })
+      .addCase(fetchCurrentAction.fulfilled, (state, action) => {
+        state.currentAction.list = action.payload;
+        state.currentAction.loading = false;
+      })
+      .addCase(fetchCurrentAction.rejected, (state, action) => {
+        state.currentAction.loading = false;
       });
   },
 });

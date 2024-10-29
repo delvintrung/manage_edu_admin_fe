@@ -28,6 +28,7 @@ import Select, { MultiValue } from "react-select";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import CheckPermission from "../../function/checkPermission";
+import checkActionValid from "../../function/checkActionValid";
 
 interface Product {
   id: number;
@@ -147,7 +148,7 @@ const AddProductModal: FC = function () {
   const [previewList, setPreviewList] = useState<string[]>([]);
   const [authors, setAuthors] = useState([]);
   const [categorys, setCategorys] = useState([]);
-  const role = useSelector((state: RootState) => state.role.old.roleAction);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -221,7 +222,7 @@ const AddProductModal: FC = function () {
         onClick={() => {
           setOpen(!isOpen);
         }}
-        disabled={CheckPermission(role, "CREATE")}
+        disabled={checkActionValid(role, "products", "create")}
       >
         <FaPlus className="mr-3 text-sm" />
         Add product
@@ -362,7 +363,7 @@ const EditProductModal: FC = function () {
 
   const [authors, setAuthors] = useState([]);
   const [categorys, setCategorys] = useState([]);
-  const role = useSelector((state: RootState) => state.role.old.roleAction);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -386,7 +387,7 @@ const EditProductModal: FC = function () {
         onClick={() => {
           setOpen(!isOpen);
         }}
-        disabled={CheckPermission(role, "EDIT")}
+        disabled={checkActionValid(role, "products", "update")}
       >
         <HiPencilAlt className="mr-2 text-lg" />
         Edit item
@@ -499,7 +500,7 @@ const EditProductModal: FC = function () {
 
 const DeleteProductModal: FC<{ id: number }> = function (props) {
   const [isOpen, setOpen] = useState(false);
-  const role = useSelector((state: RootState) => state.role.old.roleAction);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
   const handleDeleteProduct = async (productId: number) => {
     const res = await axios.put("http://localhost:3006/api/v2/product", {
       productId: productId,
@@ -510,7 +511,7 @@ const DeleteProductModal: FC<{ id: number }> = function (props) {
       <Button
         color="failure"
         onClick={() => setOpen(!isOpen)}
-        disabled={CheckPermission(role, "DELETE")}
+        disabled={checkActionValid(role, "products", "delete")}
       >
         <HiTrash className="mr-2 text-lg" />
         Delete item

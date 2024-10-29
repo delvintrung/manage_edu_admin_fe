@@ -3,7 +3,7 @@ import { MdAdsClick } from "react-icons/md";
 import { FaCartPlus } from "react-icons/fa";
 import { IoIosCash } from "react-icons/io";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../config/axios";
 import type { FC } from "react";
 import Chart from "react-apexcharts";
 import NavbarSidebarLayout from "../layouts/navbar-sidebar";
@@ -75,7 +75,6 @@ const SalesChart: FC = function () {
     let result = [];
     let tmp = 0;
     const get = async (date: string) => {
-      console.log(date);
       let res = null;
       if (date != undefined) {
         res = await axios.post("http://localhost:3006/api/v2/order/totalDate", {
@@ -106,7 +105,7 @@ const SalesChart: FC = function () {
       console.log(data);
     };
     fetchData();
-  }, [change]);
+  }, []);
 
   function getRecentDays() {
     const today = new Date();
@@ -304,32 +303,32 @@ const LatestCustomers: FC = function () {
     handleReport();
   }, [fromDay, toDay]);
 
-  useEffect(() => {
-    const getInfo = async (selectDay: number) => {
-      if (selectDay == 1) {
-        const res = await axios.get(
-          "http://localhost/WriteResfulAPIPHP/admin/order/total1D.php"
-        );
-        setReport(res.data);
-      } else if (selectDay == 2) {
-        const res = await axios.get(
-          "http://localhost/WriteResfulAPIPHP/admin/order/total3D.php"
-        );
-        setReport(res.data);
-      } else if (selectDay == 3) {
-        const res = await axios.get(
-          "http://localhost/WriteResfulAPIPHP/admin/order/total7D.php"
-        );
-        setReport(res.data);
-      } else {
-        const res = await axios.get(
-          "http://localhost/WriteResfulAPIPHP/admin/order/total30D.php"
-        );
-        setReport(res.data);
-      }
-    };
-    getInfo(selectDay);
-  }, [selectDay]);
+  // useEffect(() => {
+  //   const getInfo = async (selectDay: number) => {
+  //     if (selectDay == 1) {
+  //       const res = await axios.get(
+  //         "http://localhost/WriteResfulAPIPHP/admin/order/total1D.php"
+  //       );
+  //       setReport(res.data);
+  //     } else if (selectDay == 2) {
+  //       const res = await axios.get(
+  //         "http://localhost/WriteResfulAPIPHP/admin/order/total3D.php"
+  //       );
+  //       setReport(res.data);
+  //     } else if (selectDay == 3) {
+  //       const res = await axios.get(
+  //         "http://localhost/WriteResfulAPIPHP/admin/order/total7D.php"
+  //       );
+  //       setReport(res.data);
+  //     } else {
+  //       const res = await axios.get(
+  //         "http://localhost/WriteResfulAPIPHP/admin/order/total30D.php"
+  //       );
+  //       setReport(res.data);
+  //     }
+  //   };
+  //   getInfo(selectDay);
+  // }, [selectDay]);
 
   function convertToCurrencyFormat(amount: number) {
     return amount.toLocaleString("vi-VN", {

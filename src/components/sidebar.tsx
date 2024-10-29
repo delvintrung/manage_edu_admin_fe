@@ -18,7 +18,7 @@ import axios from "../config/axios";
 
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store";
-import { fetchPermissionView } from "../Slice/role";
+import { fetchCurrentAction, fetchPermissionView } from "../Slice/role";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
@@ -26,7 +26,8 @@ const ExampleSidebar: FC = function () {
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     dispatch(fetchPermissionView());
-  }, [dispatch]);
+    dispatch(fetchCurrentAction());
+  }, []);
 
   const permissionView = useSelector(
     (state: any) => state.role.actionView.list
@@ -113,7 +114,7 @@ const ExampleSidebar: FC = function () {
                   Orders
                 </Sidebar.Item>
               )}
-              {permissionView?.employee && (
+              {permissionView?.employees && (
                 <Sidebar.Item
                   href="/employee/list"
                   icon={GrUserManager}
@@ -126,7 +127,7 @@ const ExampleSidebar: FC = function () {
                   Employee
                 </Sidebar.Item>
               )}
-              {permissionView?.author && (
+              {permissionView?.authors && (
                 <Sidebar.Item
                   href="/author/list"
                   icon={GrUserManager}
@@ -163,6 +164,20 @@ const ExampleSidebar: FC = function () {
                   href="/delivery-received"
                 >
                   Delivery & Received
+                </Sidebar.Item>
+              )}
+
+              {permissionView?.company && (
+                <Sidebar.Item
+                  className={
+                    "/permissions/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                  icon={GrStorage}
+                  href="/company-delivery"
+                >
+                  Company
                 </Sidebar.Item>
               )}
 
