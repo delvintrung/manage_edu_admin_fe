@@ -11,7 +11,6 @@ const checkActionValid = (
   const existing = validAction.find(
     (item) => item.entity === entity && item.action === action
   );
-  console.log(validAction);
   if (existing == undefined) {
     return true;
   } else {

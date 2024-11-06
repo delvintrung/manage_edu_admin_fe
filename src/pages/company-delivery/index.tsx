@@ -12,6 +12,9 @@ import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import checkActionValid from "../../function/checkActionValid";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 type Values = {
   name: string;
@@ -20,6 +23,7 @@ type Values = {
 };
 const CompanyDeliveryPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
   const initialValues: Values = { name: "", discount: 0, infomation: "" };
 
   const validateSchema = Yup.object({
@@ -44,7 +48,7 @@ const CompanyDeliveryPage: FC = function () {
             </div>
             <div className="sm:flex sm:justify-between">
               <div className="hidden mb-3 items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100 justify-between">
-                <div className="flex space-x-[300px]">
+                <div className="flex space-x-[560px]">
                   <div className="flex space-x-5">
                     <div className="max-w-md flex items-center space-x-2">
                       <div className="mb-2 block">
@@ -76,25 +80,16 @@ const CompanyDeliveryPage: FC = function () {
                     </form>
                   </div>
                   <div className="">
-                    <Button.Group>
-                      <Button
-                        color="gray"
-                        onClick={() => {
-                          setOpenModal(true);
-                        }}
-                      >
-                        <IoAddCircle className="mr-3 h-4 w-4" />
-                        Add
-                      </Button>
-                      <Button color="gray">
-                        <RxUpdate className="mr-3 h-4 w-4" />
-                        Update
-                      </Button>
-                      <Button color="gray">
-                        <MdDeleteForever className="mr-3 h-4 w-4" />
-                        Remove
-                      </Button>
-                    </Button.Group>
+                    <Button
+                      color="gray"
+                      onClick={() => {
+                        setOpenModal(true);
+                      }}
+                      disabled={checkActionValid(role, "company", "create")}
+                    >
+                      <IoAddCircle className="mr-3 h-4 w-4" />
+                      Add
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -196,6 +191,7 @@ type Suppier = {
 
 const AllDeliveryTable: FC = function () {
   const [suppliers, setSuppliers] = useState([]);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -215,6 +211,7 @@ const AllDeliveryTable: FC = function () {
           <Table.HeadCell>Discount</Table.HeadCell>
           <Table.HeadCell>Infomation</Table.HeadCell>
           <Table.HeadCell>Status</Table.HeadCell>
+          <Table.HeadCell>Action</Table.HeadCell>
         </Table.Head>
         <Table.Body className="divide-y">
           {suppliers.map((suppier: Suppier) => (
@@ -225,6 +222,24 @@ const AllDeliveryTable: FC = function () {
               <Table.Cell>{suppier.discount}</Table.Cell>
               <Table.Cell>{suppier.description}</Table.Cell>
               <Table.Cell>{suppier.status}</Table.Cell>
+              <Table.Cell>
+                <Button.Group>
+                  <Button
+                    color="gray"
+                    disabled={checkActionValid(role, "company", "update")}
+                  >
+                    <RxUpdate className="mr-3 h-4 w-4" />
+                    Update
+                  </Button>
+                  <Button
+                    color="gray"
+                    disabled={checkActionValid(role, "company", "delete")}
+                  >
+                    <MdDeleteForever className="mr-3 h-4 w-4" />
+                    Remove
+                  </Button>
+                </Button.Group>
+              </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>

@@ -7,11 +7,12 @@ import axios from "../config/axios";
 import type { FC } from "react";
 import Chart from "react-apexcharts";
 import NavbarSidebarLayout from "../layouts/navbar-sidebar";
+import { formatPrice } from "../function/formatPrice";
 
 const DashboardPage: FC = function () {
   return (
     <NavbarSidebarLayout>
-      <div className="px-4 pt-6">
+      <div className="px-4 pt-6 relative">
         <SalesThisWeek />
         <div className="my-6"></div>
         <LatestCustomers />
@@ -76,6 +77,7 @@ const SalesChart: FC = function () {
     let tmp = 0;
     const get = async (date: string) => {
       let res = null;
+      console.log("date", date);
       if (date != undefined) {
         res = await axios.post("http://localhost:3006/api/v2/order/totalDate", {
           date,
@@ -95,6 +97,7 @@ const SalesChart: FC = function () {
     }
     return result;
   };
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await getValue();
@@ -102,10 +105,9 @@ const SalesChart: FC = function () {
         setChange(true);
       }
       setTotal7Days(data);
-      console.log(data);
     };
     fetchData();
-  }, []);
+  }, [value7Days]);
 
   function getRecentDays() {
     const today = new Date();
@@ -232,7 +234,7 @@ const SalesChart: FC = function () {
           fontWeight: 500,
         },
         formatter: function (value) {
-          return value + "đ";
+          return formatPrice(value);
         },
       },
     },
@@ -289,13 +291,10 @@ const LatestCustomers: FC = function () {
   useEffect(() => {
     const handleReport = async function () {
       if (fromDay != "" && toDay != "") {
-        const res = await axios.post(
-          "http://localhost:3006/api/v2/order/date-to-date",
-          {
-            startDate: fromDay,
-            endDate: toDay,
-          }
-        );
+        const res = await axios.post("/api/v2/order/date-to-date", {
+          startDate: fromDay,
+          endDate: toDay,
+        });
 
         setReport(res.data);
       }
@@ -303,32 +302,26 @@ const LatestCustomers: FC = function () {
     handleReport();
   }, [fromDay, toDay]);
 
-  // useEffect(() => {
-  //   const getInfo = async (selectDay: number) => {
-  //     if (selectDay == 1) {
-  //       const res = await axios.get(
-  //         "http://localhost/WriteResfulAPIPHP/admin/order/total1D.php"
-  //       );
-  //       setReport(res.data);
-  //     } else if (selectDay == 2) {
-  //       const res = await axios.get(
-  //         "http://localhost/WriteResfulAPIPHP/admin/order/total3D.php"
-  //       );
-  //       setReport(res.data);
-  //     } else if (selectDay == 3) {
-  //       const res = await axios.get(
-  //         "http://localhost/WriteResfulAPIPHP/admin/order/total7D.php"
-  //       );
-  //       setReport(res.data);
-  //     } else {
-  //       const res = await axios.get(
-  //         "http://localhost/WriteResfulAPIPHP/admin/order/total30D.php"
-  //       );
-  //       setReport(res.data);
-  //     }
-  //   };
-  //   getInfo(selectDay);
-  // }, [selectDay]);
+  useEffect(() => {
+    const getInfo = async (selectDay: number) => {
+      if (selectDay == 1) {
+        const res = await axios.get("/api/v2/order/get-total-1d");
+        setReport(res.data);
+      } else if (selectDay == 2) {
+        const res = await axios.get("/api/v2/order/get-total-3d");
+        setReport(res.data);
+      } else if (selectDay == 3) {
+        const res = await axios.get("/api/v2/order/get-total-7d");
+        setReport(res.data);
+      } else {
+        const res = await axios.get(
+          "http://localhost/WriteResfulAPIPHP/admin/order/total30D.php"
+        );
+        setReport(res.data);
+      }
+    };
+    getInfo(selectDay);
+  }, [selectDay]);
 
   function convertToCurrencyFormat(amount: number) {
     return amount.toLocaleString("vi-VN", {

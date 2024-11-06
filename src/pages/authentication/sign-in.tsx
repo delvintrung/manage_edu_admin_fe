@@ -19,7 +19,7 @@ const SignInPage: FC = function () {
       });
       if (res.data.code === 1) {
         localStorage.setItem("token", res.data.accessToken);
-        navigate("/");
+        window.location.href = "/";
       } else {
         setMessage(res.data.message);
       }

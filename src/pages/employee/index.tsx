@@ -22,6 +22,9 @@ import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
+import checkActionValid from "../../function/checkActionValid";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 interface Employee {
   id: number;
@@ -125,6 +128,7 @@ const EmployeeListPage: FC = function () {
 };
 
 const AddEmployeeModal: FC = function () {
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
   const Schema = Yup.object().shape({
     fullname: Yup.string()
       .trim()
@@ -158,7 +162,11 @@ const AddEmployeeModal: FC = function () {
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button
+        color="primary"
+        onClick={() => setOpen(true)}
+        disabled={checkActionValid(role, "employees", "create")}
+      >
         <div className="flex items-center gap-x-3">
           <HiPlus className="text-xl" />
           Add Employee
@@ -292,6 +300,7 @@ const AddEmployeeModal: FC = function () {
 
 const AllUsersTable: FC = function () {
   const [allUsers, setAllUsers] = useState([]);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
   const [productIdSelected, setProductIdSelected] = useState<number | null>(
     null
   );
@@ -379,10 +388,15 @@ const AllUsersTable: FC = function () {
                     onClick={() => {
                       openEditModal(employee.id);
                     }}
+                    disabled={checkActionValid(role, "employees", "update")}
                   >
                     Edit
                   </Button>
-                  <Button onClick={() => openDeleteModal(employee.id)}>
+                  <Button
+                    color="failure"
+                    onClick={() => openDeleteModal(employee.id)}
+                    disabled={checkActionValid(role, "employees", "delete")}
+                  >
                     Delete
                   </Button>
                 </div>
@@ -414,7 +428,6 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
       password: "",
       phone_number: "",
       address: "",
-      roleId: "",
     });
     const [infoRole, setInfoRole] = useState(0);
     const [roles, setRoles] = useState([]);
@@ -425,10 +438,6 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
         .min(2, "Quá ngắn!")
         .max(70, "Quá dài!")
         .required("Không được bỏ trống"),
-      email: Yup.string()
-        .trim()
-        .email("Email không hợp lệ")
-        .required("Email không được bỏ trống"),
       password: Yup.string().required("Password không được bỏ trống"),
       phone_number: Yup.string()
         .trim()
@@ -449,7 +458,6 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
             password: res.data[0].password,
             phone_number: res.data[0].phone_number,
             address: res.data[0].address,
-            roleId: res.data[0].role_id,
           });
           setRoles(role.data);
         }
@@ -473,8 +481,12 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                 validationSchema={Schema}
                 onSubmit={(values) => {
                   axios
-                    .put("http://localhost:3006/api/v2/employee", {
-                      values,
+                    .post("/api/v2/edit-employee", {
+                      value: {
+                        ...values,
+                        role: roleValue,
+                        id: props.productId,
+                      },
                     })
                     .then(() => {
                       console.log("OK");
@@ -497,7 +509,6 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                           placeholder=""
                           className="pr-2"
                           type="text"
-                          value={initialValues.fullname}
                         />
                         {errors.fullname && touched.fullname ? (
                           <div className="text-red-400 text-sm">
@@ -511,6 +522,7 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                           name="email"
                           type="text"
                           value={initialValues.email}
+                          disabled
                         />
                         {errors.email && touched.email ? (
                           <div className="text-red-400 text-sm">
@@ -526,7 +538,7 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                         <Field
                           name="phone_number"
                           type="number"
-                          value={initialValues.phone_number}
+                          class="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         {errors.phone_number && touched.phone_number ? (
                           <div className="text-red-400 text-sm">
@@ -536,11 +548,7 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                       </div>
                       <div>
                         <Label htmlFor="address">Address</Label>
-                        <Field
-                          name="address"
-                          type="text"
-                          value={initialValues.address}
-                        />
+                        <Field name="address" type="text" />
                         {errors.address && touched.address ? (
                           <div className="text-red-400 text-sm">
                             {errors.address}
@@ -577,11 +585,7 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                       </div>
                       <div>
                         <Label htmlFor="password">Password</Label>
-                        <Field
-                          name="password"
-                          type="text"
-                          value={initialValues.password}
-                        />
+                        <Field name="password" type="text" />
                         {errors.password && touched.password ? (
                           <div className="text-red-400 text-sm">
                             {errors.password}
@@ -592,7 +596,7 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                       </div>
                     </div>
                     <Button type="submit" color="primary">
-                      Add employee
+                      Finish
                     </Button>
                   </Form>
                 )}
@@ -608,13 +612,14 @@ const DeleteUserModal: FC<{
   productId: number | null;
   onClose: VoidFunction;
 }> = function (props): JSX.Element {
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState(true);
   const handleDeleteUser = (userId: number) => {
     const sendRequest = async () => {
       const res = await axios.put(
         `http://localhost:3006/api/v2/employee?id=${userId}`
       );
       console.log(res.data);
+      setOpen(false);
     };
     sendRequest();
   };

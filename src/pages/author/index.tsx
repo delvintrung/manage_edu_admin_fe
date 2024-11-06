@@ -23,9 +23,13 @@ import {
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
-import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
+import checkActionValid from "../../function/checkActionValid";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { FaUnlockAlt } from "react-icons/fa";
+import { dividerClasses } from "@mui/material";
 
 interface Author {
   value: number;
@@ -125,6 +129,8 @@ const AddAuthorModal: FC = function () {
   const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
   const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
   const [name, setName] = useState<string>("");
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
+
   const Schema = Yup.object().shape({
     fullname: Yup.string()
       .trim()
@@ -169,15 +175,19 @@ const AddAuthorModal: FC = function () {
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button
+        color="primary"
+        onClick={() => setOpen(true)}
+        disabled={checkActionValid(role, "authors", "create")}
+      >
         <div className="flex items-center gap-x-3">
           <HiPlus className="text-xl" />
           Add Author
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700">
-          <strong>Add new Author</strong>
+        <Modal.Header className="mt-[200px] border-b border-gray-200 !p-6 dark:border-gray-700">
+          <strong>Add new author</strong>
         </Modal.Header>
         <Modal.Body>
           <div className="">
@@ -199,7 +209,6 @@ const AddAuthorModal: FC = function () {
                   value={informationAuthor}
                   onTextChange={(e: EditorTextChangeEvent) => {
                     setInformationAuthor(e.htmlValue ?? "");
-                    console.log(e.htmlValue);
                   }}
                   style={{ height: "320px" }}
                 />
@@ -285,12 +294,6 @@ const AllAuthorsTable: FC = function () {
   return (
     <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
       <Table.Head className="bg-gray-100 dark:bg-gray-700">
-        <Table.HeadCell>
-          <Label htmlFor="select-all" className="sr-only">
-            Select all
-          </Label>
-          <Checkbox id="select-all" name="select-all" />
-        </Table.HeadCell>
         <Table.HeadCell>Name</Table.HeadCell>
         <Table.HeadCell>Information</Table.HeadCell>
         <Table.HeadCell>Status</Table.HeadCell>
@@ -299,14 +302,6 @@ const AllAuthorsTable: FC = function () {
       <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
         {allAuthor.map((author: Author) => (
           <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Table.Cell className="w-4 p-4">
-              <div className="flex items-center">
-                <Checkbox aria-describedby="checkbox-1" id="checkbox-1" />
-                <label htmlFor="checkbox-1" className="sr-only">
-                  checkbox
-                </label>
-              </div>
-            </Table.Cell>
             <Table.Cell className="mr-12 flex items-center space-x-6 whitespace-nowrap p-4 lg:mr-0">
               <img
                 className="h-10 w-10 rounded-full"
@@ -337,8 +332,8 @@ const AllAuthorsTable: FC = function () {
             </Table.Cell>
             <Table.Cell>
               <div className="flex items-center gap-x-3 whitespace-nowrap">
-                <EditAuthorModal id={author.value} />
-                <DeleteAuthorModal id={author.value} />
+                <EditAuthorModal author={author} />
+                <DeleteAuthorModal author={author} />
               </div>
             </Table.Cell>
           </Table.Row>
@@ -348,110 +343,138 @@ const AllAuthorsTable: FC = function () {
   );
 };
 
-const EditAuthorModal: FC<{ id: number }> = function (props): JSX.Element {
+const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
+  const role = useSelector((state: any) => state.role.currentAction.list);
+  const [informationAuthor, setInformationAuthor] = useState<string>("");
+  const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
+  const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
+  const [name, setName] = useState<string>("");
 
-  const handleChange = (email: string) => {
-    const change = async (email: string) => {
-      const res = await axios.post(
-        "http://localhost/WriteResfulAPIPHP/admin/user/changeRoleUser.php",
-        {
-          email: email,
-        }
-      );
+  const handleUpdateAuthor = () => {
+    const formData = new FormData();
+    formData.append("id", props.author.value.toString());
+    formData.append("name", name);
+    formData.append("information", informationAuthor);
+    formData.append("author", thumbnail as Blob);
+
+    const sendRequest = async () => {
+      const res = await axios.put("/api/v2/author/update", formData);
+      if (res.data.status == 200) {
+        setOpen(false);
+      }
       console.log(res.data);
     };
-    change(email);
+    sendRequest();
   };
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button
+        color="primary"
+        onClick={() => setOpen(true)}
+        disabled={checkActionValid(role, "authors", "update")}
+      >
         <div className="flex items-center gap-x-2">
           <HiOutlinePencilAlt className="text-lg" />
           Edit Author
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700">
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[200px]">
           <strong>Edit Author</strong>
         </Modal.Header>
         <Modal.Body>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="">
             <div>
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="name">Name Author</Label>
               <div className="mt-1">
                 <TextInput
                   id="firstName"
                   name="firstName"
-                  placeholder="Bonnie"
+                  placeholder="..."
+                  defaultValue={props.author.label}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="infomation">Infomation</Label>
               <div className="mt-1">
-                <TextInput id="lastName" name="lastName" placeholder="Green" />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="email"
-                  name="email"
-                  placeholder="email"
-                  type="email"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone number</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="phone"
-                  name="phone"
-                  placeholder="+84 378787328"
-                  type="tel"
+                <Editor
+                  value={informationAuthor}
+                  defaultValue={props.author.infomation}
+                  onTextChange={(e: EditorTextChangeEvent) => {
+                    setInformationAuthor(e.htmlValue ?? "");
+                  }}
+                  style={{ height: "320px" }}
                 />
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="passwordCurrent">Current password</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="passwordCurrent"
-                  name="passwordCurrent"
-                  placeholder="••••••••"
-                  type="password"
-                />
+            <div className="flex space-x-2">
+              <div>
+                <Label htmlFor="thumbnail">Thumbnail</Label>
+                <div className="mt-1">
+                  <Label
+                    htmlFor="dropzone-file"
+                    className="flex h-[150px] w-[300px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+                  >
+                    <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                      <svg
+                        className="mb-4 h-8 w-8 text-gray-500 dark:text-gray-400"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 20 16"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                        />
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="font-semibold">Click to upload</span>{" "}
+                        or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        SVG, PNG, JPG or GIF (MAX. 800x400px)
+                      </p>
+                    </div>
+                    <FileInput
+                      id="dropzone-file"
+                      className="hidden"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          setThumbnail(e.target.files[0]);
+                        }
+                      }}
+                      accept="image/*"
+                    />
+                  </Label>
+                </div>
               </div>
-            </div>
-            <div>
-              <Label htmlFor="passwordNew">New password</Label>
-              <div className="mt-1">
-                <TextInput
-                  id="passwordNew"
-                  name="passwordNew"
-                  placeholder="••••••••"
-                  type="password"
+              <div className="w-full">
+                {thumbnail && (
+                  <img
+                    src={previewThumbnail}
+                    className="w-[150px] ml-10 mt-5 object-cover rounded-lg"
+                  />
+                )}
+                <img
+                  src={props.author.thumbnail}
+                  className="w-[150px] ml-10 mt-5 object-cover rounded-lg"
                 />
               </div>
             </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="primary" onClick={() => setOpen(false)}>
+          <Button color="primary" onClick={() => handleUpdateAuthor()}>
             Save all
-          </Button>
-          <Button
-            color="gray"
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            Pass Employee
           </Button>
         </Modal.Footer>
       </Modal>
@@ -460,15 +483,17 @@ const EditAuthorModal: FC<{ id: number }> = function (props): JSX.Element {
 };
 
 const DeleteAuthorModal: FC<{
-  id: number;
+  author: Author;
 }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
-  const handleDeleteAuthor = (id: number) => {
+  const role = useSelector((state: any) => state.role.currentAction.list);
+
+  const handleDeleteAuthor = (author: Author) => {
     const sendRequest = async () => {
-      const res = await axios.put(
-        "http://localhost/WriteResfulAPIPHP/admin/user/deleteUser.php",
-        { authorId: id }
-      );
+      const res = await axios.put("/api/v2/author/delete", {
+        id: author.value,
+        status: author.status,
+      });
       console.log(res.data);
     };
     sendRequest();
@@ -476,27 +501,47 @@ const DeleteAuthorModal: FC<{
 
   return (
     <>
-      <Button color="failure" onClick={() => setOpen(true)}>
+      <Button
+        color="failure"
+        onClick={() => setOpen(true)}
+        disabled={checkActionValid(role, "authors", "delete")}
+      >
         <div className="flex items-center gap-x-2">
-          <HiTrash className="text-lg" />
-          Delete user
+          {props.author.status == 1 ? (
+            <div className="flex gap-x-2">
+              <HiTrash className="text-lg" />
+              Delete
+            </div>
+          ) : (
+            <div className="flex gap-x-2">
+              <FaUnlockAlt className="text-lg" /> Unlock
+            </div>
+          )}
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen} size="md">
         <Modal.Header className="px-6 pt-6 pb-0">
-          <span className="sr-only">Delete user</span>
+          <span className="sr-only">
+            {props.author.status == 1 ? "Delete" : "Unlock"}
+          </span>
         </Modal.Header>
         <Modal.Body className="px-6 pt-0 pb-6">
           <div className="flex flex-col items-center gap-y-6 text-center">
-            <HiOutlineExclamationCircle className="text-7xl text-red-500" />
+            {props.author.status == 1 ? (
+              <HiOutlineExclamationCircle className="text-7xl text-red-500" />
+            ) : (
+              <HiOutlineExclamationCircle className="text-7xl text-green-500" />
+            )}
+
             <p className="text-xl text-gray-500">
-              Are you sure you want to delete this user?
+              Are you sure you want to{" "}
+              {props.author.status == 1 ? "delete" : "unlock"} this user?
             </p>
             <div className="flex items-center gap-x-3">
               <Button
                 color="failure"
                 onClick={() => {
-                  handleDeleteAuthor(props.id);
+                  handleDeleteAuthor(props.author);
                   setOpen(false);
                 }}
               >

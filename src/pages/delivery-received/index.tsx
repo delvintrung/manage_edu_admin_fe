@@ -1,18 +1,42 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Button, Label, Table, TextInput, Modal, Select } from "flowbite-react";
+import {
+  Button,
+  Label,
+  Table,
+  TextInput,
+  Modal,
+  Select,
+  Textarea,
+} from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { IoMdAddCircleOutline, IoIosSearch } from "react-icons/io";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../store";
+import { addProductsWait, removeProductsWait } from "../../Slice/products_wait";
+import checkActionValid from "../../function/checkActionValid";
 
 const DeliveryPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
   const [idProduct, setIdProduct] = useState(0);
+  const [costPrice, setCostPrice] = useState(0);
+  const [quantity, setQuantity] = useState(0);
   const [products, setProducts] = useState([]);
   const [company, setCompany] = useState([]);
+  const [note, setNote] = useState("");
+
+  const [companySelected, setCompanySelected] = useState(0);
+
+  const dispatch = useDispatch();
+
+  const productsWait = useSelector(
+    (state: RootState) => state.productsWait.productsWait
+  );
+
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
 
   function onCloseModal() {
     setOpenModal(false);
@@ -31,6 +55,20 @@ const DeliveryPage: FC = function () {
 
     fetch();
   }, []);
+
+  const handleAddDelivery = () => {
+    try {
+      const data = {
+        companyId: companySelected,
+        note: note,
+        products: productsWait,
+      };
+      axios.post("http://localhost:3006/api/v2/create-received", data);
+      setOpenModal(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div>
@@ -66,6 +104,7 @@ const DeliveryPage: FC = function () {
               <Button
                 gradientDuoTone="greenToBlue"
                 onClick={() => setOpenModal(true)}
+                disabled={checkActionValid(role, "goods", "create")}
               >
                 {" "}
                 <IoMdAddCircleOutline className="w-6 h-6" />
@@ -91,6 +130,28 @@ const DeliveryPage: FC = function () {
             <h3 className="text-xl font-medium text-gray-900 dark:text-white">
               Delivery Product
             </h3>
+
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="Company" value="Company" />
+              </div>
+
+              <Select
+                className="w-80"
+                id="comp"
+                onChange={(e) => {
+                  setCompanySelected(parseInt(e.target.value));
+                }}
+                disabled={productsWait.length > 0 ? true : false}
+              >
+                <option value={0}>Select Company </option>
+                {company.map((item: Company) => (
+                  <option value={item.id}>{`${
+                    item.name
+                  } - Chiết khấu ${Math.floor(item.discount)}%`}</option>
+                ))}
+              </Select>
+            </div>
             <div className="flex gap-5">
               <div>
                 <div className="mb-2 block">
@@ -103,6 +164,7 @@ const DeliveryPage: FC = function () {
                     onChange={(e) => {
                       setIdProduct(parseInt(e.target.value));
                     }}
+                    disabled={companySelected == 0 ? true : false}
                   >
                     <option value={0}>Select Product ID </option>
                     {products.map((product: Product) => (
@@ -121,7 +183,10 @@ const DeliveryPage: FC = function () {
                   </p>
                 </div>
                 <div className="max-w-md relative">
-                  <Button color="light">
+                  <Button
+                    color="light"
+                    disabled={companySelected == 0 ? true : false}
+                  >
                     <Link
                       to="/delivery-received/create-temporary-product"
                       className={
@@ -144,10 +209,11 @@ const DeliveryPage: FC = function () {
                 </div>
                 <TextInput
                   id="cost-price"
-                  type="text"
+                  type="number"
                   required
                   placeholder="Enter cost price"
-                  className="w-80"
+                  onChange={(e) => setCostPrice(parseInt(e.target.value))}
+                  className="w-80 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   disabled={idProduct == 0 ? true : false}
                 />
               </div>
@@ -158,34 +224,69 @@ const DeliveryPage: FC = function () {
                 </div>
                 <TextInput
                   id="quantity"
-                  type="text"
+                  type="number"
                   required
                   placeholder="quantity of product"
                   className="w-80"
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
                   disabled={idProduct == 0 ? true : false}
                 />
               </div>
             </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="Company" value="Company" />
-              </div>
-              <Select
-                className="w-80"
-                id="comp"
-                disabled={idProduct == 0 ? true : false}
+            <div className="flex justify-center">
+              <Button
+                onClick={() =>
+                  dispatch(
+                    addProductsWait({
+                      id: idProduct,
+                      price: costPrice,
+                      quantity: quantity,
+                    })
+                  )
+                }
+                disabled={idProduct == 0 || costPrice == 0 || quantity == 0}
               >
-                <option value={0}>Select Company </option>
-                {company.map((item: Company) => (
-                  <option value={item.id}>{`${
-                    item.name
-                  } - Chiết khấu ${Math.floor(item.discount)}%`}</option>
-                ))}
-              </Select>
+                Add{" "}
+              </Button>
+            </div>
+            <div className="bg-primary-300 border border-r-blue-50 p-3 rounded-sm">
+              {productsWait.length > 0 &&
+                productsWait.map((product) => {
+                  return (
+                    <div className="flex space-x-2">
+                      <div className="flex justify-between w-[90%]">
+                        <p>ID: {product.id}</p>
+                        <p>Cost Price: {product.price}</p>
+                        <p>Quantity: {product.quantity}</p>
+                      </div>
+                      <span
+                        className="w-7 h-7 border-red-300 border text-center cursor-pointer"
+                        onClick={() => dispatch(removeProductsWait(product.id))}
+                      >
+                        X
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+            <div className="max-w-md">
+              <p>Note</p>
+              <Textarea
+                id="comment"
+                placeholder="Muốn note cái gì thì note. không muốn cũng phải note vào cho đẹp"
+                required
+                onChange={(e) => setNote(e.target.value)}
+                rows={4}
+              />
             </div>
             <div className="w-full flex justify-between">
               <div></div>
-              <Button>Send Request</Button>
+              <Button
+                disabled={productsWait.length <= 0}
+                onClick={handleAddDelivery}
+              >
+                Send Request
+              </Button>
             </div>
           </div>
         </Modal.Body>
@@ -264,55 +365,6 @@ const AllDeliveryTable: FC = function () {
             ))}
         </Table.Body>
       </Table>
-    </div>
-  );
-};
-
-export const Pagination: FC = function () {
-  return (
-    <div className="sticky right-0 bottom-0 w-full items-center border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex sm:justify-between">
-      <div className="mb-4 flex items-center sm:mb-0">
-        <a
-          href="#"
-          className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-        >
-          <span className="sr-only">Previous page</span>
-          <HiChevronLeft className="text-2xl" />
-        </a>
-        <a
-          href="#"
-          className="mr-2 inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-        >
-          <span className="sr-only">Next page</span>
-          <HiChevronRight className="text-2xl" />
-        </a>
-        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-          Showing&nbsp;
-          <span className="font-semibold text-gray-900 dark:text-white">
-            1-20
-          </span>
-          &nbsp;of&nbsp;
-          <span className="font-semibold text-gray-900 dark:text-white">
-            2290
-          </span>
-        </span>
-      </div>
-      <div className="flex items-center space-x-3">
-        <a
-          href="#"
-          className="inline-flex flex-1 items-center justify-center rounded-lg bg-primary-700 py-2 px-3 text-center text-sm font-medium text-white hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-        >
-          <HiChevronLeft className="mr-1 text-base" />
-          Previous
-        </a>
-        <a
-          href="#"
-          className="inline-flex flex-1 items-center justify-center rounded-lg bg-primary-700 py-2 px-3 text-center text-sm font-medium text-white hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-        >
-          Next
-          <HiChevronRight className="ml-1 text-base" />
-        </a>
-      </div>
     </div>
   );
 };
