@@ -188,8 +188,12 @@ const AddEmployeeModal: FC = function () {
               }}
               validationSchema={Schema}
               onSubmit={(values) => {
+                if (roleValue == "0") {
+                  console.log("ban chua chon role");
+                  return;
+                }
                 axios
-                  .post("http://localhost:3006/api/v2/employee", {
+                  .post("http://localhost:3006/api/v2/auth/register", {
                     value: { ...values, role: roleValue },
                   })
                   .then(() => {
@@ -264,13 +268,13 @@ const AddEmployeeModal: FC = function () {
                             setRoleValue(e.target.value);
                           }}
                         >
+                          <option value="0" selected>
+                            Select role
+                          </option>
                           {roles.map((role: Role) => (
                             <option value={role.id}>{role.name}</option>
                           ))}
                         </select>
-                        <div className="text-sm text-red-400">
-                          ban khong du quyen de
-                        </div>
                       </div>
                     </div>
                     <div>
