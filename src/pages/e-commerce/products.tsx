@@ -27,7 +27,6 @@ import { Editor, EditorTextChangeEvent } from "primereact/editor";
 import Select, { MultiValue } from "react-select";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
-import CheckPermission from "../../function/checkPermission";
 import checkActionValid from "../../function/checkActionValid";
 
 interface Product {
@@ -228,7 +227,7 @@ const AddProductModal: FC = function () {
         Add product
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-40">
+        <Modal.Header className="mt-[200px] border-b border-gray-200 !p-6 dark:border-gray-700">
           <strong>Add product</strong>
         </Modal.Header>
         <Modal.Body>
