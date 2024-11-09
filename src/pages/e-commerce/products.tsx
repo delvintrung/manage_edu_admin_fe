@@ -26,21 +26,47 @@ import { FaAngleDown } from "react-icons/fa";
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
 import Select, { MultiValue } from "react-select";
 import { useSelector } from "react-redux";
-import { RootState } from "../../store";
+import { AppDispatch, RootState } from "../../store";
 import checkActionValid from "../../function/checkActionValid";
+import { showToast } from "../../Slice/toast";
+import { useDispatch } from "react-redux";
+import ToastComponent from "../../components/toast";
+import { fetchAuthors, fetchCategory } from "../../Slice/category_author";
+import { CiCircleRemove } from "react-icons/ci";
 
 interface Product {
   id: number;
+  author_id: string;
   title: string;
   price: number;
-  category: string;
+  description: string;
+  introduce: string;
+  category: Category[];
   thumbnail?: string;
+  gallery?: string[];
   status: number;
 }
 
+type Author = {
+  id: number;
+  value: number;
+  label: string;
+};
+
+type Category = {
+  label: string;
+  value: number;
+};
+
 const EcommerceProductsPage: FC = function () {
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    dispatch(fetchAuthors());
+    dispatch(fetchCategory());
+  }, []);
   return (
     <NavbarSidebarLayout isFooter={false}>
+      <ToastComponent />
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
         <div className="mb-1 w-full">
           <div className="mb-4">
@@ -129,37 +155,23 @@ const SearchForProducts: FC = function () {
 };
 
 const AddProductModal: FC = function () {
-  type Author = {
-    id: number;
-    value: number;
-    label: string;
-  };
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
-  // const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
-  const [cateProduct, setCateProduct] = useState([5, 6]);
+  const [cateProduct, setCateProduct] = useState<MultiValue<Category>>([]);
   const [authorProduct, setAuthorProduct] = useState("");
+  const [introduce, setIntroduce] = useState<string>("");
   const [desctiptionProduct, setDescriptionProduct] = useState<string>("");
-
-  const [permission, setPermission] = useState(false);
 
   const [fileList, setFileList] = useState<FileList | null>(null);
   const [previewList, setPreviewList] = useState<string[]>([]);
-  const [authors, setAuthors] = useState([]);
-  const [categorys, setCategorys] = useState([]);
   const role = useSelector((state: RootState) => state.role.currentAction.list);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      await axios.get("/api/v2/author").then((res) => {
-        setAuthors(res.data);
-      });
-      await axios.get("/api/v2/category").then((res) => {
-        setCategorys(res.data);
-      });
-    };
-    fetchData();
-  }, []);
+  const authors = useSelector(
+    (state: RootState) => state.category_author.authors
+  );
+  const categorys = useSelector(
+    (state: RootState) => state.category_author.category
+  );
+  const dispatch = useDispatch();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFileList(e.target.files);
@@ -175,15 +187,18 @@ const AddProductModal: FC = function () {
     }
     let formData = new FormData();
     formData.append("name", nameProduct);
-    formData.append("category", JSON.stringify([5, 6]));
-    formData.append("author", "5");
+    formData.append(
+      "category",
+      JSON.stringify(cateProduct.map((item) => item.value))
+    );
+    formData.append("author", authorProduct);
+    formData.append("introduce", introduce);
     formData.append("description", desctiptionProduct);
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       if (file) formData.append("product", file);
     }
 
-    // console.log(fileList);
     await axios
       .post("/api/v2/product/add-product", formData, {
         headers: {
@@ -192,13 +207,15 @@ const AddProductModal: FC = function () {
       })
       .then((res) => {
         if (res.data.success == true) {
+          dispatch(showToast({ type: "success", message: res.data.message }));
           setOpen(false);
-          alert(res.data.message);
         }
       });
   };
 
-  const handleChange = (option: MultiValue<Author>) => setCateProduct(option);
+  const handleChange = (option: MultiValue<Category>) => {
+    setCateProduct(option);
+  };
 
   const files = fileList ? [...fileList] : [];
   useEffect(() => {
@@ -227,173 +244,8 @@ const AddProductModal: FC = function () {
         Add product
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="mt-[200px] border-b border-gray-200 !p-6 dark:border-gray-700">
+        <Modal.Header className="mt-[1000px] border-b border-gray-200 !p-6 dark:border-gray-700">
           <strong>Add product</strong>
-        </Modal.Header>
-        <Modal.Body>
-          <form>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div>
-                <Label htmlFor="productName">Product name</Label>
-                <TextInput
-                  id="productName"
-                  name="productName"
-                  placeholder='Truyện gì đó ...."'
-                  className="mt-1"
-                  onChange={(e) => {
-                    setNameProduct(e.target.value);
-                  }}
-                  value={nameProduct}
-                />
-              </div>
-              <div>
-                <Label htmlFor="brand">Author</Label>
-                <select
-                  className="border-slate-400 rounded"
-                  name="category"
-                  id=""
-                  onChange={(e) => {
-                    setAuthorProduct(e.target.value);
-                  }}
-                >
-                  <option value="0" selected>
-                    Chọn tác giả
-                  </option>
-                  {authors.map(
-                    (author: Author) => (
-                      console.log(author),
-                      (<option value={author.value}>{author.label}</option>)
-                    )
-                  )}
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  isMulti
-                  name="category"
-                  options={categorys}
-                  className="basic-multi-select w-[500px]"
-                  classNamePrefix="select"
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="lg:col-span-2">
-                <Label htmlFor="producTable.Celletails">Product details</Label>
-                <Editor
-                  value={desctiptionProduct}
-                  onTextChange={(e: EditorTextChangeEvent) => {
-                    setDescriptionProduct(e.htmlValue ?? "");
-                    console.log(e.htmlValue);
-                  }}
-                  style={{ height: "320px" }}
-                />
-              </div>
-              <div className="lg:col-span-2">
-                <div className="flex w-full items-center justify-center">
-                  <label className="flex h-32 w-full cursor-pointer flex-col rounded border-2 border-dashed border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <HiUpload className="text-4xl text-gray-300" />
-                      <p className="py-1 text-sm text-gray-600 dark:text-gray-500">
-                        Thêm ảnh làm thumbnail cho sản phẩm
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      multiple
-                      accept="image/*"
-                    />
-                  </label>
-                  <div className="mt-4 flex flex-wrap justify-center"></div>
-                </div>
-                {previewList && (
-                  <div className="flex ml-[-10px] mt-4">
-                    {previewList?.map((file) => (
-                      <img src={file} className="w-[200px] object-cover" />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button color="primary" onClick={handleUploadClick}>
-            Add product
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal show={permission} onClose={() => setPermission(false)}>
-        <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
-        <Modal.Body>
-          <div className="space-y-6">
-            <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => setPermission(false)}>I accept</Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
-  );
-};
-
-const EditProductModal: FC = function () {
-  type Author = {
-    id: number;
-    value: number;
-    label: string;
-  };
-  const [isOpen, setOpen] = useState(false);
-  const [nameProduct, setNameProduct] = useState("");
-  const [cateProduct, setCateProduct] = useState<MultiValue<Author>>([]);
-
-  const [authorProduct, setAuthorProduct] = useState("");
-  const [desctiptionProduct, setDescriptionProduct] = useState("");
-  const [fileList, setFileList] = useState<FileList | null>(null);
-
-  const [permission, setPermission] = useState(false);
-
-  const [authors, setAuthors] = useState([]);
-  const [categorys, setCategorys] = useState([]);
-  const role = useSelector((state: RootState) => state.role.currentAction.list);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await axios.get("/api/v2/author");
-      const cate = await axios.get("/api/v2/all-category");
-      setCategorys(cate.data);
-      setAuthors(response.data);
-    };
-    fetchData();
-  }, []);
-
-  const handleChange = (option: MultiValue<Author>) => setCateProduct(option);
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFileList(e.target.files);
-  };
-
-  return (
-    <>
-      <Button
-        color="primary"
-        onClick={() => {
-          setOpen(!isOpen);
-        }}
-        disabled={checkActionValid(role, "products", "update")}
-      >
-        <HiPencilAlt className="mr-2 text-lg" />
-        Edit item
-      </Button>
-      <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[150px]">
-          <strong>Edit product</strong>
         </Modal.Header>
         <Modal.Body>
           <form>
@@ -442,14 +294,249 @@ const EditProductModal: FC = function () {
               </div>
 
               <div className="lg:col-span-2">
+                <Label htmlFor="producTable.Celletails">
+                  Product Introduce
+                </Label>
+
+                <div>
+                  <div>
+                    <img
+                      src="/images/indicator_introduce.png"
+                      alt="Introduce"
+                      className="object-cover"
+                    />
+                  </div>
+                  <Editor
+                    onTextChange={(e: EditorTextChangeEvent) => {
+                      setIntroduce(e.htmlValue ?? "");
+                    }}
+                    style={{ height: "320px" }}
+                    value={introduce}
+                  />
+                </div>
+              </div>
+
+              <div className="lg:col-span-2">
                 <Label htmlFor="producTable.Celletails">Product details</Label>
                 <Editor
                   value={desctiptionProduct}
                   onTextChange={(e: EditorTextChangeEvent) => {
                     setDescriptionProduct(e.htmlValue ?? "");
-                    console.log(e.htmlValue);
                   }}
                   style={{ height: "320px" }}
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <div className="flex w-full items-center justify-center">
+                  <label className="flex h-32 w-full cursor-pointer flex-col rounded border-2 border-dashed border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <HiUpload className="text-4xl text-gray-300" />
+                      <p className="py-1 text-sm text-gray-600 dark:text-gray-500">
+                        Thêm ảnh làm thumbnail cho sản phẩm
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        PNG, JPG, GIF up to 10MB
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      multiple
+                      accept="image/*"
+                    />
+                  </label>
+                  <div className="mt-4 flex flex-wrap justify-center"></div>
+                </div>
+                {previewList && (
+                  <div className="grid ml-[-10px] mt-4 grid-cols-3 ">
+                    {previewList?.map((file) => (
+                      <img src={file} className="w-[200px] object-cover" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            color="primary"
+            onClick={handleUploadClick}
+            disabled={
+              nameProduct == "" ||
+              cateProduct.length <= 0 ||
+              authorProduct == "" ||
+              desctiptionProduct == "" ||
+              introduce == "" ||
+              fileList == null
+                ? true
+                : false
+            }
+          >
+            Add
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+const EditProductModal: FC<{ product: Product }> = function (props) {
+  const [isOpen, setOpen] = useState(false);
+  const [nameProduct, setNameProduct] = useState("");
+  const [cateProduct, setCateProduct] = useState<MultiValue<Category>>([]);
+  const [introduce, setIntroduce] = useState("");
+  const [desctiptionProduct, setDescriptionProduct] = useState("");
+  const [fileList, setFileList] = useState<FileList | null>(null);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
+  const authors = useSelector(
+    (state: RootState) => state.category_author.authors
+  );
+  const categorys = useSelector(
+    (state: RootState) => state.category_author.category
+  );
+  const dispatch = useDispatch();
+
+  const handleChange = (option: MultiValue<Category>) => setCateProduct(option);
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFileList(e.target.files);
+  };
+
+  const handleUpdateProduct = async () => {
+    let formData = new FormData();
+    formData.append("productId", props.product.id.toString());
+    formData.append("name", nameProduct);
+    formData.append(
+      "category",
+      JSON.stringify(cateProduct.map((item) => item.value))
+    );
+
+    formData.append("description", desctiptionProduct);
+    formData.append("introduce", introduce);
+    if (fileList) {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (file) formData.append("product", file);
+      }
+    }
+    await axios
+      .put("/api/v2/product/update-product", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        if (res.data.success == true) {
+          dispatch(showToast({ type: "success", message: res.data.message }));
+          setOpen(false);
+          alert(res.data.message);
+        }
+      })
+      .finally(() => {
+        setOpen(false);
+      });
+  };
+
+  return (
+    <>
+      <Button
+        color="primary"
+        onClick={() => {
+          setOpen(!isOpen);
+        }}
+        disabled={checkActionValid(role, "products", "update")}
+      >
+        <HiPencilAlt className="mr-2 text-lg" />
+        Edit
+      </Button>
+      <Modal onClose={() => setOpen(false)} show={isOpen}>
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[1000px]">
+          <strong>Edit product</strong>
+        </Modal.Header>
+        <Modal.Body>
+          <form>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div>
+                <Label htmlFor="productName">Product name</Label>
+                <TextInput
+                  id="productName"
+                  name="productName"
+                  placeholder=""
+                  className="mt-1"
+                  defaultValue={props.product.title}
+                  onChange={(e) => {
+                    setNameProduct(e.target.value);
+                  }}
+                />
+              </div>
+              <div>
+                <Label htmlFor="brand">Author</Label>
+                <select
+                  className="border-slate-400 rounded"
+                  name="category"
+                  id=""
+                  disabled={parseInt(props.product.author_id) ? true : false}
+                >
+                  <option value="0" selected>
+                    Chọn tác giả
+                  </option>
+                  {authors.map((author: Author) => (
+                    <option
+                      value={author.value}
+                      selected={
+                        parseInt(props.product.author_id) == author.value
+                      }
+                    >
+                      {author.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  isMulti
+                  name="category"
+                  options={categorys}
+                  className="basic-multi-select w-[500px]"
+                  classNamePrefix="select"
+                  onChange={handleChange}
+                  defaultValue={props.product.category}
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <Label htmlFor="producTable.Celletails">
+                  Product Introduce
+                </Label>
+
+                <div>
+                  <div>
+                    <img
+                      src="/images/indicator_introduce.png"
+                      alt="Introduce"
+                      className="object-cover"
+                    />
+                  </div>
+                  <Editor
+                    onTextChange={(e: EditorTextChangeEvent) => {
+                      setIntroduce(e.htmlValue ?? "");
+                    }}
+                    style={{ height: "320px" }}
+                    value={props.product.introduce}
+                  />
+                </div>
+              </div>
+
+              <div className="lg:col-span-2">
+                <Label htmlFor="producTable.Celletails">Product details</Label>
+
+                <Editor
+                  onTextChange={(e: EditorTextChangeEvent) => {
+                    setDescriptionProduct(e.htmlValue ?? "");
+                  }}
+                  style={{ height: "320px" }}
+                  value={props.product.description}
                 />
               </div>
               <div className="lg:col-span-2">
@@ -472,25 +559,31 @@ const EditProductModal: FC = function () {
                     />
                   </label>
                 </div>
+                {
+                  <div className="grid flex-wrap justify-center grid-cols-3 space-x-1 space-y-1">
+                    {props.product.gallery?.map((item) => (
+                      <div className="relative">
+                        <img src={item} className="w-[200px] object-cover" />
+                        <span
+                          className="w-5 h-5 absolute right-0 top-0"
+                          onClick={() => {
+                            console.log("click" + item);
+                          }}
+                        >
+                          <CiCircleRemove />
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                }
               </div>
             </div>
           </form>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="primary" onClick={() => setOpen(false)}>
+          <Button color="primary" onClick={handleUpdateProduct}>
             Save all
           </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal show={permission} onClose={() => setPermission(false)}>
-        <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
-        <Modal.Body>
-          <div className="space-y-6">
-            <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => setPermission(false)}>I accept</Button>
         </Modal.Footer>
       </Modal>
     </>
@@ -500,10 +593,16 @@ const EditProductModal: FC = function () {
 const DeleteProductModal: FC<{ id: number }> = function (props) {
   const [isOpen, setOpen] = useState(false);
   const role = useSelector((state: RootState) => state.role.currentAction.list);
+  const dispatch = useDispatch();
   const handleDeleteProduct = async (productId: number) => {
     const res = await axios.put("http://localhost:3006/api/v2/product", {
       productId: productId,
     });
+    if (res.data) {
+      dispatch(
+        showToast({ type: "success", message: "Xóa sản phẩm thành công" })
+      );
+    }
   };
   return (
     <>
@@ -513,7 +612,7 @@ const DeleteProductModal: FC<{ id: number }> = function (props) {
         disabled={checkActionValid(role, "products", "delete")}
       >
         <HiTrash className="mr-2 text-lg" />
-        Delete item
+        Delete
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen} size="md">
         <Modal.Header className="px-3 pt-3 pb-0">
@@ -632,7 +731,7 @@ const ProductsTable: FC = function () {
             </Table.Cell>
             <Table.Cell className="space-x-2 whitespace-nowrap p-4">
               <div className="flex items-center gap-x-3">
-                <EditProductModal />
+                <EditProductModal product={product} />
                 <DeleteProductModal id={product.id} />
               </div>
             </Table.Cell>

@@ -4,21 +4,16 @@ import {
   Button,
   Badge,
   Label,
-  Modal,
   Table,
   TextInput,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 import {
-  HiChevronLeft,
-  HiChevronRight,
   HiCog,
   HiDotsVertical,
   HiExclamationCircle,
   HiHome,
-  HiOutlineExclamationCircle,
-  HiOutlinePencilAlt,
   HiTrash,
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
@@ -27,10 +22,13 @@ import { fetchOrderStatus } from "../../Slice/order_status";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../store";
 import checkActionValid from "../../function/checkActionValid";
+import { showToast } from "../../Slice/toast";
+import ToastComponent from "../../components/toast";
 
 const UserListPage: FC = function () {
   return (
     <NavbarSidebarLayout isFooter={false}>
+      <ToastComponent />
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
         <div className="mb-1 w-full">
           <div className="mb-4">
@@ -143,6 +141,7 @@ function convertToCurrencyFormat(amount: number) {
 function Accordion({ order }: { order: Order }) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState(1);
+  const dispatch = useDispatch<AppDispatch>();
 
   const orderStatus: OrderStatus[] = useSelector(
     (state: RootState) => state.order_status.orderStatus.list
@@ -197,15 +196,13 @@ function Accordion({ order }: { order: Order }) {
 
   const handleChangeStatus = (od: string) => {
     const changeStatus = async (od: string) => {
-      const res = await axios.post(
-        "http://localhost/WriteResfulAPIPHP/admin/order/changeStatus.php",
-        {
-          orderId: parseInt(od),
-          status: status,
-          employeeId: localStorage.getItem("employeeId"),
-        }
-      );
-      alert(res.data.message);
+      const res = await axios.put("/api/v2/order/update-order-status", {
+        orderId: parseInt(od),
+        status: status,
+      });
+      if (res.data.success === true) {
+        dispatch(showToast({ type: "success", message: res.data.message }));
+      }
     };
     changeStatus(od);
   };
