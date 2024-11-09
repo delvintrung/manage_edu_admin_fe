@@ -77,7 +77,7 @@ const SalesChart: FC = function () {
     const get = async (date: string) => {
       let res = null;
       if (date != undefined) {
-        res = await axios.post("http://localhost:3006/api/v2/order/totalDate", {
+        res = await axios.post("api/v2/order/totalDate", {
           date,
         });
       }
@@ -290,7 +290,7 @@ const LatestCustomers: FC = function () {
     const handleReport = async function () {
       if (fromDay != "" && toDay != "") {
         const res = await axios.post(
-          "http://localhost:3006/api/v2/order/date-to-date",
+          "api/v2/order/date-to-date",
           {
             startDate: fromDay,
             endDate: toDay,
@@ -440,7 +440,7 @@ const AcquisitionOverview: FC = function () {
   useEffect(() => {
     const getProduct = async () => {
       const res = await axios.get(
-        "http://localhost:3006/api/v2/order/top-selling"
+        "api/v2/order/top-selling"
       );
       console.log(res.data);
       setTop(res.data);
