@@ -21,11 +21,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
 import { fetchAllPermission, fetchPermission } from "../../Slice/role";
 import CheckPermission from "../../function/checkPermission";
+import { showToast } from "../../Slice/toast";
+import ToastComponent from "../../components/toast";
 
 const PermissionPage: FC = function () {
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [changePermissions, setChangePermissions] = useState<any[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleSearchEmployee = (
     event: React.KeyboardEvent<HTMLInputElement>
@@ -39,7 +42,11 @@ const PermissionPage: FC = function () {
     const result = await axios.put("http://localhost:3006/api/v2/role-change", {
       change: JSON.stringify(changePermissions),
     });
-    console.log(result.data);
+    if (result) {
+      dispatch(
+        showToast({ message: "Save change successfully", type: "success" })
+      );
+    }
   };
 
   const handleUpdateChangePermissions = (updatedPermissions: any[]) => {
@@ -47,6 +54,7 @@ const PermissionPage: FC = function () {
   };
   return (
     <NavbarSidebarLayout isFooter={false}>
+      <ToastComponent />
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
         <div className="mb-1 w-full">
           <div className="mb-4">

@@ -18,6 +18,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { addProductsWait, removeProductsWait } from "../../Slice/products_wait";
 import checkActionValid from "../../function/checkActionValid";
+import ToastComponent from "../../components/toast";
+import { showToast } from "../../Slice/toast";
 
 const DeliveryPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
@@ -63,8 +65,21 @@ const DeliveryPage: FC = function () {
         note: note,
         products: productsWait,
       };
-      axios.post("http://localhost:3006/api/v2/create-received", data);
-      setOpenModal(false);
+      axios
+        .post("http://localhost:3006/api/v2/create-received", data)
+        .then(() => {
+          dispatch(
+            showToast({ message: "Create delivery success", type: "success" })
+          );
+          setOpenModal(false);
+        })
+        .catch((error) => {
+          dispatch(
+            showToast({ message: "Create delivery fail", type: "error" })
+          );
+          console.log(error);
+          setOpenModal(false);
+        });
     } catch (error) {
       console.log(error);
     }
@@ -73,6 +88,7 @@ const DeliveryPage: FC = function () {
   return (
     <div>
       <NavbarSidebarLayout isFooter={false}>
+        <ToastComponent />
         <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
           <div className="mb-1 w-full">
             <div className="mb-4">

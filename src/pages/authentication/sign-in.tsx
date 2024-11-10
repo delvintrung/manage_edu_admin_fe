@@ -3,13 +3,14 @@ import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
 import type { FC } from "react";
 import { useState } from "react";
 import axios from "../../config/axios";
-import { useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
+import { showToast } from "../../Slice/toast";
 
 const SignInPage: FC = function () {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLoginAdmin = async () => {
     try {
@@ -19,6 +20,7 @@ const SignInPage: FC = function () {
       });
       if (res.data.code === 1) {
         localStorage.setItem("token", res.data.accessToken);
+        dispatch(showToast({ type: "success", message: "Login success" }));
         window.location.href = "/";
       } else {
         setMessage(res.data.message);

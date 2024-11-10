@@ -18,6 +18,7 @@ import CreateTempProduct from "./pages/delivery-received/createTempProduct";
 import CompanyDeliveryPage from "./pages/company-delivery";
 import EmployeeListPage from "./pages/employee";
 import AuthorListPage from "./pages/author";
+import ToastComponent from "./components/toast";
 
 const container = document.getElementById("root");
 
@@ -31,6 +32,7 @@ root.render(
   <StrictMode>
     <Provider store={store}>
       <Flowbite theme={{ theme }}>
+        <ToastComponent />
         <BrowserRouter>
           <Routes>
             <Route path="/authentication/sign-in" element={<SignInPage />} />
