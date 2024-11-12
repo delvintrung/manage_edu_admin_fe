@@ -12,7 +12,11 @@ import {
 } from "react-icons/hi";
 import { AiFillMedicineBox } from "react-icons/ai";
 import { FaUserLock } from "react-icons/fa";
+import { RiCouponLine } from "react-icons/ri";
+import { FaBuilding } from "react-icons/fa";
 import { GrStorage } from "react-icons/gr";
+import { TfiWrite } from "react-icons/tfi";
+import { BiCategory } from "react-icons/bi";
 import { GrUserManager } from "react-icons/gr";
 import axios from "../config/axios";
 
@@ -130,7 +134,7 @@ const ExampleSidebar: FC = function () {
               {permissionView?.authors && (
                 <Sidebar.Item
                   href="/author/list"
-                  icon={GrUserManager}
+                  icon={TfiWrite}
                   className={
                     "/author/list" === currentPage
                       ? "bg-gray-100 dark:bg-gray-700"
@@ -156,7 +160,7 @@ const ExampleSidebar: FC = function () {
               {permissionView?.delivery && (
                 <Sidebar.Item
                   className={
-                    "/permissions/list" === currentPage
+                    "/delivery-received" === currentPage
                       ? "bg-gray-100 dark:bg-gray-700"
                       : ""
                   }
@@ -170,16 +174,43 @@ const ExampleSidebar: FC = function () {
               {permissionView?.company && (
                 <Sidebar.Item
                   className={
-                    "/permissions/list" === currentPage
+                    "/company-delivery" === currentPage
                       ? "bg-gray-100 dark:bg-gray-700"
                       : ""
                   }
-                  icon={GrStorage}
+                  icon={FaBuilding}
                   href="/company-delivery"
                 >
                   Company
                 </Sidebar.Item>
               )}
+              {
+                <Sidebar.Item
+                  className={
+                    "/discount" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                  icon={RiCouponLine}
+                  href="/discount"
+                >
+                  Discount
+                </Sidebar.Item>
+              }
+
+              {
+                <Sidebar.Item
+                  className={
+                    "/category" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                  icon={BiCategory}
+                  href="/category"
+                >
+                  Category
+                </Sidebar.Item>
+              }
 
               {localStorage.getItem("token") ? null : (
                 <Sidebar.Item href={"/authentication/sign-in"} icon={HiLogin}>

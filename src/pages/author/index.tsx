@@ -2,7 +2,6 @@
 import {
   Breadcrumb,
   Button,
-  Checkbox,
   Label,
   Modal,
   Table,
@@ -12,9 +11,6 @@ import {
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 import {
-  HiCog,
-  HiDotsVertical,
-  HiExclamationCircle,
   HiHome,
   HiOutlineExclamationCircle,
   HiOutlinePencilAlt,
@@ -23,13 +19,15 @@ import {
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
-import * as Yup from "yup";
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
 import checkActionValid from "../../function/checkActionValid";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { FaUnlockAlt } from "react-icons/fa";
-import { dividerClasses } from "@mui/material";
+import { CiSearch } from "react-icons/ci";
+import { useDispatch } from "react-redux";
+import { showToast } from "../../Slice/toast";
+import ToastComponent from "../../components/toast";
 
 interface Author {
   value: number;
@@ -42,6 +40,7 @@ interface Author {
 const AuthorListPage: FC = function () {
   return (
     <NavbarSidebarLayout isFooter={false}>
+      <ToastComponent />
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
         <div className="mb-1 w-full">
           <div className="mb-4">
@@ -74,34 +73,9 @@ const AuthorListPage: FC = function () {
                 </div>
               </form>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Configure</span>
-                  <HiCog className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Delete</span>
-                  <HiTrash className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Purge</span>
-                  <HiExclamationCircle className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Settings</span>
-                  <HiDotsVertical className="text-2xl" />
-                </a>
+                <div className="cursor-pointer p-2">
+                  <CiSearch size="30" />
+                </div>
               </div>
             </div>
             <div className="ml-auto flex items-center space-x-2 sm:space-x-3">
@@ -130,23 +104,7 @@ const AddAuthorModal: FC = function () {
   const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
   const [name, setName] = useState<string>("");
   const role = useSelector((state: RootState) => state.role.currentAction.list);
-
-  const Schema = Yup.object().shape({
-    fullname: Yup.string()
-      .trim()
-      .min(2, "Quá ngắn!")
-      .max(70, "Quá dài!")
-      .required("Không được bỏ trống"),
-    email: Yup.string()
-      .trim()
-      .email("Email không hợp lệ")
-      .required("Email không được bỏ trống"),
-    password: Yup.string().required("Password không được bỏ trống"),
-    phone_number: Yup.string()
-      .trim()
-      .required("Số điện thoại không được bỏ trống"),
-    address: Yup.string().required("Địa chỉ không được bỏ trống"),
-  });
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (thumbnail) {
@@ -161,17 +119,43 @@ const AddAuthorModal: FC = function () {
   }, [thumbnail]);
 
   const handleAddAuthor = () => {
+    if (!name || !informationAuthor || !thumbnail) {
+      dispatch(showToast({ message: "Thiếu thông tin", type: "error" }));
+      return;
+    }
     const formData = new FormData();
     formData.append("name", name);
     formData.append("information", informationAuthor);
     formData.append("author", thumbnail as Blob);
 
     const sendRequest = async () => {
-      const res = await axios.post("/api/v2/author/add", formData);
-      console.log(res.data);
+      await axios
+        .post("/api/v2/author/add", formData)
+        .then((res) => {
+          if (res.data.success) {
+            setOpen(false);
+            dispatch(
+              showToast({ message: "Thêm tác giả thành công", type: "success" })
+            );
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ message: "Thêm tác giả thất bại", type: "error" })
+          );
+        });
     };
     sendRequest();
   };
+
+  const isDisabled = !name || !informationAuthor || !thumbnail;
+  const disabledReason = !name
+    ? "Thiếu tên tác giả"
+    : !informationAuthor
+    ? "Thiếu thông tin tác giả"
+    : !thumbnail
+    ? "Thiếu ảnh tác giả"
+    : "";
 
   return (
     <>
@@ -185,6 +169,7 @@ const AddAuthorModal: FC = function () {
           Add Author
         </div>
       </Button>
+      <ToastComponent />
       <Modal onClose={() => setOpen(false)} show={isOpen}>
         <Modal.Header className="mt-[200px] border-b border-gray-200 !p-6 dark:border-gray-700">
           <strong>Add new author</strong>
@@ -272,7 +257,12 @@ const AddAuthorModal: FC = function () {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="primary" onClick={handleAddAuthor}>
+          <Button
+            color="primary"
+            onClick={handleAddAuthor}
+            disabled={isDisabled}
+            title={isDisabled ? disabledReason : ""}
+          >
             Add Author
           </Button>
         </Modal.Footer>
@@ -377,7 +367,7 @@ const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
       >
         <div className="flex items-center gap-x-2">
           <HiOutlinePencilAlt className="text-lg" />
-          Edit Author
+          Edit
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
@@ -486,6 +476,7 @@ const DeleteAuthorModal: FC<{
   author: Author;
 }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
+  const dispatch = useDispatch();
   const role = useSelector((state: any) => state.role.currentAction.list);
 
   const handleDeleteAuthor = (author: Author) => {
@@ -494,7 +485,11 @@ const DeleteAuthorModal: FC<{
         id: author.value,
         status: author.status,
       });
-      console.log(res.data);
+      if (res.data.code) {
+        dispatch(showToast({ message: res.data.message, type: "success" }));
+      } else {
+        dispatch(showToast({ message: "Xóa tác giả thất bại", type: "error" }));
+      }
     };
     sendRequest();
   };

@@ -9,15 +9,7 @@ import {
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
-import {
-  HiCog,
-  HiDotsVertical,
-  HiExclamationCircle,
-  HiHome,
-  HiOutlineExclamationCircle,
-  HiPlus,
-  HiTrash,
-} from "react-icons/hi";
+import { HiHome, HiOutlineExclamationCircle, HiPlus } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
 import { Formik, Form, Field } from "formik";
@@ -25,12 +17,17 @@ import * as Yup from "yup";
 import checkActionValid from "../../function/checkActionValid";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
+import { CiSearch } from "react-icons/ci";
+import ToastComponent from "../../components/toast";
+import { useDispatch } from "react-redux";
+import { showToast } from "../../Slice/toast";
 
 interface Employee {
   id: number;
+  role_id: number;
   role_name: string;
   address: string;
-  fullName: string;
+  fullname: string;
   phone_number: string;
   email: string;
   status: number;
@@ -46,6 +43,7 @@ type VoidFunction = () => void;
 const EmployeeListPage: FC = function () {
   return (
     <NavbarSidebarLayout isFooter={false}>
+      <ToastComponent />
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
         <div className="mb-1 w-full">
           <div className="mb-4">
@@ -73,39 +71,14 @@ const EmployeeListPage: FC = function () {
                   <TextInput
                     id="users-search"
                     name="users-search"
-                    placeholder="Search for users"
+                    placeholder="Search for employees"
                   />
                 </div>
               </form>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Configure</span>
-                  <HiCog className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Delete</span>
-                  <HiTrash className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Purge</span>
-                  <HiExclamationCircle className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Settings</span>
-                  <HiDotsVertical className="text-2xl" />
-                </a>
+                <div className="cursor-pointer p-2">
+                  <CiSearch size="30" />
+                </div>
               </div>
             </div>
             <div className="ml-auto flex items-center space-x-2 sm:space-x-3">
@@ -148,6 +121,8 @@ const AddEmployeeModal: FC = function () {
   const [isOpen, setOpen] = useState(false);
   const [roles, setRoles] = useState([]);
   const [roleValue, setRoleValue] = useState("");
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const fetch = async () => {
       const res = await axios.get("http://localhost:3006/api/v2/role");
@@ -196,8 +171,19 @@ const AddEmployeeModal: FC = function () {
                   .post("http://localhost:3006/api/v2/auth/register", {
                     value: { ...values, role: roleValue },
                   })
-                  .then(() => {
-                    console.log("OK");
+                  .then((res) => {
+                    if (res.data.code) {
+                      dispatch(
+                        showToast({
+                          type: "success",
+                          message: res.data.message,
+                        })
+                      );
+                    } else {
+                      dispatch(
+                        showToast({ type: "error", message: res.data.message })
+                      );
+                    }
                   })
                   .catch((error) => {
                     console.error(error);
@@ -305,29 +291,29 @@ const AddEmployeeModal: FC = function () {
 const AllUsersTable: FC = function () {
   const [allUsers, setAllUsers] = useState([]);
   const role = useSelector((state: RootState) => state.role.currentAction.list);
-  const [productIdSelected, setProductIdSelected] = useState<number | null>(
+  const [employeeSelected, setEmployeeSelected] = useState<Employee | null>(
     null
   );
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
 
-  const openEditModal = (id: number) => {
-    setProductIdSelected(id);
+  const openEditModal = (employee: Employee) => {
+    setEmployeeSelected(employee);
     setIsOpenEditModal(true);
   };
 
-  const openDeleteModal = (id: number) => {
-    setProductIdSelected(id);
+  const openDeleteModal = (employee: Employee) => {
+    setEmployeeSelected(employee);
     setIsOpenDeleteModal(true);
   };
 
   const closeEditModal = () => {
-    setProductIdSelected(null);
+    setEmployeeSelected(null);
     setIsOpenEditModal(false);
   };
 
   const closeDeleteModal = () => {
-    setProductIdSelected(null);
+    setEmployeeSelected(null);
     setIsOpenDeleteModal(false);
   };
   useEffect(() => {
@@ -360,7 +346,7 @@ const AllUsersTable: FC = function () {
 
                 <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
                   <div className="text-base font-semibold text-gray-900 dark:text-white max-w-[200px]">
-                    {employee.fullName}
+                    {employee.fullname}
                   </div>
                   <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
                     {employee.email}
@@ -390,7 +376,7 @@ const AllUsersTable: FC = function () {
                 <div className="flex items-center gap-x-3 whitespace-nowrap">
                   <Button
                     onClick={() => {
-                      openEditModal(employee.id);
+                      openEditModal(employee);
                     }}
                     disabled={checkActionValid(role, "employees", "update")}
                   >
@@ -398,7 +384,7 @@ const AllUsersTable: FC = function () {
                   </Button>
                   <Button
                     color="failure"
-                    onClick={() => openDeleteModal(employee.id)}
+                    onClick={() => openDeleteModal(employee)}
                     disabled={checkActionValid(role, "employees", "delete")}
                   >
                     Delete
@@ -411,11 +397,11 @@ const AllUsersTable: FC = function () {
       </Table>
 
       {isOpenEditModal && (
-        <EditUserModal productId={productIdSelected} onClose={closeEditModal} />
+        <EditUserModal employee={employeeSelected} onClose={closeEditModal} />
       )}
       {isOpenDeleteModal && (
         <DeleteUserModal
-          productId={productIdSelected}
+          employee={employeeSelected}
           onClose={closeDeleteModal}
         />
       )}
@@ -423,26 +409,22 @@ const AllUsersTable: FC = function () {
   );
 };
 
-const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
+const EditUserModal: FC<{ employee: Employee | null; onClose: VoidFunction }> =
   function (props): JSX.Element {
     const [isOpen, setOpen] = useState(true);
-    const [initialValues, setInitialValues] = useState({
-      fullname: "",
-      email: "",
-      password: "",
-      phone_number: "",
-      address: "",
-    });
-    const [infoRole, setInfoRole] = useState(0);
     const [roles, setRoles] = useState([]);
     const [roleValue, setRoleValue] = useState("");
+    const dispatch = useDispatch();
     const Schema = Yup.object().shape({
       fullname: Yup.string()
         .trim()
         .min(2, "Quá ngắn!")
         .max(70, "Quá dài!")
         .required("Không được bỏ trống"),
-      password: Yup.string().required("Password không được bỏ trống"),
+      password: Yup.string()
+        .trim()
+        .min(6, "Password phải hơn 6 kí tự")
+        .required("Password không được bỏ trống"),
       phone_number: Yup.string()
         .trim()
         .required("Số điện thoại không được bỏ trống"),
@@ -451,25 +433,25 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
 
     useEffect(() => {
       const fetch = async () => {
-        const res = await axios.get(
-          `http://localhost:3006/api/v2/employee-current?id=${props.productId}`
-        );
-        const role = await axios.get("http://localhost:3006/api/v2/role");
-        if (res.data) {
-          setInitialValues({
-            fullname: res.data[0].fullname,
-            email: res.data[0].email,
-            password: res.data[0].password,
-            phone_number: res.data[0].phone_number,
-            address: res.data[0].address,
-          });
-          setRoles(role.data);
+        const res = await axios.get("http://localhost:3006/api/v2/role");
+        if (res) {
+          setRoles(res.data);
+        } else {
+          console.log("co loi khi dung useEffect get role");
         }
       };
-      if (props.productId) {
-        fetch();
-      }
-    }, [props.productId]);
+      fetch();
+    }, []);
+
+    const initialValues = {
+      fullname: props.employee?.fullname,
+      email: props.employee?.email,
+      password: "",
+      phone_number: props.employee?.phone_number,
+      address: props.employee?.address,
+    };
+    let isDisabled: boolean = false;
+    const disabledReason: string = "Password không được bỏ trống";
 
     return (
       <>
@@ -489,11 +471,25 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                       value: {
                         ...values,
                         role: roleValue,
-                        id: props.productId,
+                        id: props.employee?.id,
                       },
                     })
-                    .then(() => {
-                      console.log("OK");
+                    .then((res) => {
+                      if (res.data.code) {
+                        dispatch(
+                          showToast({
+                            type: "success",
+                            message: res.data.message,
+                          })
+                        );
+                      } else {
+                        dispatch(
+                          showToast({
+                            type: "error",
+                            message: res.data.message,
+                          })
+                        );
+                      }
                     })
                     .catch((error) => {
                       console.error(error);
@@ -576,15 +572,16 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                             {roles.map((role: Role) => (
                               <option
                                 value={role.id}
-                                selected={role.id == infoRole ? true : false}
+                                selected={
+                                  role.id == props.employee?.role_id
+                                    ? true
+                                    : false
+                                }
                               >
                                 {role.name}
                               </option>
                             ))}
                           </select>
-                          <div className="text-sm text-red-400">
-                            ban khong du quyen de
-                          </div>
                         </div>
                       </div>
                       <div>
@@ -599,7 +596,12 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
                         )}
                       </div>
                     </div>
-                    <Button type="submit" color="primary">
+                    <Button
+                      type="submit"
+                      color="primary"
+                      disabled={errors.password ? true : false}
+                      title={isDisabled ? disabledReason : ""}
+                    >
                       Finish
                     </Button>
                   </Form>
@@ -613,16 +615,31 @@ const EditUserModal: FC<{ productId: number | null; onClose: VoidFunction }> =
   };
 
 const DeleteUserModal: FC<{
-  productId: number | null;
+  employee: Employee | null;
   onClose: VoidFunction;
 }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(true);
+  const dispatch = useDispatch();
   const handleDeleteUser = (userId: number) => {
     const sendRequest = async () => {
       const res = await axios.put(
         `http://localhost:3006/api/v2/employee?id=${userId}`
       );
-      console.log(res.data);
+      if (res.data.code) {
+        dispatch(
+          showToast({
+            type: "success",
+            message: res.data.message,
+          })
+        );
+      } else {
+        dispatch(
+          showToast({
+            type: "error",
+            message: res.data.message,
+          })
+        );
+      }
       setOpen(false);
     };
     sendRequest();
@@ -632,20 +649,20 @@ const DeleteUserModal: FC<{
     <>
       <Modal onClose={props.onClose} show={isOpen} size="md">
         <Modal.Header className="px-6 pt-6 pb-0">
-          <span className="sr-only">Delete user</span>
+          <span className="sr-only">Delete employee</span>
         </Modal.Header>
         <Modal.Body className="px-6 pt-0 pb-6">
           <div className="flex flex-col items-center gap-y-6 text-center">
             <HiOutlineExclamationCircle className="text-7xl text-red-500" />
             <p className="text-xl text-gray-500">
-              Are you sure you want to delete this user?
+              Are you sure you want to delete this employee?
             </p>
             <div className="flex items-center gap-x-3">
               <Button
                 color="failure"
                 onClick={() => {
-                  if (props.productId) {
-                    handleDeleteUser(props.productId);
+                  if (props.employee) {
+                    handleDeleteUser(props.employee.id);
                     setOpen(false);
                   }
                 }}
