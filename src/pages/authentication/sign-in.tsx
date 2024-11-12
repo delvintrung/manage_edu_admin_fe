@@ -20,7 +20,7 @@ const SignInPage: FC = function () {
           password: password,
         })
         .then((res) => {
-          if (res.data.success === true) {
+          if (res.data.code === 1) {
             localStorage.setItem("token", res.data.accessToken);
             dispatch(showToast({ type: "success", message: "Login success" }));
             window.location.href = "/";
