@@ -11,9 +11,6 @@ import type { FC } from "react";
 import { useState, useEffect, ChangeEvent } from "react";
 import { FaPlus } from "react-icons/fa";
 import {
-  HiCog,
-  HiDotsVertical,
-  HiExclamationCircle,
   HiHome,
   HiOutlineExclamationCircle,
   HiPencilAlt,
@@ -33,6 +30,7 @@ import { useDispatch } from "react-redux";
 import ToastComponent from "../../components/toast";
 import { fetchAuthors, fetchCategory } from "../../Slice/category_author";
 import { CiCircleRemove } from "react-icons/ci";
+import { CiSearch } from "react-icons/ci";
 
 interface Product {
   id: number;
@@ -88,35 +86,8 @@ const EcommerceProductsPage: FC = function () {
           </div>
           <div className="block items-center sm:flex">
             <SearchForProducts />
-            <div className="hidden space-x-1 border-l border-gray-100 pl-2 dark:border-gray-700 md:flex">
-              <a
-                href="#"
-                className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                <span className="sr-only">Configure</span>
-                <HiCog className="text-2xl" />
-              </a>
-              <a
-                href="#"
-                className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                <span className="sr-only">Delete</span>
-                <HiTrash className="text-2xl" />
-              </a>
-              <a
-                href="#"
-                className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                <span className="sr-only">Purge</span>
-                <HiExclamationCircle className="text-2xl" />
-              </a>
-              <a
-                href="#"
-                className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                <span className="sr-only">Settings</span>
-                <HiDotsVertical className="text-2xl" />
-              </a>
+            <div className="cursor-pointer p-2">
+              <CiSearch size="30" />
             </div>
             <div className="flex w-full items-center sm:justify-end">
               <AddProductModal />
@@ -230,6 +201,27 @@ const AddProductModal: FC = function () {
       setPreviewList(URLList);
     }
   }, [files]);
+
+  const isDisabled =
+    nameProduct == "" ||
+    cateProduct.length <= 0 ||
+    authorProduct == "" ||
+    desctiptionProduct == "" ||
+    introduce == "" ||
+    fileList == null;
+  const disabledReason = !nameProduct
+    ? "Thiếu tên sản phẩm"
+    : cateProduct.length <= 0
+    ? "Thiếu danh mục"
+    : !authorProduct
+    ? "Thiếu tác giả"
+    : desctiptionProduct == ""
+    ? "Thiếu mô tả sản phẩm"
+    : introduce == ""
+    ? "Thiếu giới thiệu sản phẩm"
+    : fileList == null
+    ? "Thiếu ảnh sản phẩm"
+    : "";
 
   return (
     <div>
@@ -363,16 +355,8 @@ const AddProductModal: FC = function () {
           <Button
             color="primary"
             onClick={handleUploadClick}
-            disabled={
-              nameProduct == "" ||
-              cateProduct.length <= 0 ||
-              authorProduct == "" ||
-              desctiptionProduct == "" ||
-              introduce == "" ||
-              fileList == null
-                ? true
-                : false
-            }
+            disabled={isDisabled}
+            title={isDisabled ? disabledReason : ""}
           >
             Add
           </Button>
@@ -451,7 +435,7 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
         Edit
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[1000px]">
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[1200px]">
           <strong>Edit product</strong>
         </Modal.Header>
         <Modal.Body>

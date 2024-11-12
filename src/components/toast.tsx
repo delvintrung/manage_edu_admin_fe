@@ -22,15 +22,19 @@ const ToastComponent = () => {
     <div className="toast-container">
       {toasts.map((toast) => (
         <Toast className="toast">
-          <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
-            {toast.toast.type == "success" ? (
+          {toast.toast.type == "success" ? (
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
               <HiCheck className="h-5 w-5" />
-            ) : toast.toast.type == "error" ? (
+            </div>
+          ) : toast.toast.type == "error" ? (
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-500 dark:bg-green-800 dark:text-green-200">
               <HiX className="h-5 w-5" />
-            ) : (
+            </div>
+          ) : (
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-yellow-100 text-yellow-500 dark:bg-green-800 dark:text-green-200">
               <HiExclamation className="h-5 w-5" />
-            )}
-          </div>
+            </div>
+          )}
           <div className="ml-3 text-sm font-normal">{toast.toast.message}</div>
         </Toast>
       ))}

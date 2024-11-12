@@ -27,7 +27,7 @@ import axios from "../../config/axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import checkActionValid from "../../function/checkActionValid";
-import { number } from "yup";
+import { CiSearch } from "react-icons/ci";
 
 interface User {
   id: number;
@@ -74,34 +74,9 @@ const UserListPage: FC = function () {
                 </div>
               </form>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Configure</span>
-                  <HiCog className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Delete</span>
-                  <HiTrash className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Purge</span>
-                  <HiExclamationCircle className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Settings</span>
-                  <HiDotsVertical className="text-2xl" />
-                </a>
+                <div className="cursor-pointer p-2">
+                  <CiSearch size="30" />
+                </div>
               </div>
             </div>
           </div>

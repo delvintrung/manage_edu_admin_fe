@@ -15,6 +15,7 @@ import checkActionValid from "../../function/checkActionValid";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { showToast } from "../../Slice/toast";
+import { FaDropbox } from "react-icons/fa";
 import ToastComponent from "../../components/toast";
 
 type Values = {
@@ -22,7 +23,7 @@ type Values = {
   discount: number;
   infomation: string;
 };
-const CompanyDeliveryPage: FC = function () {
+const DiscountPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const dispatch = useDispatch();
@@ -58,9 +59,9 @@ const CompanyDeliveryPage: FC = function () {
                         <Label htmlFor="countries" value="Status:" />
                       </div>
                       <Select id="countries" required>
-                        <option value={0}>All</option>
-                        <option value={1}>Running</option>
-                        <option value={2}>Stopped</option>
+                        <option>All</option>
+                        <option>还有联系</option>
+                        <option>Stopped</option>
                       </Select>
                     </div>
                     <form className="lg:pr-3">
@@ -103,7 +104,7 @@ const CompanyDeliveryPage: FC = function () {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden shadow">
-                <AllDeliveryTable />
+                <AllCouponTable />
               </div>
             </div>
           </div>
@@ -114,14 +115,14 @@ const CompanyDeliveryPage: FC = function () {
         position="center"
         onClose={() => setOpenModal(false)}
       >
-        <Modal.Header>Add Supplier</Modal.Header>
+        <Modal.Header>Add Coupon</Modal.Header>
         <Modal.Body>
           <Formik
             initialValues={initialValues}
             validationSchema={validateSchema}
             onSubmit={(values, actions) => {
               axios
-                .post("/api/v2/company", values)
+                .post("/api/v2/discount", values)
                 .then((res) => {
                   if (res.data.code) {
                     dispatch(
@@ -194,22 +195,23 @@ const CompanyDeliveryPage: FC = function () {
   );
 };
 
-type Suppier = {
-  name: string;
-  discount: number;
-  description: string;
-  status: string;
+type Discount = {
+  id: number;
+  coupon_code: string;
+  discount_value: number;
+  expiration_date: string;
+  value_apply: string;
 };
 
-const AllDeliveryTable: FC = function () {
-  const [suppliers, setSuppliers] = useState([]);
+const AllCouponTable: FC = function () {
+  const [discounts, setDiscounts] = useState([]);
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   useEffect(() => {
     const fetch = async () => {
       try {
-        const result = await axios.get("/api/v2/company");
+        const result = await axios.get("/api/v2/discount");
         if (result) {
-          setSuppliers(result.data);
+          setDiscounts(result.data.data);
         }
       } catch (error) {}
     };
@@ -219,21 +221,32 @@ const AllDeliveryTable: FC = function () {
     <div className="overflow-x-auto">
       <Table hoverable>
         <Table.Head>
-          <Table.HeadCell>Name Supplier</Table.HeadCell>
-          <Table.HeadCell>Discount</Table.HeadCell>
-          <Table.HeadCell>Infomation</Table.HeadCell>
-          <Table.HeadCell>Status</Table.HeadCell>
-          <Table.HeadCell>Action</Table.HeadCell>
+          <Table.HeadCell>Code</Table.HeadCell>
+          <Table.HeadCell>Discount Value</Table.HeadCell>
+          <Table.HeadCell>Value Apply</Table.HeadCell>
+          <Table.HeadCell>Expiry Date</Table.HeadCell>
+          <Table.HeadCell>Drop</Table.HeadCell>
         </Table.Head>
         <Table.Body className="divide-y">
-          {suppliers.map((suppier: Suppier) => (
-            <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+          {discounts.map((discount: Discount) => (
+            <Table.Row
+              className="bg-white dark:border-gray-700 dark:bg-gray-800"
+              key={discount.id}
+            >
               <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                {suppier.name}
+                {discount.coupon_code}
               </Table.Cell>
-              <Table.Cell>{suppier.discount}</Table.Cell>
-              <Table.Cell>{suppier.description}</Table.Cell>
-              <Table.Cell>{suppier.status}</Table.Cell>
+              <Table.Cell>{discount.discount_value}</Table.Cell>
+              <Table.Cell>{discount.value_apply}</Table.Cell>
+              <Table.Cell>{discount.expiration_date}</Table.Cell>
+              <Table.Cell>
+                {
+                  <Button color="gray">
+                    <FaDropbox className="mr-3 h-4 w-4" />
+                    Give Discount
+                  </Button>
+                }
+              </Table.Cell>
               <Table.Cell>
                 <Button.Group>
                   <Button
@@ -243,10 +256,7 @@ const AllDeliveryTable: FC = function () {
                     <RxUpdate className="mr-3 h-4 w-4" />
                     Update
                   </Button>
-                  <Button
-                    color="gray"
-                    disabled={checkActionValid(role, "company", "delete")}
-                  >
+                  <Button color="gray">
                     <MdDeleteForever className="mr-3 h-4 w-4" />
                     Remove
                   </Button>
@@ -260,4 +270,25 @@ const AllDeliveryTable: FC = function () {
   );
 };
 
-export default CompanyDeliveryPage;
+const DropBox: FC = function () {
+  const [openModal, setOpenModal] = useState(true);
+  return (
+    <div>
+      <Button onClick={() => setOpenModal(true)}>Toggle modal</Button>
+      <Modal show={openModal} onClose={() => setOpenModal(false)}>
+        <Modal.Header>Terms of Service</Modal.Header>
+        <Modal.Body>
+          <div className="space-y-6"></div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setOpenModal(false)}>I accept</Button>
+          <Button color="gray" onClick={() => setOpenModal(false)}>
+            Decline
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+export default DiscountPage;

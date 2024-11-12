@@ -18,6 +18,7 @@ import CreateTempProduct from "./pages/delivery-received/createTempProduct";
 import CompanyDeliveryPage from "./pages/company-delivery";
 import EmployeeListPage from "./pages/employee";
 import AuthorListPage from "./pages/author";
+import DiscountPage from "./pages/discount";
 import ToastComponent from "./components/toast";
 
 const container = document.getElementById("root");
@@ -55,6 +56,8 @@ root.render(
               element={<CreateTempProduct />}
             />
             <Route path="/company-delivery" element={<CompanyDeliveryPage />} />
+            <Route path="/discount" element={<DiscountPage />} />
+            <Route path="/category" element={<DiscountPage />} />
           </Routes>
         </BrowserRouter>
       </Flowbite>

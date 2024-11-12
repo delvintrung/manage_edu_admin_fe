@@ -1,21 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import {
-  Breadcrumb,
-  Button,
-  Badge,
-  Label,
-  Table,
-  TextInput,
-} from "flowbite-react";
+import { Breadcrumb, Button, Badge, Table } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
-import {
-  HiCog,
-  HiDotsVertical,
-  HiExclamationCircle,
-  HiHome,
-  HiTrash,
-} from "react-icons/hi";
+import { HiHome } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
 import { fetchOrderStatus } from "../../Slice/order_status";
@@ -24,6 +11,8 @@ import { RootState, AppDispatch } from "../../store";
 import checkActionValid from "../../function/checkActionValid";
 import { showToast } from "../../Slice/toast";
 import ToastComponent from "../../components/toast";
+import moment from "moment";
+import { FaSortDown } from "react-icons/fa";
 
 const UserListPage: FC = function () {
   return (
@@ -45,52 +34,6 @@ const UserListPage: FC = function () {
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
               All orders
             </h1>
-          </div>
-          <div className="sm:flex">
-            <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-              <form className="lg:pr-3">
-                <Label htmlFor="users-search" className="sr-only">
-                  Search
-                </Label>
-                <div className="relative mt-1 lg:w-64 xl:w-96">
-                  <TextInput
-                    id="users-search"
-                    name="users-search"
-                    placeholder="Search for orders"
-                  />
-                </div>
-              </form>
-              <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Configure</span>
-                  <HiCog className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Delete</span>
-                  <HiTrash className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Purge</span>
-                  <HiExclamationCircle className="text-2xl" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Settings</span>
-                  <HiDotsVertical className="text-2xl" />
-                </a>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -209,22 +152,23 @@ function Accordion({ order }: { order: Order }) {
 
   return (
     <div>
+      <ToastComponent />
       <div onClick={toggleAccordion}>
-        <div className="flex justify-between gap-x-[80px] h-[50px] items-center border-2 border-slate-300">
-          <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white">
+        <div className="grid grid-cols-[50px_1fr_1fr_1fr_1fr_1fr] gap-x-[70px] items-left border-2 border-slate-300">
+          <div className="whitespace-nowrap p-4 text-sm font-normal text-gray-900 dark:text-white w-4">
             {order.orderId}
           </div>
-          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white w-[200px] max-w-[210px]">
+          <div className="p-4 text-sm font-semibold text-gray-900 dark:text-white  min-w-[300px] text-left">
             {order.products[0]?.productName}
           </div>
-          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
-            {order.orderDate}
+          <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white text-left">
+            {moment.utc(order.orderDate).format("hh:mm:ss MM/DD/YYYY")}
           </div>
           <div className="whitespace-nowrap p-4 text-sm font-semibold text-gray-900 dark:text-white">
             {convertToCurrencyFormat(parseFloat(order.total) + order.shipFee)}
           </div>
 
-          <div className="flex whitespace-nowrap p-4">
+          <div className="flex whitespace-nowrap p-4 justify-start min-w-[120px]">
             <Badge color={selectStatus(order.status).color}>
               {selectStatus(order.status).name}
             </Badge>
@@ -285,7 +229,7 @@ function Accordion({ order }: { order: Order }) {
                 </select>
                 <Button
                   color="success"
-                  onClick={() => handleChangeStatus(order.orderId)}
+                  onClick={handleChangeStatus.bind(null, order.orderId)}
                   disabled={checkActionValid(role, "orders", "update")}
                 >
                   Xác nhận
@@ -328,6 +272,10 @@ function Accordion({ order }: { order: Order }) {
 const AllUsersTable: FC = function () {
   const [orders, setOrders] = useState<Order[]>([]);
   const dispatch = useDispatch<AppDispatch>();
+  const [showList, setShowList] = useState(false);
+  const orderStatus = useSelector(
+    (state: RootState) => state.order_status.orderStatus.list
+  );
 
   useEffect(() => {
     dispatch(fetchOrderStatus());
@@ -344,24 +292,72 @@ const AllUsersTable: FC = function () {
     getOrders();
   }, []);
 
+  const handleGetOrderByStatus = async (status: number) => {
+    await axios
+      .post("/api/v2/order/get-order-by-status", { status: status })
+      .then((res) => {
+        setOrders(res.data);
+        dispatch(
+          showToast({ type: "success", message: "Thay đổi thành công" })
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+        dispatch(showToast({ type: "error", message: "Thay đổi thất bại" }));
+      });
+  };
+
   return (
     <Table
       striped
       className="min-w-full divide-y divide-gray-200 dark:divide-gray-600"
     >
       <Table.Head className="bg-gray-50 dark:bg-gray-700">
-        <Table.HeadCell className="flex justify-between">
-          <div>Mã đơn</div> <div>Tên sản phẩm</div> <div>Ngày đặt</div>{" "}
-          <div>Tổng</div>
-          <div>Trạng thái</div>
+        <Table.HeadCell className="flex justify-between items-center">
+          <div>Mã đơn</div> <div>Tên sản phẩm</div>{" "}
+          <div className="ml-16">Ngày đặt</div>
+          <div className="ml-10">Tổng</div>
+          <div
+            className="px-4 py-1 flex space-x-2 justify-center items-center relative"
+            onClick={() => {
+              setShowList(!showList);
+            }}
+          >
+            <p>Trạng thái</p>{" "}
+            <span className="flex justify-center items-center mb-2">
+              {<FaSortDown size={20} />}
+            </span>
+            {showList && (
+              <ul className="absolute top-8 right-[-170px] bg-white p-3 z-50">
+                {orderStatus.length > 0 &&
+                  orderStatus.map((item: OrderStatus) => (
+                    <li
+                      key={item.id}
+                      value={item.id}
+                      className="text-xs py-1 text-gray-600 hover:cursor-pointer hover:bg-gray-300 hover:text-black"
+                      onClick={() => {
+                        handleGetOrderByStatus(item.id);
+                      }}
+                    >
+                      {item.name}
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
           <div>Mã nhân viên</div>
         </Table.HeadCell>
       </Table.Head>
 
-      <Table.Body className="bg-white dark:bg-gray-800">
-        <div>
-          {orders.length > 0 &&
-            orders.map((order) => <Accordion order={order} />)}
+      <Table.Body className="bg-white dark:bg-gray-800 min-h-[00px]">
+        <div className="min-h-[400px]">
+          {orders.length > 0 ? (
+            orders.map((order) => <Accordion order={order} />)
+          ) : (
+            <div className="flex justify-center">
+              <p className="text-2xl">Empty</p>
+            </div>
+          )}
         </div>
       </Table.Body>
     </Table>

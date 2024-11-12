@@ -14,18 +14,26 @@ const SignInPage: FC = function () {
 
   const handleLoginAdmin = async () => {
     try {
-      const res = await axios.post("/api/v2/auth/login", {
-        email: email,
-        password: password,
-      });
-      if (res.data.code === 1) {
-        localStorage.setItem("token", res.data.accessToken);
-        dispatch(showToast({ type: "success", message: "Login success" }));
-        window.location.href = "/";
-      } else {
-        setMessage(res.data.message);
-      }
+      await axios
+        .post("/api/v2/auth/login", {
+          email: email,
+          password: password,
+        })
+        .then((res) => {
+          if (res.data.success === true) {
+            localStorage.setItem("token", res.data.accessToken);
+            dispatch(showToast({ type: "success", message: "Login success" }));
+            window.location.href = "/";
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+            setMessage(res.data.message);
+          }
+        })
+        .catch((error) => {
+          dispatch(showToast({ type: "error", message: error }));
+        });
     } catch (error) {
+      dispatch(showToast({ type: "error", message: "Login failed" }));
       console.error("Login failed:", error);
     }
   };
