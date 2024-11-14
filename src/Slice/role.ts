@@ -12,7 +12,7 @@ export const fetchPermission = createAsyncThunk(
   "role/fetchPermission",
   async () => {
     const response = await axios.get(
-      "http://localhost:3006/api/v2/permissions"
+      "/api/v2/permissions"
     );
     return response.data;
   }
@@ -22,7 +22,7 @@ export const fetchPermissionView = createAsyncThunk(
   "role/fetchPermissionView",
   async () => {
     const response = await axios.get(
-      "http://localhost:3006/api/v2/action-view"
+      "/api/v2/action-view"
     );
     return response.data;
   }
@@ -32,7 +32,7 @@ export const fetchCurrentAction = createAsyncThunk(
   "role/fetchCurrentAction",
   async () => {
     const response = await axios.get(
-      "http://localhost:3006/api/v2/current-action"
+      "/api/v2/current-action"
     );
     return response.data;
   }
@@ -42,7 +42,7 @@ export const fetchAllPermission = createAsyncThunk(
   "role/fetchAllPermission",
   async () => {
     const response = await axios.get(
-      "http://localhost:3006/api/v2/all-permissions"
+      "/api/v2/all-permissions"
     );
     return response.data;
   }

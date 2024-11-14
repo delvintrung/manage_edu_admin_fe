@@ -23,7 +23,8 @@ const Chat: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3006");
+    const socketUrl = import.meta.env.VITE_API_URL;
+    const newSocket = io(socketUrl);
     setSocket(newSocket);
 
     newSocket.on("connect_error", (err) => {

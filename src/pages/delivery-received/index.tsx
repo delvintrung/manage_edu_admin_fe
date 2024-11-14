@@ -46,12 +46,10 @@ const DeliveryPage: FC = function () {
 
   useEffect(() => {
     const fetch = async () => {
-      const allProducts = await axios.get(
-        "http://localhost:3006/api/v2/product"
-      );
+      const allProducts = await axios.get("/api/v2/product");
       setProducts(allProducts.data);
 
-      const company = await axios.get("http://localhost:3006/api/v2/company");
+      const company = await axios.get("/api/v2/company");
       setCompany(company.data);
     };
 
@@ -66,7 +64,7 @@ const DeliveryPage: FC = function () {
         products: productsWait,
       };
       axios
-        .post("http://localhost:3006/api/v2/create-received", data)
+        .post("/api/v2/create-received", data)
         .then(() => {
           dispatch(
             showToast({ message: "Create delivery success", type: "success" })
@@ -336,7 +334,7 @@ const AllDeliveryTable: FC = function () {
   const [received, setReceived] = useState([]);
   useEffect(() => {
     const fetch = async () => {
-      const result = await axios.get("http://localhost:3006/api/v2/received");
+      const result = await axios.get("/api/v2/received");
       setReceived(result.data);
     };
     fetch();
@@ -372,7 +370,16 @@ const AllDeliveryTable: FC = function () {
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                   {item.name_company}
                 </Table.Cell>
-                <Table.Cell>{item.dateReceived}</Table.Cell>
+                <Table.Cell>
+                  {new Date(item.dateReceived).toLocaleString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
+                </Table.Cell>
                 <Table.Cell>
                   {formatPrice(parseInt(item.total_value))}
                 </Table.Cell>
