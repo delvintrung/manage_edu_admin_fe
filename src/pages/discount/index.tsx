@@ -9,7 +9,7 @@ import { IoAddCircle } from "react-icons/io5";
 import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
 import * as Yup from "yup";
 import checkActionValid from "../../function/checkActionValid";
 import { useSelector, useDispatch } from "react-redux";
@@ -17,26 +17,43 @@ import { RootState } from "../../store";
 import { showToast } from "../../Slice/toast";
 import { FaDropbox } from "react-icons/fa";
 import ToastComponent from "../../components/toast";
+import { convertDate } from "../../function/convertDate";
+import { formatPrice } from "../../function/formatPrice";
+import { reloadSide } from "../../function/reloadSide";
 
 type Values = {
-  name: string;
-  discount: number;
-  infomation: string;
+  coupon_code: string;
+  discount_value: number;
+  value_apply: number;
+  max_apply: number;
+  expiration_date: string;
 };
 const DiscountPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const dispatch = useDispatch();
-  const initialValues: Values = { name: "", discount: 0, infomation: "" };
+  const initialValues: Values = {
+    coupon_code: "",
+    discount_value: 0,
+    value_apply: 10000,
+    max_apply: 200000,
+    expiration_date: "",
+  };
 
   const validateSchema = Yup.object({
-    name: Yup.string()
-      .max(255, "Must be 255 characters or less")
-      .required("Tên nhà cung cấp không thể bỏ trống"),
-    discount: Yup.number().required("Phải điền chiết khấu nhận được"),
-    infomation: Yup.string().required(
-      "Thêm một tí thông tin gì đó cho nhà cung cấp này"
-    ),
+    coupon_code: Yup.string()
+      .max(20, "Mã giảm giá không được quá 20 ký tự")
+      .required("Phải điền mã giảm giá"),
+    discount_value: Yup.number()
+      .max(100, "100% là giá trị tối đa")
+      .required("Phải điền chiết khấu nhận được"),
+    value_apply: Yup.number()
+      .min(10000, "Giá trị áp dụng phải lớn hơn hoặc bằng 10000")
+      .required("Phải điền giá trị áp dụng cho mã giảm giá"),
+    max_apply: Yup.number()
+      .min(50000, "Giá trị áp dụng tối đa phải nhỏ hơn hoặc bằng 50000")
+      .required("Phải điền giá trị áp dụng tối thiểu"),
+    expiration_date: Yup.date().required("Phải chọn ngày hết hạn"),
   });
 
   return (
@@ -116,7 +133,7 @@ const DiscountPage: FC = function () {
         onClose={() => setOpenModal(false)}
       >
         <Modal.Header>Add Coupon</Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="w-[900px]">
           <Formik
             initialValues={initialValues}
             validationSchema={validateSchema}
@@ -141,49 +158,92 @@ const DiscountPage: FC = function () {
             }}
           >
             <Form>
-              <div className="mb-5 flex items-center">
-                <label htmlFor="name">Name: </label>
-                <Field
-                  id="name"
-                  name="name"
-                  placeholder="Name"
-                  className="ml-3"
-                />
+              <div className="mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="coupon_code">Discount Code: </label>
+                  <Field
+                    id="coupon_code"
+                    name="coupon_code"
+                    placeholder="Code"
+                    className="ml-3"
+                  />
+                </div>
+
                 <ErrorMessage
-                  name="name"
+                  name="coupon_code"
                   component="div"
                   className="error text-sm text-red-500 "
                 />
               </div>
-              <div className="mb-10 flex items-center">
-                <label htmlFor="discount">Discount (%):</label>
-                <Field
-                  id="discount"
-                  name="discount"
-                  placeholder="discount"
-                  className="ml-3"
-                />
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="discount_value">Discount (%):</label>
+                  <Field
+                    id="discount_value"
+                    name="discount_value"
+                    placeholder="discount"
+                    className="ml-3"
+                  />
+                </div>
+
                 <ErrorMessage
-                  name="discount"
+                  name="discount_value"
                   component="div"
                   className="error text-sm text-red-500 "
                 />
               </div>
-              <div className="mb-10 flex ">
-                <label htmlFor="infomation">Infomation</label>
-                <Field
-                  as="textarea"
-                  id="infomation"
-                  name="infomation"
-                  placeholder="infomation"
-                  className="ml-3 w-[300px]"
-                />
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="value_apply">Value Apply:</label>
+                  <Field
+                    id="value_apply"
+                    name="value_apply"
+                    placeholder="Value Apply"
+                    className="ml-3"
+                  />
+                </div>
+
                 <ErrorMessage
-                  name="infomation"
+                  name="value_apply"
                   component="div"
                   className="error text-sm text-red-500 "
                 />
               </div>
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="max_apply">Max Value Apply:</label>
+                  <Field
+                    id="max_apply"
+                    name="max_apply"
+                    placeholder="Max Value Apply"
+                    className="ml-3"
+                  />
+                </div>
+
+                <ErrorMessage
+                  name="max_apply"
+                  component="div"
+                  className="error text-sm text-red-500 "
+                />
+              </div>
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="expiration_date">Expiration Date:</label>
+                  <Field
+                    id="expiration_date"
+                    name="expiration_date"
+                    type="date"
+                    className="ml-3"
+                  />
+                </div>
+
+                <ErrorMessage
+                  name="expiration_date"
+                  component="div"
+                  className="error text-sm text-red-500 "
+                />
+              </div>
+
               <div className="flex">
                 <Button type="submit">Submit</Button>
               </div>
@@ -201,6 +261,7 @@ type Discount = {
   discount_value: number;
   expiration_date: string;
   value_apply: string;
+  dropTime: string;
 };
 
 const AllCouponTable: FC = function () {
@@ -219,6 +280,7 @@ const AllCouponTable: FC = function () {
   }, []);
   return (
     <div className="overflow-x-auto">
+      <ToastComponent />
       <Table hoverable>
         <Table.Head>
           <Table.HeadCell>Code</Table.HeadCell>
@@ -237,16 +299,11 @@ const AllCouponTable: FC = function () {
                 {discount.coupon_code}
               </Table.Cell>
               <Table.Cell>{discount.discount_value}</Table.Cell>
-              <Table.Cell>{discount.value_apply}</Table.Cell>
-              <Table.Cell>{discount.expiration_date}</Table.Cell>
               <Table.Cell>
-                {
-                  <Button color="gray">
-                    <FaDropbox className="mr-3 h-4 w-4" />
-                    Give Discount
-                  </Button>
-                }
+                {formatPrice(parseFloat(discount.value_apply))}
               </Table.Cell>
+              <Table.Cell>{convertDate(discount.expiration_date)}</Table.Cell>
+              <Table.Cell>{<DropBox coupon={discount} />}</Table.Cell>
               <Table.Cell>
                 <Button.Group>
                   <Button
@@ -270,18 +327,171 @@ const AllCouponTable: FC = function () {
   );
 };
 
-const DropBox: FC = function () {
-  const [openModal, setOpenModal] = useState(true);
+const DropBox: FC<{ coupon: Discount }> = function (props): JSX.Element {
+  const [openModal, setOpenModal] = useState(false);
+  const role = useSelector((state: RootState) => state.role.currentAction.list);
+  const dispatch = useDispatch();
+  const [optionSelected, setOptionSelected] = useState(0);
+  const [users, setUsers] = useState([]);
+
+  const fetch = async (min: number, max: number) => {
+    try {
+      axios.post("api/v2/discount-max-min", { min, max }).then((res) => {
+        setUsers(res.data.data);
+        dispatch(showToast({ type: "success", message: res.data.message }));
+        return;
+      });
+    } catch (error) {
+      dispatch(showToast({ type: "error", message: error }));
+    }
+  };
+
+  const fetchAll = async () => {
+    try {
+      axios.get("api/v2/user").then((res) => {
+        setUsers(res.data);
+        return;
+      });
+    } catch (error) {
+      dispatch(showToast({ type: "error", message: error }));
+    }
+  };
+
+  useEffect(() => {
+    switch (optionSelected) {
+      case 1:
+        const min = 1000000;
+        const max = 3000000;
+        fetch(min, max);
+        break;
+      case 2:
+        const min2 = 3000000;
+        const max2 = 5000000;
+        fetch(min2, max2);
+        break;
+      case 3:
+        const min3 = 5000000;
+        const max3 = 10000000;
+        fetch(min3, max3);
+        break;
+      case 4:
+        const min4 = 10000000;
+        const max4 = 15000000;
+        fetch(min4, max4);
+        break;
+      case 5:
+        const min5 = 15000000;
+        const max5 = 100000000;
+        fetch(min5, max5);
+        break;
+      default:
+        fetchAll();
+        break;
+    }
+  }, [optionSelected]);
+
+  type User = {
+    id: number;
+    email: string;
+    amount: number;
+  };
+
+  const handleDropDiscount = async () => {
+    if (users.length > 0) {
+      const listUser = users.map((user: User) => user.id);
+      axios
+        .post("/api/v2/drop-discount", {
+          id_user: listUser,
+          id_discount: props.coupon.id,
+        })
+        .then((res) => {
+          if (res.data.code) {
+            dispatch(showToast({ type: "success", message: res.data.message }));
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setOpenModal(false);
+          reloadSide();
+        });
+    }
+  };
+
   return (
     <div>
-      <Button onClick={() => setOpenModal(true)}>Toggle modal</Button>
+      <Button
+        color="gray"
+        onClick={() => setOpenModal(true)}
+        disabled={props.coupon.dropTime !== null}
+        title={props.coupon.dropTime !== null ? "Over time" : ""}
+      >
+        <FaDropbox className="mr-3 h-4 w-4" />
+        Give Discount
+      </Button>
       <Modal show={openModal} onClose={() => setOpenModal(false)}>
-        <Modal.Header>Terms of Service</Modal.Header>
+        <Modal.Header>Drop Discount Modal</Modal.Header>
         <Modal.Body>
-          <div className="space-y-6"></div>
+          <div className="space-y-6">
+            <div>
+              <p>Thông tin mã giảm giá</p>
+              <div className="flex justify-between items-center ">
+                <span>{props.coupon.id}</span>
+                <span>{props.coupon.coupon_code}</span>
+                <span>{props.coupon.discount_value}</span>
+                <span>{formatPrice(parseFloat(props.coupon.value_apply))}</span>
+                <span>{convertDate(props.coupon.expiration_date)}</span>
+              </div>
+            </div>
+            <div className="flex space-x-4 items-center">
+              <p>Chọn user sẽ nhận được mã:</p>
+              <select
+                name=""
+                id=""
+                onChange={(e) => {
+                  setOptionSelected(parseInt(e.target.value));
+                }}
+              >
+                <option value="0">Chọn người dùng</option>
+                <option value="1">Tiêu từ 1 triệu - 3 triệu</option>
+                <option value="2">Tiêu từ 3 triệu - 5 triệu</option>
+                <option value="3">Tiêu từ 5 triệu - 10 triệu</option>
+                <option value="4">Tiêu từ 10 triệu - 15 triệu</option>
+                <option value="5">Trên 15 triệu</option>
+                <option value="6">Cho tất cả</option>
+              </select>
+            </div>
+            {optionSelected !== 0 &&
+              optionSelected !== 6 &&
+              users.length > 0 && (
+                <Table>
+                  <Table.Head>
+                    <Table.HeadCell>ID User</Table.HeadCell>
+                    <Table.HeadCell>Email</Table.HeadCell>
+                    <Table.HeadCell>Amount</Table.HeadCell>
+                  </Table.Head>
+                  <Table.Body>
+                    {users.map((user: User) => (
+                      <Table.Row>
+                        <Table.Cell>{user.id}</Table.Cell>
+
+                        <Table.Cell>{user.email}</Table.Cell>
+                        <Table.Cell>{formatPrice(user.amount)}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              )}
+          </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => setOpenModal(false)}>I accept</Button>
+          <Button onClick={handleDropDiscount}>I accept</Button>
           <Button color="gray" onClick={() => setOpenModal(false)}>
             Decline
           </Button>
