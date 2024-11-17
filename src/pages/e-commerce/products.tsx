@@ -52,6 +52,7 @@ type Author = {
 };
 
 type Category = {
+  id: number;
   label: string;
   value: number;
 };
@@ -236,7 +237,7 @@ const AddProductModal: FC = function () {
         Add product
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="mt-[1000px] border-b border-gray-200 !p-6 dark:border-gray-700">
+        <Modal.Header className=" border-b border-gray-200 !p-6 dark:border-gray-700 mt-[1200px]">
           <strong>Add product</strong>
         </Modal.Header>
         <Modal.Body>
@@ -369,10 +370,15 @@ const AddProductModal: FC = function () {
 const EditProductModal: FC<{ product: Product }> = function (props) {
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
+  const [thumbnail, setThumbnail] = useState<String>("");
   const [cateProduct, setCateProduct] = useState<MultiValue<Category>>([]);
   const [introduce, setIntroduce] = useState("");
   const [desctiptionProduct, setDescriptionProduct] = useState("");
+  const [imagesDelete, setImagesDelete] = useState<String[]>([]);
+  const [imagesNew, setImagesNew] = useState<FileList | null>(null);
   const [fileList, setFileList] = useState<FileList | null>(null);
+  const [previewList, setPreviewList] = useState<string[]>([]);
+
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const authors = useSelector(
     (state: RootState) => state.category_author.authors
@@ -380,30 +386,57 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
   const categorys = useSelector(
     (state: RootState) => state.category_author.category
   );
+
+  useEffect(() => {
+    setPreviewList(props.product.gallery ?? []);
+    setNameProduct(props.product.title);
+    setCateProduct(props.product.category);
+    setIntroduce(props.product.introduce);
+    setDescriptionProduct(props.product.description);
+  }, []);
   const dispatch = useDispatch();
 
   const handleChange = (option: MultiValue<Category>) => setCateProduct(option);
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const newFiles = Array.from(e.target.files);
+      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+      setPreviewList([...previewList, ...newPreviews]);
+      setImagesNew(fileList);
+    }
     setFileList(e.target.files);
   };
 
   const handleUpdateProduct = async () => {
     let formData = new FormData();
+
+    const currentCategories = props.product.category.map((item) => item.id);
+    const newCategories = cateProduct.map((item) =>
+      item.id != undefined ? item.id : item.value
+    );
+
+    const categoriesToAdd = newCategories.filter(
+      (id) => !currentCategories.includes(id)
+    );
+    const categoriesToRemove = currentCategories.filter(
+      (id) => !newCategories.includes(id)
+    );
     formData.append("productId", props.product.id.toString());
     formData.append("name", nameProduct);
-    formData.append(
-      "category",
-      JSON.stringify(cateProduct.map((item) => item.value))
-    );
+
+    formData.append("categoryAdd", JSON.stringify(categoriesToAdd));
+    formData.append("categoryRemove", JSON.stringify(categoriesToRemove));
 
     formData.append("description", desctiptionProduct);
     formData.append("introduce", introduce);
-    if (fileList) {
+    formData.append("imagesDelete", JSON.stringify(imagesDelete));
+    if (fileList != null) {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         if (file) formData.append("product", file);
       }
     }
+
     await axios
       .put("/api/v2/product/update-product", formData, {
         headers: {
@@ -411,10 +444,9 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
         },
       })
       .then((res) => {
-        if (res.data.success == true) {
+        if (res.data.code == 1) {
           dispatch(showToast({ type: "success", message: res.data.message }));
           setOpen(false);
-          alert(res.data.message);
         }
       })
       .finally(() => {
@@ -435,11 +467,11 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
         Edit
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[1200px]">
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[250px]">
           <strong>Edit product</strong>
         </Modal.Header>
         <Modal.Body>
-          <form>
+          <form className="max-h-screen overflow-y-auto">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div>
                 <Label htmlFor="productName">Product name</Label>
@@ -540,18 +572,22 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
                       onChange={handleFileChange}
                       className="hidden"
                       multiple
+                      accept="image/*"
                     />
                   </label>
                 </div>
                 {
                   <div className="grid flex-wrap justify-center grid-cols-3 space-x-1 space-y-1">
-                    {props.product.gallery?.map((item) => (
+                    {previewList?.map((item) => (
                       <div className="relative">
                         <img src={item} className="w-[200px] object-cover" />
                         <span
                           className="w-5 h-5 absolute right-0 top-0"
                           onClick={() => {
-                            console.log("click" + item);
+                            setImagesDelete([...imagesDelete, item]);
+                            setPreviewList(
+                              previewList.filter((i) => i !== item)
+                            );
                           }}
                         >
                           <CiCircleRemove />
@@ -564,9 +600,12 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
             </div>
           </form>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="flex justify-between">
           <Button color="primary" onClick={handleUpdateProduct}>
             Save all
+          </Button>
+          <Button color="gray" onClick={() => setOpen(!isOpen)}>
+            Close
           </Button>
         </Modal.Footer>
       </Modal>
@@ -668,7 +707,7 @@ const ProductsTable: FC = function () {
   };
 
   return (
-    <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+    <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600 relative">
       <Table.Head className="bg-gray-100 dark:bg-gray-700">
         <Table.HeadCell
           className="flex items-center gap-2"
@@ -714,7 +753,7 @@ const ProductsTable: FC = function () {
               {product.status == 1 ? "Còn hàng" : "Hết hàng"}
             </Table.Cell>
             <Table.Cell className="space-x-2 whitespace-nowrap p-4">
-              <div className="flex items-center gap-x-3">
+              <div className="flex items-center gap-x-3 ">
                 <EditProductModal product={product} />
                 <DeleteProductModal id={product.id} />
               </div>

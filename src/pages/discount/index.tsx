@@ -9,7 +9,7 @@ import { IoAddCircle } from "react-icons/io5";
 import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
-import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import checkActionValid from "../../function/checkActionValid";
 import { useSelector, useDispatch } from "react-redux";
@@ -306,13 +306,7 @@ const AllCouponTable: FC = function () {
               <Table.Cell>{<DropBox coupon={discount} />}</Table.Cell>
               <Table.Cell>
                 <Button.Group>
-                  <Button
-                    color="gray"
-                    disabled={checkActionValid(role, "company", "update")}
-                  >
-                    <RxUpdate className="mr-3 h-4 w-4" />
-                    Update
-                  </Button>
+                  <EditModal coupon={discount} />
                   <Button color="gray">
                     <MdDeleteForever className="mr-3 h-4 w-4" />
                     Remove
@@ -498,6 +492,166 @@ const DropBox: FC<{ coupon: Discount }> = function (props): JSX.Element {
         </Modal.Footer>
       </Modal>
     </div>
+  );
+};
+
+const EditModal: FC<{ coupon: Discount }> = function (props): JSX.Element {
+  const [openModal, setOpenModal] = useState(false);
+  const dispatch = useDispatch();
+  const initialValues: Values = {
+    coupon_code: "",
+    discount_value: 0,
+    value_apply: 10000,
+    max_apply: 200000,
+    expiration_date: "",
+  };
+
+  const validateSchema = Yup.object({
+    coupon_code: Yup.string()
+      .max(20, "Mã giảm giá không được quá 20 ký tự")
+      .required("Phải điền mã giảm giá"),
+    discount_value: Yup.number()
+      .max(100, "100% là giá trị tối đa")
+      .required("Phải điền chiết khấu nhận được"),
+    value_apply: Yup.number()
+      .min(10000, "Giá trị áp dụng phải lớn hơn hoặc bằng 10000")
+      .required("Phải điền giá trị áp dụng cho mã giảm giá"),
+    max_apply: Yup.number()
+      .min(50000, "Giá trị áp dụng tối đa phải nhỏ hơn hoặc bằng 50000")
+      .required("Phải điền giá trị áp dụng tối thiểu"),
+    expiration_date: Yup.date().required("Phải chọn ngày hết hạn"),
+  });
+  return (
+    <>
+      <Button onClick={() => setOpenModal(true)} color="gray">
+        <RxUpdate className="mr-3 h-4 w-4" />
+        Update
+      </Button>
+      <Modal
+        show={openModal}
+        position="center"
+        onClose={() => setOpenModal(false)}
+      >
+        <Modal.Header>Edit Coupon</Modal.Header>
+        <Modal.Body className="w-[900px]">
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validateSchema}
+            onSubmit={(values, actions) => {
+              // axios
+              //   .post("/api/v2/discount", values)
+              //   .then((res) => {
+              //     if (res.data.code) {
+              //       dispatch(
+              //         showToast({ type: "success", message: res.data.message })
+              //       );
+              //     } else {
+              //       dispatch(
+              //         showToast({ type: "error", message: res.data.message })
+              //       );
+              //     }
+              //   })
+              //   .finally(() => {
+              //     actions.setSubmitting(false);
+              //     setOpenModal(false);
+              //   });
+            }}
+          >
+            <Form>
+              <div className="mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="coupon_code">Discount Code: </label>
+                  <Field
+                    id="coupon_code"
+                    name="coupon_code"
+                    placeholder="Code"
+                    className="ml-3"
+                  />
+                </div>
+
+                <ErrorMessage
+                  name="coupon_code"
+                  component="div"
+                  className="error text-sm text-red-500 "
+                />
+              </div>
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="discount_value">Discount (%):</label>
+                  <Field
+                    id="discount_value"
+                    name="discount_value"
+                    placeholder="discount"
+                    className="ml-3"
+                  />
+                </div>
+
+                <ErrorMessage
+                  name="discount_value"
+                  component="div"
+                  className="error text-sm text-red-500 "
+                />
+              </div>
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="value_apply">Value Apply:</label>
+                  <Field
+                    id="value_apply"
+                    name="value_apply"
+                    placeholder="Value Apply"
+                    className="ml-3"
+                  />
+                </div>
+
+                <ErrorMessage
+                  name="value_apply"
+                  component="div"
+                  className="error text-sm text-red-500 "
+                />
+              </div>
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="max_apply">Max Value Apply:</label>
+                  <Field
+                    id="max_apply"
+                    name="max_apply"
+                    placeholder="Max Value Apply"
+                    className="ml-3"
+                  />
+                </div>
+
+                <ErrorMessage
+                  name="max_apply"
+                  component="div"
+                  className="error text-sm text-red-500 "
+                />
+              </div>
+              <div className="mb-1r mb-5">
+                <div className="flex items-center">
+                  <label htmlFor="expiration_date">Expiration Date:</label>
+                  <Field
+                    id="expiration_date"
+                    name="expiration_date"
+                    type="date"
+                    className="ml-3"
+                  />
+                </div>
+
+                <ErrorMessage
+                  name="expiration_date"
+                  component="div"
+                  className="error text-sm text-red-500 "
+                />
+              </div>
+
+              <div className="flex">
+                <Button type="submit">Submit</Button>
+              </div>
+            </Form>
+          </Formik>
+        </Modal.Body>
+      </Modal>
+    </>
   );
 };
 

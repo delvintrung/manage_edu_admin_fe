@@ -3,7 +3,7 @@ import { MdAdsClick } from "react-icons/md";
 import { FaCartPlus } from "react-icons/fa";
 import { IoIosCash } from "react-icons/io";
 import { useState, useEffect } from "react";
-import axios from "../config/axios";
+import axios from "../config/configAxios";
 import type { FC } from "react";
 import Chart from "react-apexcharts";
 import NavbarSidebarLayout from "../layouts/navbar-sidebar";
@@ -432,9 +432,7 @@ const AcquisitionOverview: FC = function () {
   const [top, setTop] = useState([]);
   useEffect(() => {
     const getProduct = async () => {
-      const res = await axios.get(
-        "api/v2/order/top-selling"
-      );
+      const res = await axios.get("api/v2/order/top-selling");
       console.log(res.data);
       setTop(res.data);
     };
