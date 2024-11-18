@@ -19,6 +19,7 @@ import CompanyDeliveryPage from "./pages/company-delivery";
 import EmployeeListPage from "./pages/employee";
 import AuthorListPage from "./pages/author";
 import DiscountPage from "./pages/discount";
+import CategoryPage from "./pages/category";
 import ToastComponent from "./components/toast";
 
 const container = document.getElementById("root");
@@ -57,7 +58,7 @@ root.render(
             />
             <Route path="/company-delivery" element={<CompanyDeliveryPage />} />
             <Route path="/discount" element={<DiscountPage />} />
-            <Route path="/category" element={<DiscountPage />} />
+            <Route path="/category" element={<CategoryPage />} />
           </Routes>
         </BrowserRouter>
       </Flowbite>

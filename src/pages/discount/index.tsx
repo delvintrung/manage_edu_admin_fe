@@ -45,11 +45,20 @@ const DiscountPage: FC = function () {
       .max(20, "Mã giảm giá không được quá 20 ký tự")
       .required("Phải điền mã giảm giá"),
     discount_value: Yup.number()
+      .min(1, "Giá trị không được nhỏ hơn 1")
       .max(100, "100% là giá trị tối đa")
       .required("Phải điền chiết khấu nhận được"),
+
     value_apply: Yup.number()
       .min(10000, "Giá trị áp dụng phải lớn hơn hoặc bằng 10000")
-      .required("Phải điền giá trị áp dụng cho mã giảm giá"),
+      .required("Phải điền giá trị áp dụng cho mã giảm giá")
+      .test(
+        "is-less-than-max-apply",
+        "Giá trị áp dụng phải nhỏ hơn giá trị tối đa",
+        function (value) {
+          return value < this.parent.max_apply;
+        }
+      ),
     max_apply: Yup.number()
       .min(50000, "Giá trị áp dụng tối đa phải nhỏ hơn hoặc bằng 50000")
       .required("Phải điền giá trị áp dụng tối thiểu"),
@@ -106,7 +115,7 @@ const DiscountPage: FC = function () {
                       onClick={() => {
                         setOpenModal(true);
                       }}
-                      disabled={checkActionValid(role, "company", "create")}
+                      disabled={checkActionValid(role, "coupons", "create")}
                     >
                       <IoAddCircle className="mr-3 h-4 w-4" />
                       Add
@@ -234,6 +243,7 @@ const DiscountPage: FC = function () {
                     name="expiration_date"
                     type="date"
                     className="ml-3"
+                    min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
 
@@ -307,7 +317,10 @@ const AllCouponTable: FC = function () {
               <Table.Cell>
                 <Button.Group>
                   <EditModal coupon={discount} />
-                  <Button color="gray">
+                  <Button
+                    color="gray"
+                    disabled={checkActionValid(role, "coupons", "delete")}
+                  >
                     <MdDeleteForever className="mr-3 h-4 w-4" />
                     Remove
                   </Button>
@@ -515,7 +528,14 @@ const EditModal: FC<{ coupon: Discount }> = function (props): JSX.Element {
       .required("Phải điền chiết khấu nhận được"),
     value_apply: Yup.number()
       .min(10000, "Giá trị áp dụng phải lớn hơn hoặc bằng 10000")
-      .required("Phải điền giá trị áp dụng cho mã giảm giá"),
+      .required("Phải điền giá trị áp dụng cho mã giảm giá")
+      .test(
+        "is-less-than-max-apply",
+        "Giá trị áp dụng phải nhỏ hơn giá trị tối đa",
+        function (value) {
+          return value < this.parent.max_apply;
+        }
+      ),
     max_apply: Yup.number()
       .min(50000, "Giá trị áp dụng tối đa phải nhỏ hơn hoặc bằng 50000")
       .required("Phải điền giá trị áp dụng tối thiểu"),
@@ -534,27 +554,47 @@ const EditModal: FC<{ coupon: Discount }> = function (props): JSX.Element {
       >
         <Modal.Header>Edit Coupon</Modal.Header>
         <Modal.Body className="w-[900px]">
+          <ToastComponent />
           <Formik
             initialValues={initialValues}
             validationSchema={validateSchema}
             onSubmit={(values, actions) => {
-              // axios
-              //   .post("/api/v2/discount", values)
-              //   .then((res) => {
-              //     if (res.data.code) {
-              //       dispatch(
-              //         showToast({ type: "success", message: res.data.message })
-              //       );
-              //     } else {
-              //       dispatch(
-              //         showToast({ type: "error", message: res.data.message })
-              //       );
-              //     }
-              //   })
-              //   .finally(() => {
-              //     actions.setSubmitting(false);
-              //     setOpenModal(false);
-              //   });
+              if (values.coupon_code === "") {
+                values.coupon_code = props.coupon.coupon_code;
+              }
+              if (values.discount_value === 0) {
+                values.discount_value = props.coupon.discount_value;
+              }
+              if (values.value_apply >= values.max_apply) {
+                dispatch(
+                  showToast({
+                    type: "error",
+                    message: "Value apply must be less than max apply",
+                  })
+                );
+                return;
+              }
+
+              axios
+                .put("/api/v2/discount", {
+                  ...values,
+                  discount_id: props.coupon.id,
+                })
+                .then((res) => {
+                  if (res.data.code) {
+                    dispatch(
+                      showToast({ type: "success", message: res.data.message })
+                    );
+                  } else {
+                    dispatch(
+                      showToast({ type: "error", message: res.data.message })
+                    );
+                  }
+                })
+                .finally(() => {
+                  actions.setSubmitting(false);
+                  setOpenModal(false);
+                });
             }}
           >
             <Form>
@@ -629,11 +669,13 @@ const EditModal: FC<{ coupon: Discount }> = function (props): JSX.Element {
               <div className="mb-1r mb-5">
                 <div className="flex items-center">
                   <label htmlFor="expiration_date">Expiration Date:</label>
+
                   <Field
                     id="expiration_date"
                     name="expiration_date"
                     type="date"
                     className="ml-3"
+                    min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
 

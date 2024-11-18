@@ -7,6 +7,7 @@ import {
   Modal,
   Select,
   Textarea,
+  Accordion,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
@@ -20,6 +21,8 @@ import { addProductsWait, removeProductsWait } from "../../Slice/products_wait";
 import checkActionValid from "../../function/checkActionValid";
 import ToastComponent from "../../components/toast";
 import { showToast } from "../../Slice/toast";
+import { convertDate } from "../../function/convertDate";
+import { formatPrice } from "../../function/formatPrice";
 
 const DeliveryPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
@@ -189,32 +192,6 @@ const DeliveryPage: FC = function () {
                   </Select>
                 </div>
               </div>
-              <div>
-                <div className="mb-2 block">
-                  <p className="text-[10px] text-gray-900">
-                    If product not exist. Create temporary product with some
-                    basic infomation
-                  </p>
-                </div>
-                <div className="max-w-md relative">
-                  <Button
-                    color="light"
-                    disabled={companySelected == 0 ? true : false}
-                  >
-                    <Link
-                      to="/delivery-received/create-temporary-product"
-                      className={
-                        idProduct != 0
-                          ? "flex space-x-1 cursor-not-allowed opacity-50"
-                          : "flex space-x-1"
-                      }
-                    >
-                      <IoMdAddCircleOutline className="w-6 h-6" />
-                      <p>Create Temp Product</p>
-                    </Link>
-                  </Button>
-                </div>
-              </div>
             </div>
             <div className="flex gap-5">
               <div>
@@ -322,20 +299,28 @@ type Company = {
   description: string;
 };
 
-type Received = {
+type ReceivedItem = {
   id: number;
+  title: string;
+  price: number;
+  quantity: number;
+};
+
+type Received = {
+  idReceived: number;
   dateReceived: string;
   name_company: string;
   noteReceived: string;
   total_value: string;
+  details: ReceivedItem[];
 };
 
 const AllDeliveryTable: FC = function () {
-  const [received, setReceived] = useState([]);
+  const [received, setReceived] = useState<Received[]>([]);
   useEffect(() => {
     const fetch = async () => {
-      const result = await axios.get("/api/v2/received");
-      setReceived(result.data);
+      const result = await axios.get("/api/v2/received-detail");
+      setReceived(result.data.result);
     };
     fetch();
   }, []);
@@ -351,43 +336,47 @@ const AllDeliveryTable: FC = function () {
 
   return (
     <div className="overflow-x-auto">
-      <Table hoverable>
-        <Table.Head>
-          <Table.HeadCell className="w-[30px]">ID</Table.HeadCell>
-          <Table.HeadCell className="w-[250px]">Name Company</Table.HeadCell>
-          <Table.HeadCell className="w-[250px]">Date</Table.HeadCell>
-          <Table.HeadCell className="w-[150px]">Total Value</Table.HeadCell>
-          <Table.HeadCell className="w-[450px] text-center">
-            Note
-          </Table.HeadCell>
-        </Table.Head>
-        <Table.Body className="divide-y">
-          {received &&
-            received.map((item: Received) => (
-              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <Table.Cell>{item.id}</Table.Cell>
+      {received.length > 0 ? (
+        received.map((item) => <Component received={item} />)
+      ) : (
+        <div>Không có dữ liệu</div>
+      )}
+    </div>
+  );
+};
 
-                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {item.name_company}
-                </Table.Cell>
-                <Table.Cell>
-                  {new Date(item.dateReceived).toLocaleString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
-                </Table.Cell>
-                <Table.Cell>
-                  {formatPrice(parseInt(item.total_value))}
-                </Table.Cell>
-                <Table.Cell>{item.noteReceived}</Table.Cell>
-              </Table.Row>
-            ))}
-        </Table.Body>
-      </Table>
+const Component: FC<{ received: Received }> = ({ received }): JSX.Element => {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleAccordion = () => {
+    setIsOpen(!isOpen);
+  };
+  return (
+    <div className=" bg-white">
+      <div className="">
+        <div
+          className="grid grid-cols-5 bg-gray-300  p-5"
+          onClick={toggleAccordion}
+        >
+          <div>{received.idReceived}</div>
+          <div>{convertDate(received.dateReceived)}</div>
+          <div>{received.name_company}</div>
+          <div>{formatPrice(parseFloat(received.total_value))}</div>
+          <div>{received.noteReceived}</div>
+        </div>
+        <div>
+          {isOpen &&
+            received.details.map((item) => {
+              return (
+                <div className="grid grid-cols-4 justify-evenly text-center">
+                  <p>{item.id}</p>
+                  <p className="text-left">{item.title}</p>
+                  <p>{formatPrice(item.price)}</p>
+                  <p>{item.quantity}</p>
+                </div>
+              );
+            })}
+        </div>
+      </div>
     </div>
   );
 };
