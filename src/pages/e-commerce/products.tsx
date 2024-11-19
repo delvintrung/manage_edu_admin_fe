@@ -435,11 +435,11 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
         Edit
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[1200px]">
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[250px]">
           <strong>Edit product</strong>
         </Modal.Header>
         <Modal.Body>
-          <form>
+          <form className="max-h-screen overflow-y-auto">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div>
                 <Label htmlFor="productName">Product name</Label>
