@@ -23,6 +23,7 @@ import axios from "../config/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store";
 import { fetchCurrentAction, fetchPermissionView } from "../Slice/role";
+import Notify from "./notification";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
@@ -184,7 +185,7 @@ const ExampleSidebar: FC = function () {
                   Company
                 </Sidebar.Item>
               )}
-              {
+              {permissionView?.coupons && (
                 <Sidebar.Item
                   className={
                     "/discount" === currentPage
@@ -196,9 +197,9 @@ const ExampleSidebar: FC = function () {
                 >
                   Discount
                 </Sidebar.Item>
-              }
+              )}
 
-              {
+              {permissionView?.category && (
                 <Sidebar.Item
                   className={
                     "/category" === currentPage
@@ -210,7 +211,7 @@ const ExampleSidebar: FC = function () {
                 >
                   Category
                 </Sidebar.Item>
-              }
+              )}
 
               {localStorage.getItem("token") ? null : (
                 <Sidebar.Item href={"/authentication/sign-in"} icon={HiLogin}>
@@ -226,18 +227,6 @@ const ExampleSidebar: FC = function () {
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </div>
-
-        <Modal show={permission} onClose={() => setPermission(false)}>
-          <Modal.Header>Tài khoản không đủ quyền</Modal.Header>
-          <Modal.Body>
-            <div className="space-y-6">
-              <p>Tài khoản cuả bạn không đủ quyền để truy cập phần này</p>
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={() => setPermission(false)}>I accept</Button>
-          </Modal.Footer>
-        </Modal>
 
         <Modal
           show={openModal}

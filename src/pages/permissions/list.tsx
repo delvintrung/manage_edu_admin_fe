@@ -23,6 +23,7 @@ import { fetchAllPermission, fetchPermission } from "../../Slice/role";
 import CheckPermission from "../../function/checkPermission";
 import { showToast } from "../../Slice/toast";
 import ToastComponent from "../../components/toast";
+import { reloadSide } from "../../function/reloadSide";
 
 const PermissionPage: FC = function () {
   const [search, setSearch] = useState("");
@@ -46,6 +47,7 @@ const PermissionPage: FC = function () {
       dispatch(
         showToast({ message: "Save change successfully", type: "success" })
       );
+      reloadSide();
     }
   };
 

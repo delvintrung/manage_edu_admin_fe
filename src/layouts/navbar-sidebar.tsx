@@ -5,6 +5,7 @@ import Sidebar from "../components/sidebar";
 import { MdFacebook } from "react-icons/md";
 import { FaDribbble, FaGithub, FaInstagram, FaTwitter } from "react-icons/fa";
 import Chat from "../components/Chat";
+import Notify from "../components/notification";
 
 interface NavbarSidebarLayoutProps {
   isFooter?: boolean;
@@ -23,6 +24,9 @@ const NavbarSidebarLayout: FC<PropsWithChildren<NavbarSidebarLayoutProps>> =
         </div>
         <div className="fixed top-[50px] right-[400px]">
           <Chat />
+        </div>
+        <div className="fixed top-[20px] right-[80px]">
+          <Notify />
         </div>
       </div>
     );

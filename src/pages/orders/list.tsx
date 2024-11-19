@@ -222,6 +222,12 @@ function Accordion({ order }: { order: Order }) {
                       <option
                         value={item.id}
                         selected={order.status == item.id ? true : false}
+                        disabled={item.id < order.status ? true : false}
+                        className={`${
+                          item.id < order.status
+                            ? "text-gray-400 cursor-not-allowed"
+                            : ""
+                        }`}
                       >
                         {item.name}
                       </option>
