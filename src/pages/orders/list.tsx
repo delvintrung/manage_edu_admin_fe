@@ -258,9 +258,7 @@ function Accordion({ order }: { order: Order }) {
                 <div className="flex items-center gap-8">
                   <p>Tổng tiền thanh toán:</p>{" "}
                   <span>
-                    {convertToCurrencyFormat(
-                      parseFloat(order.total) + order.shipFee
-                    )}
+                    {convertToCurrencyFormat(parseFloat(order.total))}
                   </span>{" "}
                 </div>
                 <div className="flex items-center gap-8">

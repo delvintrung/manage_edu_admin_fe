@@ -1,24 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { reloadSide } from "../function/reloadSide";
 import { GoBell } from "react-icons/go";
-
-interface Message {
-  id: number;
-  message: string;
-  fromAdmin?: boolean;
-}
-
-interface Users {
-  socketId: string;
-  chats: Message[];
-}
 
 const Notify: React.FC = () => {
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [totalNoti, setTotalNoti] = useState<number>(0);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const currentNoti = useRef(0);
+  useEffect(() => {
+    currentNoti.current = totalNoti;
+  }, [totalNoti]);
 
   const playNotificationSound = () => {
     const audio = new Audio("/images/bell-98033.mp3");
@@ -67,7 +59,7 @@ const Notify: React.FC = () => {
       {openModal && (
         <div className=" absolute top-0 right-0 w-52 h-52 bg-white border-black border p-2 rounded-sm">
           <div className="h-40">
-            <p>Có {totalNoti} đơn hàng mới</p>
+            <p>Có {currentNoti.current} đơn hàng mới</p>
           </div>
           <div>
             <button
