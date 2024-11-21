@@ -6,7 +6,6 @@ import { MdFacebook } from "react-icons/md";
 import { FaDribbble, FaGithub, FaInstagram, FaTwitter } from "react-icons/fa";
 import Chat from "../components/Chat";
 import Notify from "../components/notification";
-
 interface NavbarSidebarLayoutProps {
   isFooter?: boolean;
 }
