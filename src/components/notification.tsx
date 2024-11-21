@@ -22,25 +22,18 @@ const Notify: React.FC = () => {
     const newSocket = io(socketUrl);
     setSocket(newSocket);
 
-    newSocket.on("newOrderResponse", () => {
-      setTotalNoti(totalNoti + 1);
-      // reloadSide();
-    });
-
     newSocket.on("error", (err) => {
       console.error("Socket error:", err);
       setError("An error occurred. Please try again later.");
     });
 
     return () => {
-      newSocket.off("newOrderResponse");
       newSocket.close();
     };
   }, []);
   socket?.on("newOrderResponse", () => {
     playNotificationSound();
     setTotalNoti(totalNoti + 1);
-    // reloadSide();
   });
 
   return (

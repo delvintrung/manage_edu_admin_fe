@@ -28,6 +28,7 @@ import { CiSearch } from "react-icons/ci";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../Slice/toast";
 import ToastComponent from "../../components/toast";
+import { reloadSide } from "../../function/reloadSide";
 
 interface Category {
   value: number;
@@ -116,6 +117,7 @@ const AddCategoryModal: FC = function () {
             dispatch(
               showToast({ message: "Thêm thành công", type: "success" })
             );
+            reloadSide();
           }
         })
         .catch((err) => {
@@ -245,6 +247,7 @@ const EditCategoryModal: FC<{ category: Category }> = function (
             dispatch(
               showToast({ message: "Cập nhật thành công", type: "success" })
             );
+            reloadSide();
           }
         })
         .catch((err) => {
@@ -311,6 +314,7 @@ const DeleteCategoryModal: FC<{
       });
       if (res.data.code == 1) {
         dispatch(showToast({ message: res.data.message, type: "success" }));
+        reloadSide();
       } else {
         dispatch(showToast({ message: "Xóa thất bại", type: "error" }));
       }

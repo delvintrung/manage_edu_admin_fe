@@ -13,6 +13,7 @@ import { showToast } from "../../Slice/toast";
 import ToastComponent from "../../components/toast";
 import moment from "moment";
 import { FaSortDown } from "react-icons/fa";
+import { reloadSide } from "../../function/reloadSide";
 
 const UserListPage: FC = function () {
   return (
@@ -65,6 +66,9 @@ interface Order {
   orderDate: string;
   status: number;
   employeeId: null | string;
+  fullname: string;
+  phone_number: string;
+  address: string;
 }
 
 interface OrderStatus {
@@ -145,6 +149,7 @@ function Accordion({ order }: { order: Order }) {
       });
       if (res.data.success === true) {
         dispatch(showToast({ type: "success", message: res.data.message }));
+        reloadSide();
       }
     };
     changeStatus(od);
@@ -243,7 +248,14 @@ function Accordion({ order }: { order: Order }) {
               </div>
             </div>
             <div className="flex justify-between mt-10 px-20">
-              <div></div>
+              <div>
+                <p>Thông tin người đặt:</p>
+                <ul>
+                  <li>Tên: {order.fullname}</li>
+                  <li>Số điện thoại: {order.phone_number}</li>
+                  <li>Địa chỉ: {order.address}</li>
+                </ul>
+              </div>
               <div>
                 <div className="flex items-center gap-8">
                   <p>Mã đơn hàng:</p> <span>{order.orderId}</span>{" "}

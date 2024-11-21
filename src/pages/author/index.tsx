@@ -28,6 +28,7 @@ import { CiSearch } from "react-icons/ci";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../Slice/toast";
 import ToastComponent from "../../components/toast";
+import { reloadSide } from "../../function/reloadSide";
 
 interface Author {
   value: number;
@@ -137,6 +138,7 @@ const AddAuthorModal: FC = function () {
             dispatch(
               showToast({ message: "Thêm tác giả thành công", type: "success" })
             );
+            reloadSide();
           }
         })
         .catch((err) => {
@@ -352,6 +354,7 @@ const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
       const res = await axios.put("/api/v2/author/update", formData);
       if (res.data.status == 200) {
         setOpen(false);
+        reloadSide();
       }
       console.log(res.data);
     };
@@ -487,6 +490,7 @@ const DeleteAuthorModal: FC<{
       });
       if (res.data.code) {
         dispatch(showToast({ message: res.data.message, type: "success" }));
+        reloadSide();
       } else {
         dispatch(showToast({ message: "Xóa tác giả thất bại", type: "error" }));
       }

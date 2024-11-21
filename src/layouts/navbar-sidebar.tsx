@@ -6,6 +6,9 @@ import { MdFacebook } from "react-icons/md";
 import { FaDribbble, FaGithub, FaInstagram, FaTwitter } from "react-icons/fa";
 import Chat from "../components/Chat";
 import Notify from "../components/notification";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
+import checkActionValid from "../function/checkActionValid";
 
 interface NavbarSidebarLayoutProps {
   isFooter?: boolean;
@@ -13,6 +16,9 @@ interface NavbarSidebarLayoutProps {
 
 const NavbarSidebarLayout: FC<PropsWithChildren<NavbarSidebarLayoutProps>> =
   function ({ children, isFooter = true }) {
+    const role = useSelector(
+      (state: RootState) => state.role.currentAction.list
+    );
     return (
       <div className="relative">
         <div className=" sticky top-0">
@@ -25,9 +31,11 @@ const NavbarSidebarLayout: FC<PropsWithChildren<NavbarSidebarLayoutProps>> =
         <div className="fixed top-[50px] right-[400px]">
           <Chat />
         </div>
-        <div className="fixed top-[20px] right-[80px]">
-          <Notify />
-        </div>
+        {!checkActionValid(role, "orders", "view") ? (
+          <div className="fixed top-[20px] right-[80px]">
+            <Notify />
+          </div>
+        ) : null}
       </div>
     );
   };

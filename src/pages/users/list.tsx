@@ -2,7 +2,6 @@
 import {
   Breadcrumb,
   Button,
-  Checkbox,
   Label,
   Modal,
   Table,
@@ -10,16 +9,7 @@ import {
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
-import {
-  HiChevronLeft,
-  HiChevronRight,
-  HiCog,
-  HiDotsVertical,
-  HiExclamationCircle,
-  HiHome,
-  HiOutlineExclamationCircle,
-  HiTrash,
-} from "react-icons/hi";
+import { HiHome, HiOutlineExclamationCircle } from "react-icons/hi";
 import { FaUnlockAlt } from "react-icons/fa";
 import { MdBlock } from "react-icons/md";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
@@ -28,6 +18,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import checkActionValid from "../../function/checkActionValid";
 import { CiSearch } from "react-icons/ci";
+import { useNavigate } from "react-router";
 
 interface User {
   id: number;
@@ -98,6 +89,7 @@ const UserListPage: FC = function () {
 const AllUsersTable: FC = function () {
   const [allUsers, setAllUsers] = useState([]);
   const role = useSelector((state: RootState) => state.role.currentAction.list);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getAllUsers = async () => {
@@ -132,11 +124,11 @@ const AllUsersTable: FC = function () {
     status: number | null
   ) => {
     try {
-      const res = await axios.put(`/api/v2/user/change-status`, {
+      await axios.put(`/api/v2/user/change-status`, {
         id: userId,
         status: status == 1 ? 0 : 1,
       });
-      console.log(res.data);
+      navigate(0);
     } catch (error) {
       console.log(error);
     }

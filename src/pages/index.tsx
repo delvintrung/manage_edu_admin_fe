@@ -3,7 +3,7 @@ import { MdAdsClick } from "react-icons/md";
 import { FaCartPlus } from "react-icons/fa";
 import { IoIosCash } from "react-icons/io";
 import { useState, useEffect } from "react";
-import axios from "../config/configAxios";
+import axios from "../config/axios";
 import type { FC } from "react";
 import Chart from "react-apexcharts";
 import NavbarSidebarLayout from "../layouts/navbar-sidebar";
