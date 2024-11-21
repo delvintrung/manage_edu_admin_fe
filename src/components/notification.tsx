@@ -28,7 +28,6 @@ const Notify: React.FC = () => {
     });
 
     return () => {
-      newSocket.off("newOrderResponse");
       newSocket.close();
     };
   }, []);

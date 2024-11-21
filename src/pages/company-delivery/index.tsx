@@ -16,6 +16,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { showToast } from "../../Slice/toast";
 import ToastComponent from "../../components/toast";
+import { reloadSide } from "../../function/reloadSide";
 
 type Values = {
   name: string;
@@ -127,6 +128,7 @@ const CompanyDeliveryPage: FC = function () {
                     dispatch(
                       showToast({ type: "success", message: res.data.message })
                     );
+                    reloadSide();
                   } else {
                     dispatch(
                       showToast({ type: "error", message: res.data.message })

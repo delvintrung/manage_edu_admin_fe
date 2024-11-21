@@ -21,6 +21,7 @@ import { CiSearch } from "react-icons/ci";
 import ToastComponent from "../../components/toast";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../Slice/toast";
+import { useNavigate } from "react-router";
 
 interface Employee {
   id: number;
@@ -122,6 +123,7 @@ const AddEmployeeModal: FC = function () {
   const [roles, setRoles] = useState([]);
   const [roleValue, setRoleValue] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetch = async () => {
@@ -179,6 +181,7 @@ const AddEmployeeModal: FC = function () {
                           message: res.data.message,
                         })
                       );
+                      navigate(0);
                     } else {
                       dispatch(
                         showToast({ type: "error", message: res.data.message })
@@ -415,6 +418,7 @@ const EditUserModal: FC<{ employee: Employee | null; onClose: VoidFunction }> =
     const [roles, setRoles] = useState([]);
     const [roleValue, setRoleValue] = useState("");
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const Schema = Yup.object().shape({
       fullname: Yup.string()
         .trim()
@@ -482,6 +486,7 @@ const EditUserModal: FC<{ employee: Employee | null; onClose: VoidFunction }> =
                             message: res.data.message,
                           })
                         );
+                        navigate(0);
                       } else {
                         dispatch(
                           showToast({
@@ -620,6 +625,7 @@ const DeleteUserModal: FC<{
 }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(true);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const handleDeleteUser = (userId: number) => {
     const sendRequest = async () => {
       const res = await axios.put(
@@ -632,6 +638,7 @@ const DeleteUserModal: FC<{
             message: res.data.message,
           })
         );
+        navigate(0);
       } else {
         dispatch(
           showToast({

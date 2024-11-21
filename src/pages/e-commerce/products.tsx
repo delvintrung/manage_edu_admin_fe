@@ -31,6 +31,7 @@ import ToastComponent from "../../components/toast";
 import { fetchAuthors, fetchCategory } from "../../Slice/category_author";
 import { CiCircleRemove } from "react-icons/ci";
 import { CiSearch } from "react-icons/ci";
+import { reloadSide } from "../../function/reloadSide";
 
 interface Product {
   id: number;
@@ -178,9 +179,10 @@ const AddProductModal: FC = function () {
         },
       })
       .then((res) => {
-        if (res.data.success == true) {
+        if (res.data.code == 1) {
           dispatch(showToast({ type: "success", message: res.data.message }));
           setOpen(false);
+          reloadSide();
         }
       });
   };
@@ -447,6 +449,7 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
         if (res.data.code == 1) {
           dispatch(showToast({ type: "success", message: res.data.message }));
           setOpen(false);
+          reloadSide();
         }
       })
       .finally(() => {
@@ -625,6 +628,7 @@ const DeleteProductModal: FC<{ id: number }> = function (props) {
       dispatch(
         showToast({ type: "success", message: "Xóa sản phẩm thành công" })
       );
+      reloadSide();
     }
   };
   return (

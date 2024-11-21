@@ -73,7 +73,7 @@ const DiscountPage: FC = function () {
           <div className="mb-1 w-full">
             <div className="mb-4">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-                Suppier Management
+                Discount Management
               </h1>
             </div>
             <div className="sm:flex sm:justify-between">
@@ -98,7 +98,7 @@ const DiscountPage: FC = function () {
                         <TextInput
                           id="users-search"
                           name="users-search"
-                          placeholder="Search for delivery"
+                          placeholder="Search for discount"
                         />
                         <IoIosSearch
                           className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
@@ -336,7 +336,6 @@ const AllCouponTable: FC = function () {
 
 const DropBox: FC<{ coupon: Discount }> = function (props): JSX.Element {
   const [openModal, setOpenModal] = useState(false);
-  const role = useSelector((state: RootState) => state.role.currentAction.list);
   const dispatch = useDispatch();
   const [optionSelected, setOptionSelected] = useState(0);
   const [users, setUsers] = useState([]);

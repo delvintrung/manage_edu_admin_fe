@@ -2,7 +2,8 @@ import { Sidebar, TextInput } from "flowbite-react";
 import { Button, Modal } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import type { FC } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   HiChartPie,
   HiLogin,
@@ -23,12 +24,12 @@ import axios from "../config/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store";
 import { fetchCurrentAction, fetchPermissionView } from "../Slice/role";
-import Notify from "./notification";
 
 const ExampleSidebar: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   useEffect(() => {
     dispatch(fetchPermissionView());
     dispatch(fetchCurrentAction());
@@ -45,13 +46,57 @@ const ExampleSidebar: FC = function () {
   }, [setCurrentPage]);
 
   const [openModal, setOpenModal] = useState(false);
-  const [permission, setPermission] = useState(false);
 
   const handleLogout = async () => {
     await axios.post("/api/v2/auth/logout");
     localStorage.clear();
-    window.location.href = "/authentication/sign-in";
+    navigate("/authentication/sign-in");
+    // window.location.href = "/authentication/sign-in";
   };
+
+  const initialPermissionView = useRef(permissionView);
+
+  useEffect(() => {
+    if (!initialPermissionView.current?.dashboard) {
+      const firstAvailablePage = Object.keys(
+        initialPermissionView.current
+      ).find((key) => initialPermissionView.current[key]);
+      if (firstAvailablePage) {
+        switch (firstAvailablePage) {
+          case "products":
+            window.location.href = "/e-commerce/products";
+            break;
+          case "users":
+            window.location.href = "/users/list";
+            break;
+          case "orders":
+            window.location.href = "/orders/list";
+            break;
+          case "employees":
+            window.location.href = "/employee/list";
+            break;
+          case "authors":
+            window.location.href = "/author/list";
+            break;
+          case "permissions":
+            window.location.href = "/permissions/list";
+            break;
+          case "delivery":
+            window.location.href = "/delivery-received";
+            break;
+          case "company":
+            window.location.href = "/company-delivery";
+            break;
+          case "coupons":
+            window.location.href = "/discount";
+            break;
+          case "category":
+            window.location.href = "/category";
+            break;
+        }
+      }
+    }
+  }, []);
 
   return (
     <Sidebar aria-label="Sidebar with multi-level dropdown example">
@@ -70,153 +115,164 @@ const ExampleSidebar: FC = function () {
           <Sidebar.Items>
             <Sidebar.ItemGroup>
               {permissionView?.dashboard && (
-                <Sidebar.Item
-                  href="/"
-                  icon={HiChartPie}
-                  className={
-                    "/" === currentPage ? "bg-gray-100 dark:bg-gray-700" : ""
-                  }
-                >
-                  Dashboard
-                </Sidebar.Item>
+                <Link to={"/"}>
+                  <Sidebar.Item
+                    icon={HiChartPie}
+                    className={
+                      "/" === currentPage ? "bg-gray-100 dark:bg-gray-700" : ""
+                    }
+                  >
+                    Dashboard
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.products && (
-                <Sidebar.Item
-                  href="/e-commerce/products"
-                  icon={HiShoppingBag}
-                  className={
-                    "/e-commerce/products" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                >
-                  Products
-                </Sidebar.Item>
+                <Link to="/e-commerce/products">
+                  <Sidebar.Item
+                    icon={HiShoppingBag}
+                    className={
+                      "/e-commerce/products" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                  >
+                    Products
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.users && (
-                <Sidebar.Item
-                  href="/users/list"
-                  icon={HiUsers}
-                  className={
-                    "/users/list" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                >
-                  Users
-                </Sidebar.Item>
+                <Link to="/users/list">
+                  <Sidebar.Item
+                    icon={HiUsers}
+                    className={
+                      "/users/list" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                  >
+                    Users
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.orders && (
-                <Sidebar.Item
-                  href="/orders/list"
-                  icon={AiFillMedicineBox}
-                  className={
-                    "/orders/list" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                >
-                  Orders
-                </Sidebar.Item>
+                <Link to="/orders/list">
+                  <Sidebar.Item
+                    icon={AiFillMedicineBox}
+                    className={
+                      "/orders/list" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                  >
+                    Orders
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.employees && (
-                <Sidebar.Item
-                  href="/employee/list"
-                  icon={GrUserManager}
-                  className={
-                    "/employee/list" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                >
-                  Employee
-                </Sidebar.Item>
+                <Link to="/employee/list">
+                  <Sidebar.Item
+                    icon={GrUserManager}
+                    className={
+                      "/employee/list" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                  >
+                    Employee
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.authors && (
-                <Sidebar.Item
-                  href="/author/list"
-                  icon={TfiWrite}
-                  className={
-                    "/author/list" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                >
-                  Author
-                </Sidebar.Item>
+                <Link to="/author/list">
+                  <Sidebar.Item
+                    icon={TfiWrite}
+                    className={
+                      "/author/list" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                  >
+                    Author
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.permissions && (
-                <Sidebar.Item
-                  href="/permissions/list"
-                  icon={FaUserLock}
-                  className={
-                    "/permissions/list" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                >
-                  Permissions
-                </Sidebar.Item>
+                <Link to="/permissions/list">
+                  <Sidebar.Item
+                    icon={FaUserLock}
+                    className={
+                      "/permissions/list" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                  >
+                    Permissions
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.delivery && (
-                <Sidebar.Item
-                  className={
-                    "/delivery-received" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                  icon={GrStorage}
-                  href="/delivery-received"
-                >
-                  Delivery & Received
-                </Sidebar.Item>
+                <Link to="/delivery-received">
+                  <Sidebar.Item
+                    className={
+                      "/delivery-received" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                    icon={GrStorage}
+                  >
+                    Delivery & Received
+                  </Sidebar.Item>
+                </Link>
               )}
 
               {permissionView?.company && (
-                <Sidebar.Item
-                  className={
-                    "/company-delivery" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                  icon={FaBuilding}
-                  href="/company-delivery"
-                >
-                  Company
-                </Sidebar.Item>
+                <Link to="/company-delivery">
+                  <Sidebar.Item
+                    className={
+                      "/company-delivery" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                    icon={FaBuilding}
+                  >
+                    Company
+                  </Sidebar.Item>
+                </Link>
               )}
               {permissionView?.coupons && (
-                <Sidebar.Item
-                  className={
-                    "/discount" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                  icon={RiCouponLine}
-                  href="/discount"
-                >
-                  Discount
-                </Sidebar.Item>
+                <Link to="/discount">
+                  <Sidebar.Item
+                    className={
+                      "/discount" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                    icon={RiCouponLine}
+                  >
+                    Discount
+                  </Sidebar.Item>
+                </Link>
               )}
 
               {permissionView?.category && (
-                <Sidebar.Item
-                  className={
-                    "/category" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                  icon={BiCategory}
-                  href="/category"
-                >
-                  Category
-                </Sidebar.Item>
+                <Link to="/category">
+                  <Sidebar.Item
+                    className={
+                      "/category" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                    icon={BiCategory}
+                  >
+                    Category
+                  </Sidebar.Item>
+                </Link>
               )}
 
               {localStorage.getItem("token") ? null : (
-                <Sidebar.Item href={"/authentication/sign-in"} icon={HiLogin}>
-                  Sign in
-                </Sidebar.Item>
+                <Link to="/authentication/sign-in">
+                  <Sidebar.Item icon={HiLogin}>Sign in</Sidebar.Item>
+                </Link>
               )}
 
               {localStorage.getItem("token") ? (

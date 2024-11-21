@@ -5,12 +5,14 @@ import { useState } from "react";
 import axios from "../../config/axios";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../Slice/toast";
+import { useNavigate } from "react-router-dom";
 
 const SignInPage: FC = function () {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleLoginAdmin = async () => {
     try {
