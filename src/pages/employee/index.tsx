@@ -55,11 +55,11 @@ const EmployeeListPage: FC = function () {
                   <span className="dark:text-white">Home</span>
                 </div>
               </Breadcrumb.Item>
-              <Breadcrumb.Item href="/users/list">Users</Breadcrumb.Item>
+              <Breadcrumb.Item href="/users/list">Employees</Breadcrumb.Item>
               <Breadcrumb.Item>List</Breadcrumb.Item>
             </Breadcrumb>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-              All users
+              All employees
             </h1>
           </div>
           <div className="sm:flex">
@@ -121,7 +121,7 @@ const AddEmployeeModal: FC = function () {
   });
   const [isOpen, setOpen] = useState(false);
   const [roles, setRoles] = useState([]);
-  const [roleValue, setRoleValue] = useState("");
+  const [roleValue, setRoleValue] = useState("0");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -136,6 +136,8 @@ const AddEmployeeModal: FC = function () {
     };
     fetch();
   }, []);
+
+  const isDisabled: boolean = roleValue == "0" ? true : false;
 
   return (
     <>
@@ -245,14 +247,14 @@ const AddEmployeeModal: FC = function () {
                     </div>
                   </div>
 
-                  <div className="flex space-x-3 mb-5">
-                    <div>
+                  <div className="flex space-x-5 mb-5">
+                    <div className="">
                       <Label htmlFor="role">Role</Label>
                       <div className="mt-1">
                         <select
                           name="role"
                           id="role"
-                          className="w-[230px]"
+                          className="w-[240px]"
                           onChange={(e) => {
                             setRoleValue(e.target.value);
                           }}
@@ -278,7 +280,12 @@ const AddEmployeeModal: FC = function () {
                       )}
                     </div>
                   </div>
-                  <Button type="submit" color="primary">
+                  <Button
+                    type="submit"
+                    color="primary"
+                    disabled={isDisabled}
+                    title={isDisabled ? " Role chưa được chọn" : ""}
+                  >
                     Add employee
                   </Button>
                 </Form>
@@ -628,9 +635,7 @@ const DeleteUserModal: FC<{
   const navigate = useNavigate();
   const handleDeleteUser = (userId: number) => {
     const sendRequest = async () => {
-      const res = await axios.put(
-        `/api/v2/employee?id=${userId}`
-      );
+      const res = await axios.put(`/api/v2/employee?id=${userId}`);
       if (res.data.code) {
         dispatch(
           showToast({

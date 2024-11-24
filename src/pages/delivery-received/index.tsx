@@ -26,6 +26,7 @@ import { formatPrice } from "../../function/formatPrice";
 
 const DeliveryPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
+  const [messageError, setMessageError] = useState("");
   const [idProduct, setIdProduct] = useState(0);
   const [costPrice, setCostPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
@@ -224,18 +225,26 @@ const DeliveryPage: FC = function () {
                 />
               </div>
             </div>
+            {messageError != "" && (
+              <p className="text-red-600 text-sm"> {messageError}</p>
+            )}
             <div className="flex justify-center">
               <Button
-                onClick={() =>
+                onClick={() => {
                   dispatch(
                     addProductsWait({
                       id: idProduct,
                       price: costPrice,
                       quantity: quantity,
                     })
-                  )
+                  );
+                }}
+                disabled={idProduct == 0 || costPrice <= 0 || quantity <= 0}
+                title={
+                  idProduct == 0 || costPrice <= 0 || quantity <= 0
+                    ? "Số tiền và số lượng phải lớn hơn 0"
+                    : ""
                 }
-                disabled={idProduct == 0 || costPrice == 0 || quantity == 0}
               >
                 Add{" "}
               </Button>
