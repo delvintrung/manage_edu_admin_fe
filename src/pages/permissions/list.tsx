@@ -67,39 +67,12 @@ const PermissionPage: FC = function () {
                   <span className="dark:text-white">Home</span>
                 </div>
               </Breadcrumb.Item>
-              <Breadcrumb.Item href="/orders/list">Employees</Breadcrumb.Item>
-              <Breadcrumb.Item>List</Breadcrumb.Item>
+              <Breadcrumb.Item href="/orders/list">Permissions</Breadcrumb.Item>
             </Breadcrumb>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-              All employees
-            </h1>
           </div>
           <div className="sm:flex md:justify-between">
             <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-              <form className="lg:pr-3">
-                <Label htmlFor="users-search" className="sr-only">
-                  Search
-                </Label>
-                <div className="relative mt-1 lg:w-64 xl:w-96">
-                  <TextInput
-                    id="users-search"
-                    name="users-search"
-                    placeholder="Search for employees"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => handleSearchEmployee(e)}
-                  />
-                </div>
-              </form>
-              <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <a
-                  href="#"
-                  className="inline-flex cursor-pointer justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <span className="sr-only">Search</span>
-                  <IoSearchSharp className="text-2xl" />
-                </a>
-              </div>
+              <h1 className="font-bold">Phân quyền linh động</h1>
             </div>
             <div>
               <Button color="success" onClick={handleSaveChange}>

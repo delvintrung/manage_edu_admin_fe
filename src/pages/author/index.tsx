@@ -52,11 +52,11 @@ const AuthorListPage: FC = function () {
                   <span className="dark:text-white">Home</span>
                 </div>
               </Breadcrumb.Item>
-              <Breadcrumb.Item href="/users/list">Users</Breadcrumb.Item>
+              <Breadcrumb.Item href="/users/list">Authors</Breadcrumb.Item>
               <Breadcrumb.Item>List</Breadcrumb.Item>
             </Breadcrumb>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-              All users
+              All authors
             </h1>
           </div>
           <div className="sm:flex">

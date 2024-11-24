@@ -197,6 +197,7 @@ const CompanyDeliveryPage: FC = function () {
 };
 
 type Suppier = {
+  id: number;
   name: string;
   discount: number;
   description: string;
@@ -205,7 +206,19 @@ type Suppier = {
 
 const AllDeliveryTable: FC = function () {
   const [suppliers, setSuppliers] = useState([]);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [selectCompany, setSelectCompany] = useState<Suppier | null>(null);
+  const [nameCompanyUpdate, setNameCompanyUpdate] = useState<
+    string | undefined
+  >("");
+  const [discountCompanyUpdate, setDiscountCompanyUpdate] = useState<
+    number | null
+  >(null);
+  const [infoCompanyUpdate, setInfoCompanyUpdate] = useState<string>("");
+  const [statusCompanyUpdate, setStatusCompanyUpdate] = useState<string>("");
   const role = useSelector((state: RootState) => state.role.currentAction.list);
+  const dispatch = useDispatch();
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -217,8 +230,83 @@ const AllDeliveryTable: FC = function () {
     };
     fetch();
   }, []);
+
+  const isDisabled =
+    nameCompanyUpdate === "" &&
+    discountCompanyUpdate === null &&
+    infoCompanyUpdate === "" &&
+    statusCompanyUpdate === "";
+
+  const handleSubmitUpdate = (e: any) => {
+    e.preventDefault();
+    try {
+      const updatedName = nameCompanyUpdate || selectCompany?.name;
+      const updatedDiscount = discountCompanyUpdate ?? selectCompany?.discount;
+      const updatedInfo = infoCompanyUpdate || selectCompany?.description;
+      const updatedStatus = statusCompanyUpdate || selectCompany?.status;
+
+      if (
+        updatedName &&
+        updatedDiscount !== null &&
+        updatedInfo &&
+        updatedStatus
+      ) {
+        axios
+          .put("/api/v2/company-update", {
+            id: selectCompany?.id,
+            name: updatedName,
+            discount: updatedDiscount,
+            infomation: updatedInfo,
+            status: updatedStatus,
+          })
+          .then((res) => {
+            if (res.data.code) {
+              dispatch(
+                showToast({ type: "success", message: res.data.message })
+              );
+              reloadSide();
+            } else {
+              dispatch(showToast({ type: "error", message: res.data.message }));
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+          .finally(() => {
+            setOpenEditModal(false);
+            setSelectCompany(null);
+            setDiscountCompanyUpdate(null);
+            setNameCompanyUpdate("");
+            setInfoCompanyUpdate("");
+            setStatusCompanyUpdate("");
+          });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDeleteCompany = () => {
+    axios
+      .put(`/api/v2/company-delete`, { id: selectCompany?.id })
+      .then((res) => {
+        if (res.data.code) {
+          dispatch(showToast({ type: "success", message: res.data.message }));
+          reloadSide();
+        } else {
+          dispatch(showToast({ type: "error", message: res.data.message }));
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setOpenDeleteModal(false);
+        setSelectCompany(null);
+      });
+  };
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto relative">
       <Table hoverable>
         <Table.Head>
           <Table.HeadCell>Name Supplier</Table.HeadCell>
@@ -241,6 +329,10 @@ const AllDeliveryTable: FC = function () {
                   <Button
                     color="gray"
                     disabled={checkActionValid(role, "company", "update")}
+                    onClick={() => {
+                      setOpenEditModal(true);
+                      setSelectCompany(suppier);
+                    }}
                   >
                     <RxUpdate className="mr-3 h-4 w-4" />
                     Update
@@ -248,6 +340,10 @@ const AllDeliveryTable: FC = function () {
                   <Button
                     color="gray"
                     disabled={checkActionValid(role, "company", "delete")}
+                    onClick={() => {
+                      setSelectCompany(suppier);
+                      setOpenDeleteModal(true);
+                    }}
                   >
                     <MdDeleteForever className="mr-3 h-4 w-4" />
                     Remove
@@ -258,6 +354,123 @@ const AllDeliveryTable: FC = function () {
           ))}
         </Table.Body>
       </Table>
+      {openEditModal && (
+        <Modal
+          show={openEditModal}
+          position="center"
+          onClose={() => {
+            setOpenEditModal(false);
+            setSelectCompany(null);
+            setDiscountCompanyUpdate(null);
+            setNameCompanyUpdate("");
+            setInfoCompanyUpdate("");
+            setStatusCompanyUpdate("");
+          }}
+        >
+          <Modal.Header>Edit Supplier</Modal.Header>
+          <Modal.Body>
+            <form onSubmit={handleSubmitUpdate}>
+              <div className="p-5 ">
+                <div className="flex">
+                  <label htmlFor="name">Name: </label>
+                  <input
+                    id="name"
+                    name="name"
+                    placeholder="Name"
+                    className="ml-3"
+                    defaultValue={selectCompany?.name}
+                    onChange={(e) => {
+                      setNameCompanyUpdate(e.target.value);
+                    }}
+                  />
+                </div>
+                <div className="flex">
+                  <label htmlFor="name">Discount(%): </label>
+
+                  <input
+                    id="name"
+                    name="name"
+                    placeholder="Name"
+                    className="ml-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    type="number"
+                    step="0.01"
+                    defaultValue={selectCompany?.discount}
+                    onChange={(e) => {
+                      setDiscountCompanyUpdate(Number(e.target.value));
+                    }}
+                  />
+                </div>
+                <div className="flex">
+                  <label htmlFor="name">Infomation: </label>
+                  <textarea
+                    id="name"
+                    placeholder="Name"
+                    className="ml-3 h-32 w-[400px] max-w-[420px] max-h-44 min-h-[100px]"
+                    defaultValue={selectCompany?.description}
+                    onChange={(e) => {
+                      setInfoCompanyUpdate(e.target.value);
+                    }}
+                  />
+                </div>
+                <div className="flex">
+                  <label htmlFor="name">Status: </label>
+                  <select
+                    onChange={(e) => setStatusCompanyUpdate(e.target.value)}
+                  >
+                    <option
+                      value="running"
+                      selected={selectCompany?.status === "running"}
+                    >
+                      Running
+                    </option>
+                    <option
+                      value="stopped"
+                      selected={selectCompany?.status === "stopped"}
+                    >
+                      Stopped
+                    </option>
+                  </select>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    className=""
+                    disabled={isDisabled}
+                    title={isDisabled ? "Không có giá trị gì thay đổi" : ""}
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </Modal.Body>
+        </Modal>
+      )}
+
+      {openDeleteModal && (
+        <Modal
+          show={openDeleteModal}
+          position="center"
+          onClose={() => {
+            setOpenEditModal(false);
+            setSelectCompany(null);
+          }}
+        >
+          <Modal.Header>Delete Supplier</Modal.Header>
+          <Modal.Body>
+            <div className="p-5 ">
+              <div className="flex justify-center">
+                <p>Bạn có chắc chắn muốn xóa nhà cung cấp này không?</p>
+              </div>
+              <div className="flex justify-center mt-5">
+                <Button color="failure" onClick={handleDeleteCompany}>
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Modal.Body>
+        </Modal>
+      )}
     </div>
   );
 };
