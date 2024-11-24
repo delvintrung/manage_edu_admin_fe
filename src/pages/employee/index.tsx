@@ -127,7 +127,7 @@ const AddEmployeeModal: FC = function () {
 
   useEffect(() => {
     const fetch = async () => {
-      const res = await axios.get("http://localhost:3006/api/v2/role");
+      const res = await axios.get("/api/v2/role");
       if (res) {
         setRoles(res.data);
       } else {
@@ -170,7 +170,7 @@ const AddEmployeeModal: FC = function () {
                   return;
                 }
                 axios
-                  .post("http://localhost:3006/api/v2/auth/register", {
+                  .post("/api/v2/auth/register", {
                     value: { ...values, role: roleValue },
                   })
                   .then((res) => {
@@ -321,7 +321,7 @@ const AllUsersTable: FC = function () {
   };
   useEffect(() => {
     const getAllUsers = async () => {
-      const res = await axios.get("http://localhost:3006/api/v2/employee");
+      const res = await axios.get("/api/v2/employee");
       setAllUsers(res.data);
     };
     getAllUsers();
@@ -437,7 +437,7 @@ const EditUserModal: FC<{ employee: Employee | null; onClose: VoidFunction }> =
 
     useEffect(() => {
       const fetch = async () => {
-        const res = await axios.get("http://localhost:3006/api/v2/role");
+        const res = await axios.get("/api/v2/role");
         if (res) {
           setRoles(res.data);
         } else {
@@ -629,7 +629,7 @@ const DeleteUserModal: FC<{
   const handleDeleteUser = (userId: number) => {
     const sendRequest = async () => {
       const res = await axios.put(
-        `http://localhost:3006/api/v2/employee?id=${userId}`
+        `/api/v2/employee?id=${userId}`
       );
       if (res.data.code) {
         dispatch(
