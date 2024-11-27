@@ -19,6 +19,7 @@ import { RootState } from "../../store";
 import checkActionValid from "../../function/checkActionValid";
 import { CiSearch } from "react-icons/ci";
 import { useNavigate } from "react-router";
+import React from "react";
 
 interface User {
   id: number;
@@ -31,6 +32,29 @@ interface User {
 }
 
 const UserListPage: FC = function () {
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    const getAllUsers = async () => {
+      const res = await axios.get("/api/v2/user");
+      setAllUsers(res.data);
+    };
+    getAllUsers();
+  }, []);
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      if (search === "") {
+        const res = await axios.get("/api/v2/user");
+        setAllUsers(res.data);
+        return;
+      }
+      const res = await axios.get(`/api/v2/user-search?search=${search}`);
+      setAllUsers(res.data);
+    } catch (error) {
+      setAllUsers([]);
+    }
+  };
   return (
     <NavbarSidebarLayout isFooter={false}>
       <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
@@ -52,7 +76,7 @@ const UserListPage: FC = function () {
           </div>
           <div className="sm:flex">
             <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-              <form className="lg:pr-3">
+              <form className="lg:pr-3" onSubmit={handleSearch}>
                 <Label htmlFor="users-search" className="sr-only">
                   Search
                 </Label>
@@ -61,13 +85,15 @@ const UserListPage: FC = function () {
                     id="users-search"
                     name="users-search"
                     placeholder="Search for users"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
               </form>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <div className="cursor-pointer p-2">
+                <button type="submit" className="cursor-pointer p-2">
                   <CiSearch size="30" />
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -77,7 +103,7 @@ const UserListPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllUsersTable />
+              <MemoizedUserTable allUsers={allUsers} />
             </div>
           </div>
         </div>
@@ -86,18 +112,9 @@ const UserListPage: FC = function () {
   );
 };
 
-const AllUsersTable: FC = function () {
-  const [allUsers, setAllUsers] = useState([]);
+const AllUsersTable: FC<{ allUsers: User[] }> = function ({ allUsers }) {
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const getAllUsers = async () => {
-      const res = await axios.get("/api/v2/user");
-      setAllUsers(res.data);
-    };
-    getAllUsers();
-  }, []);
 
   interface SelectedUser {
     userId: number | null;
@@ -254,5 +271,5 @@ const AllUsersTable: FC = function () {
     </>
   );
 };
-
+const MemoizedUserTable = React.memo(AllUsersTable);
 export default UserListPage;

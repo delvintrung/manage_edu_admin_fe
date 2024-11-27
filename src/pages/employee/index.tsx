@@ -22,6 +22,7 @@ import ToastComponent from "../../components/toast";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../Slice/toast";
 import { useNavigate } from "react-router";
+import React from "react";
 
 interface Employee {
   id: number;
@@ -42,6 +43,29 @@ type Role = {
 type VoidFunction = () => void;
 
 const EmployeeListPage: FC = function () {
+  const [allUsers, setAllUsers] = useState<Employee[]>([]);
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    const getAllUsers = async () => {
+      const res = await axios.get("/api/v2/employee");
+      setAllUsers(res.data);
+    };
+    getAllUsers();
+  }, []);
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      if (search === "") {
+        const res = await axios.get("/api/v2/employee");
+        setAllUsers(res.data);
+        return;
+      }
+      const res = await axios.get(`/api/v2/employee-search?search=${search}`);
+      setAllUsers(res.data);
+    } catch (error) {
+      setAllUsers([]);
+    }
+  };
   return (
     <NavbarSidebarLayout isFooter={false}>
       <ToastComponent />
@@ -64,7 +88,7 @@ const EmployeeListPage: FC = function () {
           </div>
           <div className="sm:flex">
             <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-              <form className="lg:pr-3">
+              <form className="lg:pr-3" onSubmit={handleSearch}>
                 <Label htmlFor="users-search" className="sr-only">
                   Search
                 </Label>
@@ -73,14 +97,16 @@ const EmployeeListPage: FC = function () {
                     id="users-search"
                     name="users-search"
                     placeholder="Search for employees"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-              </form>
-              <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <div className="cursor-pointer p-2">
-                  <CiSearch size="30" />
+                <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
+                  <button className="cursor-pointer p-2" type="submit">
+                    <CiSearch size="30" />
+                  </button>
                 </div>
-              </div>
+              </form>
             </div>
             <div className="ml-auto flex items-center space-x-2 sm:space-x-3">
               <AddEmployeeModal />
@@ -92,7 +118,7 @@ const EmployeeListPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllUsersTable />
+              <MemoizedUsersTable allUsers={allUsers} />
             </div>
           </div>
         </div>
@@ -298,8 +324,7 @@ const AddEmployeeModal: FC = function () {
   );
 };
 
-const AllUsersTable: FC = function () {
-  const [allUsers, setAllUsers] = useState([]);
+const AllUsersTable: FC<{ allUsers: Employee[] }> = function ({ allUsers }) {
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const [employeeSelected, setEmployeeSelected] = useState<Employee | null>(
     null
@@ -326,14 +351,6 @@ const AllUsersTable: FC = function () {
     setEmployeeSelected(null);
     setIsOpenDeleteModal(false);
   };
-  useEffect(() => {
-    const getAllUsers = async () => {
-      const res = await axios.get("/api/v2/employee");
-      setAllUsers(res.data);
-    };
-    getAllUsers();
-  }, []);
-
   return (
     <div>
       <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
@@ -418,7 +435,7 @@ const AllUsersTable: FC = function () {
     </div>
   );
 };
-
+const MemoizedUsersTable = React.memo(AllUsersTable);
 const EditUserModal: FC<{ employee: Employee | null; onClose: VoidFunction }> =
   function (props): JSX.Element {
     const [isOpen, setOpen] = useState(true);

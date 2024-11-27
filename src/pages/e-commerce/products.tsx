@@ -8,7 +8,7 @@ import {
   TextInput,
 } from "flowbite-react";
 import type { FC } from "react";
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent, memo } from "react";
 import { FaPlus } from "react-icons/fa";
 import {
   HiHome,
@@ -57,13 +57,40 @@ type Category = {
   label: string;
   value: number;
 };
-
 const EcommerceProductsPage: FC = function () {
   const dispatch = useDispatch<AppDispatch>();
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [text, setText] = useState("");
   useEffect(() => {
     dispatch(fetchAuthors());
     dispatch(fetchCategory());
   }, []);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get("/api/v2/product");
+        setAllProducts(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchData();
+  }, []);
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      if (text == "") {
+        const response = await axios.get("/api/v2/product");
+        setAllProducts(response.data);
+        return;
+      }
+      const response = await axios.get(`/api/v2/product-search?text=${text}`);
+      setAllProducts(response.data);
+    } catch (error) {
+      console.log(error);
+      setAllProducts([]);
+    }
+  };
   return (
     <NavbarSidebarLayout isFooter={false}>
       <ToastComponent />
@@ -87,10 +114,26 @@ const EcommerceProductsPage: FC = function () {
             </h1>
           </div>
           <div className="block items-center sm:flex">
-            <SearchForProducts />
-            <div className="cursor-pointer p-2">
-              <CiSearch size="30" />
-            </div>
+            <form
+              className="flex mb-4 sm:mb-0 sm:pr-3"
+              onSubmit={handleSearch}
+            >
+              <Label htmlFor="products-search" className="sr-only">
+                Search
+              </Label>
+              <div className="relative mt-1 lg:w-64 xl:w-96">
+                <TextInput
+                  id="products-search"
+                  name="products-search"
+                  placeholder="Search for products"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="cursor-pointer p-2">
+                <CiSearch size="30" />
+              </button>
+            </form>
             <div className="flex w-full items-center sm:justify-end">
               <AddProductModal />
             </div>
@@ -101,7 +144,7 @@ const EcommerceProductsPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <ProductsTable />
+              <MemoizedProductsTable allProducts={allProducts} />
             </div>
           </div>
         </div>
@@ -109,24 +152,6 @@ const EcommerceProductsPage: FC = function () {
     </NavbarSidebarLayout>
   );
 };
-
-const SearchForProducts: FC = function () {
-  return (
-    <form className="mb-4 sm:mb-0 sm:pr-3" action="#" method="GET">
-      <Label htmlFor="products-search" className="sr-only">
-        Search
-      </Label>
-      <div className="relative mt-1 lg:w-64 xl:w-96">
-        <TextInput
-          id="products-search"
-          name="products-search"
-          placeholder="Search for products"
-        />
-      </div>
-    </form>
-  );
-};
-
 const AddProductModal: FC = function () {
   const [isOpen, setOpen] = useState(false);
   const [nameProduct, setNameProduct] = useState("");
@@ -672,33 +697,22 @@ const DeleteProductModal: FC<{ id: number }> = function (props) {
   );
 };
 
-const ProductsTable: FC = function () {
-  const [allProducts, setAllProducts] = useState([]);
+const ProductsTable: FC<{ allProducts: Product[] }> = function ({
+  allProducts,
+}) {
   const [clickTitle, setClickTitle] = useState(false);
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await axios.get("/api/v2/product");
-        setAllProducts(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetch = async () => {
-      if (clickTitle) {
-        try {
-          const response = await axios.get("/api/v2/product/filter/title");
-          setAllProducts(response.data);
-        } catch (error) {}
-        return;
-      }
-    };
-    fetch();
-  }, [clickTitle]);
+  // useEffect(() => {
+  //   const fetch = async () => {
+  //     if (clickTitle) {
+  //       try {
+  //         const response = await axios.get("/api/v2/product/filter/title");
+  //         setAllProducts(response.data);
+  //       } catch (error) {}
+  //       return;
+  //     }
+  //   };
+  //   fetch();
+  // }, [clickTitle]);
 
   const formatPrice: (currentPrice: number) => string = (
     currenPrice: number
@@ -768,5 +782,5 @@ const ProductsTable: FC = function () {
     </Table>
   );
 };
-
+const MemoizedProductsTable = memo(ProductsTable);
 export default EcommerceProductsPage;
