@@ -298,7 +298,7 @@ const AllUsersTable: FC = function () {
     const getOrders = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:3006/api/v2/order/get-all-order-admin"
+          "/api/v2/order/get-all-order-admin"
         );
         setOrders(res.data);
       } catch (error) {

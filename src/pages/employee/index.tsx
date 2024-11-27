@@ -328,7 +328,7 @@ const AllUsersTable: FC = function () {
   };
   useEffect(() => {
     const getAllUsers = async () => {
-      const res = await axios.get("http://localhost:3006/api/v2/employee");
+      const res = await axios.get("/api/v2/employee");
       setAllUsers(res.data);
     };
     getAllUsers();
