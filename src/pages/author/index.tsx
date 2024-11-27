@@ -39,6 +39,46 @@ interface Author {
 }
 
 const AuthorListPage: FC = function () {
+  const [allAuthor, setAllAuthor] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const getAllAuthor = async () => {
+      const res = await axios.get("/api/v2/author");
+      setAllAuthor(res.data);
+    };
+    getAllAuthor();
+  }, []);
+
+  const handleSearch = async () => {
+    if (searchValue === "") {
+      const result = await axios.get("/api/v2/author");
+      if (result) {
+        setAllAuthor(result.data);
+      }
+      dispatch(
+        showToast({ type: "error", message: "Vui lòng thêm giá trị tìm kiếm" })
+      );
+    } else {
+      axios
+        .get(`/api/v2/author-search?search=${searchValue}`)
+        .then((res) => {
+          if (res.data.code) {
+            setAllAuthor(res.data.data);
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setSearchValue("");
+        });
+    }
+  };
   return (
     <NavbarSidebarLayout isFooter={false}>
       <ToastComponent />
@@ -70,11 +110,12 @@ const AuthorListPage: FC = function () {
                     id="users-search"
                     name="users-search"
                     placeholder="Search for users"
+                    onChange={(e) => setSearchValue(e.target.value)}
                   />
                 </div>
               </form>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <div className="cursor-pointer p-2">
+                <div className="cursor-pointer p-2" onClick={handleSearch}>
                   <CiSearch size="30" />
                 </div>
               </div>
@@ -89,7 +130,7 @@ const AuthorListPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllAuthorsTable />
+              <AllAuthorsTable authors={allAuthor} />
             </div>
           </div>
         </div>
@@ -273,16 +314,11 @@ const AddAuthorModal: FC = function () {
   );
 };
 
-const AllAuthorsTable: FC = function () {
-  const [allAuthor, setAllAuthor] = useState([]);
-  useEffect(() => {
-    const getAllAuthor = async () => {
-      const res = await axios.get("/api/v2/author");
-      setAllAuthor(res.data);
-    };
-    getAllAuthor();
-  }, []);
+type AuthorListProps = {
+  authors: Author[];
+};
 
+const AllAuthorsTable: FC<AuthorListProps> = function ({ authors }) {
   return (
     <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
       <Table.Head className="bg-gray-100 dark:bg-gray-700">
@@ -292,7 +328,7 @@ const AllAuthorsTable: FC = function () {
         <Table.HeadCell>Actions</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-        {allAuthor.map((author: Author) => (
+        {authors.map((author: Author) => (
           <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
             <Table.Cell className="mr-12 flex items-center space-x-6 whitespace-nowrap p-4 lg:mr-0">
               <img
