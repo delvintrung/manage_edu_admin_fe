@@ -114,10 +114,7 @@ const EcommerceProductsPage: FC = function () {
             </h1>
           </div>
           <div className="block items-center sm:flex">
-            <form
-              className="flex mb-4 sm:mb-0 sm:pr-3"
-              onSubmit={handleSearch}
-            >
+            <form className="flex mb-4 sm:mb-0 sm:pr-3" onSubmit={handleSearch}>
               <Label htmlFor="products-search" className="sr-only">
                 Search
               </Label>
@@ -701,19 +698,26 @@ const ProductsTable: FC<{ allProducts: Product[] }> = function ({
   allProducts,
 }) {
   const [clickTitle, setClickTitle] = useState(false);
-  // useEffect(() => {
-  //   const fetch = async () => {
-  //     if (clickTitle) {
-  //       try {
-  //         const response = await axios.get("/api/v2/product/filter/title");
-  //         setAllProducts(response.data);
-  //       } catch (error) {}
-  //       return;
-  //     }
-  //   };
-  //   fetch();
-  // }, [clickTitle]);
-
+  const [currentArray, setCurrentArray] = useState<Product[]>([]);
+  useEffect(() => {
+    const fetch = async () => {
+      if (clickTitle) {
+        var byName = allProducts.slice(0);
+        byName.sort(function (a: Product, b: Product) {
+          var x = a.title.toLowerCase();
+          var y = b.title.toLowerCase();
+          return x < y ? -1 : x > y ? 1 : 0;
+        });
+        setCurrentArray(byName);
+        return;
+      }
+      setCurrentArray(allProducts);
+    };
+    fetch();
+  }, [clickTitle]);
+  useEffect(() => {
+    setCurrentArray(allProducts);
+  }, [allProducts]);
   const formatPrice: (currentPrice: number) => string = (
     currenPrice: number
   ) => {
@@ -733,7 +737,7 @@ const ProductsTable: FC<{ allProducts: Product[] }> = function ({
             setClickTitle(!clickTitle);
           }}
         >
-          Product Name{" "}
+          Product Name
           {clickTitle && (
             <div>
               <FaAngleDown />
@@ -747,7 +751,7 @@ const ProductsTable: FC<{ allProducts: Product[] }> = function ({
         <Table.HeadCell>Actions</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-        {allProducts.map((product: Product) => (
+        {currentArray.map((product: Product) => (
           <Table.Row
             key={product.id}
             className="hover:bg-gray-100 dark:hover:bg-gray-700"

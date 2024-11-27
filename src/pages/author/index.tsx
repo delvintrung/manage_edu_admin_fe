@@ -101,7 +101,7 @@ const AuthorListPage: FC = function () {
           </div>
           <div className="sm:flex">
             <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-              <form className="lg:pr-3">
+              <div className="lg:pr-3">
                 <Label htmlFor="users-search" className="sr-only">
                   Search
                 </Label>
@@ -113,7 +113,7 @@ const AuthorListPage: FC = function () {
                     onChange={(e) => setSearchValue(e.target.value)}
                   />
                 </div>
-              </form>
+              </div>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
                 <div className="cursor-pointer p-2" onClick={handleSearch}>
                   <CiSearch size="30" />
