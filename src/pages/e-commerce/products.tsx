@@ -674,6 +674,7 @@ const DeleteProductModal: FC<{ id: number }> = function (props) {
 
 const ProductsTable: FC = function () {
   const [allProducts, setAllProducts] = useState([]);
+
   const [clickTitle, setClickTitle] = useState(false);
   useEffect(() => {
     async function fetchData() {
@@ -690,11 +691,13 @@ const ProductsTable: FC = function () {
   useEffect(() => {
     const fetch = async () => {
       if (clickTitle) {
-        try {
-          const response = await axios.get("/api/v2/product/filter/title");
-          setAllProducts(response.data);
-        } catch (error) {}
-        return;
+        var byName = allProducts.slice(0);
+        byName.sort(function (a: Product, b: Product) {
+          var x = a.title.toLowerCase();
+          var y = b.title.toLowerCase();
+          return x < y ? -1 : x > y ? 1 : 0;
+        });
+        setAllProducts(byName);
       }
     };
     fetch();
@@ -719,7 +722,7 @@ const ProductsTable: FC = function () {
             setClickTitle(!clickTitle);
           }}
         >
-          Product Name{" "}
+          Product Name
           {clickTitle && (
             <div>
               <FaAngleDown />

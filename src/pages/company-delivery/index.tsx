@@ -98,7 +98,7 @@ const CompanyDeliveryPage: FC = function () {
               <div className="hidden mb-3 items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100 justify-between">
                 <div className="flex space-x-[560px]">
                   <div className="flex space-x-5">
-                    <form className="lg:pr-3">
+                    <div className="lg:pr-3">
                       <Label htmlFor="users-search" className="sr-only">
                         Search
                       </Label>
@@ -114,7 +114,7 @@ const CompanyDeliveryPage: FC = function () {
                           onClick={handleSearch}
                         />
                       </div>
-                    </form>
+                    </div>
                   </div>
                   <div className="">
                     <Button

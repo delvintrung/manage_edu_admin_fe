@@ -42,6 +42,46 @@ type Role = {
 type VoidFunction = () => void;
 
 const EmployeeListPage: FC = function () {
+  const dispatch = useDispatch();
+  const [employees, setEmployees] = useState([]);
+  const [searchValue, setSearchValue] = useState<string>("");
+  useEffect(() => {
+    const getAllEmployees = async () => {
+      const res = await axios.get("/api/v2/employee");
+      setEmployees(res.data);
+    };
+    getAllEmployees();
+  }, []);
+
+  const handleSearch = async () => {
+    if (searchValue === "") {
+      const result = await axios.get("/api/v2/employee");
+      if (result) {
+        setEmployees(result.data);
+      }
+      dispatch(
+        showToast({ type: "error", message: "Vui lòng thêm giá trị tìm kiếm" })
+      );
+    } else {
+      axios
+        .get(`/api/v2/employee-search?search=${searchValue}`)
+        .then((res) => {
+          if (res.data.code) {
+            setEmployees(res.data.data);
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setSearchValue("");
+        });
+    }
+  };
   return (
     <NavbarSidebarLayout isFooter={false}>
       <ToastComponent />
@@ -64,7 +104,7 @@ const EmployeeListPage: FC = function () {
           </div>
           <div className="sm:flex">
             <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-              <form className="lg:pr-3">
+              <div className="lg:pr-3">
                 <Label htmlFor="users-search" className="sr-only">
                   Search
                 </Label>
@@ -73,11 +113,12 @@ const EmployeeListPage: FC = function () {
                     id="users-search"
                     name="users-search"
                     placeholder="Search for employees"
+                    onChange={(e) => setSearchValue(e.target.value)}
                   />
                 </div>
-              </form>
+              </div>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <div className="cursor-pointer p-2">
+                <div className="cursor-pointer p-2" onClick={handleSearch}>
                   <CiSearch size="30" />
                 </div>
               </div>
@@ -92,7 +133,7 @@ const EmployeeListPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllUsersTable />
+              <AllUsersTable employees={employees} />
             </div>
           </div>
         </div>
@@ -298,8 +339,11 @@ const AddEmployeeModal: FC = function () {
   );
 };
 
-const AllUsersTable: FC = function () {
-  const [allUsers, setAllUsers] = useState([]);
+type AllUsersTableProps = {
+  employees: Employee[];
+};
+
+const AllUsersTable: FC<AllUsersTableProps> = function ({ employees }) {
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const [employeeSelected, setEmployeeSelected] = useState<Employee | null>(
     null
@@ -326,13 +370,6 @@ const AllUsersTable: FC = function () {
     setEmployeeSelected(null);
     setIsOpenDeleteModal(false);
   };
-  useEffect(() => {
-    const getAllUsers = async () => {
-      const res = await axios.get("/api/v2/employee");
-      setAllUsers(res.data);
-    };
-    getAllUsers();
-  }, []);
 
   return (
     <div>
@@ -345,7 +382,7 @@ const AllUsersTable: FC = function () {
           <Table.HeadCell>Actions</Table.HeadCell>
         </Table.Head>
         <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-          {allUsers.map((employee: Employee) => (
+          {employees.map((employee: Employee) => (
             <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
               <Table.Cell className="mr-12 flex items-center space-x-6 whitespace-nowrap p-4 lg:mr-0">
                 <img
