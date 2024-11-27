@@ -6,7 +6,6 @@ import {
   Modal,
   Table,
   TextInput,
-  FileInput,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
@@ -19,7 +18,6 @@ import {
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
-import { Editor, EditorTextChangeEvent } from "primereact/editor";
 import checkActionValid from "../../function/checkActionValid";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -37,6 +35,47 @@ interface Category {
 }
 
 const CategoryListPage: FC = function () {
+  const [allCategory, setAllCategory] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getAllCategory = async () => {
+      const res = await axios.get("/api/v2/all-category");
+      setAllCategory(res.data);
+    };
+    getAllCategory();
+  }, []);
+
+  const handleSearch = async () => {
+    if (searchValue === "") {
+      const result = await axios.get("/api/v2/all-category");
+      if (result) {
+        setAllCategory(result.data);
+      }
+      dispatch(
+        showToast({ type: "error", message: "Vui lòng thêm giá trị tìm kiếm" })
+      );
+    } else {
+      axios
+        .get(`/api/v2/category-search?search=${searchValue}`)
+        .then((res) => {
+          if (res.data.code) {
+            setAllCategory(res.data.data);
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setSearchValue("");
+        });
+    }
+  };
   return (
     <NavbarSidebarLayout isFooter={false}>
       <ToastComponent />
@@ -68,11 +107,12 @@ const CategoryListPage: FC = function () {
                     id="users-search"
                     name="users-search"
                     placeholder="Search for users"
+                    onChange={(e) => setSearchValue(e.target.value)}
                   />
                 </div>
               </form>
               <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
-                <div className="cursor-pointer p-2">
+                <div className="cursor-pointer p-2" onClick={handleSearch}>
                   <CiSearch size="30" />
                 </div>
               </div>
@@ -87,7 +127,7 @@ const CategoryListPage: FC = function () {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllAuthorsTable />
+              <AllAuthorsTable categorys={allCategory} />
             </div>
           </div>
         </div>
@@ -168,17 +208,11 @@ const AddCategoryModal: FC = function () {
     </>
   );
 };
+type AllAuthorsTableProps = {
+  categorys: Category[];
+};
 
-const AllAuthorsTable: FC = function () {
-  const [allCategory, setAllCategory] = useState([]);
-  useEffect(() => {
-    const getAllCategory = async () => {
-      const res = await axios.get("/api/v2/all-category");
-      setAllCategory(res.data);
-    };
-    getAllCategory();
-  }, []);
-
+const AllAuthorsTable: FC<AllAuthorsTableProps> = function ({ categorys }) {
   return (
     <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
       <Table.Head className="bg-gray-100 dark:bg-gray-700">
@@ -188,7 +222,7 @@ const AllAuthorsTable: FC = function () {
         <Table.HeadCell>Actions</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-        {allCategory.map((category: Category) => (
+        {categorys.map((category: Category) => (
           <Table.Row className="hover:bg-gray-100 dark:hover:bg-gray-700">
             <Table.Cell className="mr-12 flex items-center space-x-6 whitespace-nowrap p-4 lg:mr-0">
               <div className="text-sm font-normal text-gray-500 dark:text-gray-400">

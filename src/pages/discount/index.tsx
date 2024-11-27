@@ -29,7 +29,22 @@ type Values = {
   expiration_date: string;
 };
 const DiscountPage: FC = function () {
+  const [discounts, setDiscounts] = useState([]);
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await axios.get("/api/v2/discount");
+        if (result) {
+          setDiscounts(result.data.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetch();
+  }, []);
   const [openModal, setOpenModal] = useState(false);
+  const [searchValue, setSearchValue] = useState<string>("");
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const dispatch = useDispatch();
   const initialValues: Values = {
@@ -38,6 +53,36 @@ const DiscountPage: FC = function () {
     value_apply: 10000,
     max_apply: 200000,
     expiration_date: "",
+  };
+
+  const handleSearch = async () => {
+    if (searchValue === "") {
+      const result = await axios.get("/api/v2/discount");
+      if (result) {
+        setDiscounts(result.data.data);
+      }
+      dispatch(
+        showToast({ type: "error", message: "Vui lòng thêm giá trị tìm kiếm" })
+      );
+    } else {
+      axios
+        .get(`/api/v2/discount-search?search=${searchValue}`)
+        .then((res) => {
+          if (res.data.code) {
+            setDiscounts(res.data.data);
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setSearchValue("");
+        });
+    }
   };
 
   const validateSchema = Yup.object({
@@ -80,16 +125,6 @@ const DiscountPage: FC = function () {
               <div className="hidden mb-3 items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100 justify-between">
                 <div className="flex space-x-[560px]">
                   <div className="flex space-x-5">
-                    <div className="max-w-md flex items-center space-x-2">
-                      <div className="mb-2 block">
-                        <Label htmlFor="countries" value="Status:" />
-                      </div>
-                      <Select id="countries" required>
-                        <option>All</option>
-                        <option>还有联系</option>
-                        <option>Stopped</option>
-                      </Select>
-                    </div>
                     <form className="lg:pr-3">
                       <Label htmlFor="users-search" className="sr-only">
                         Search
@@ -99,12 +134,11 @@ const DiscountPage: FC = function () {
                           id="users-search"
                           name="users-search"
                           placeholder="Search for discount"
+                          onChange={(e) => setSearchValue(e.target.value)}
                         />
                         <IoIosSearch
                           className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
-                          onClick={() => {
-                            console.log("Tingggg");
-                          }}
+                          onClick={handleSearch}
                         />
                       </div>
                     </form>
@@ -130,7 +164,7 @@ const DiscountPage: FC = function () {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden shadow">
-                <AllCouponTable />
+                <AllCouponTable discounts={discounts} />
               </div>
             </div>
           </div>
@@ -274,20 +308,13 @@ type Discount = {
   dropTime: string;
 };
 
-const AllCouponTable: FC = function () {
-  const [discounts, setDiscounts] = useState([]);
+type AllCouponTableProps = {
+  discounts: Discount[];
+};
+
+const AllCouponTable: FC<AllCouponTableProps> = function ({ discounts }) {
   const role = useSelector((state: RootState) => state.role.currentAction.list);
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const result = await axios.get("/api/v2/discount");
-        if (result) {
-          setDiscounts(result.data.data);
-        }
-      } catch (error) {}
-    };
-    fetch();
-  }, []);
+
   return (
     <div className="overflow-x-auto">
       <ToastComponent />

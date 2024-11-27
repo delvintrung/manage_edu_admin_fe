@@ -25,6 +25,7 @@ type Values = {
 };
 const CompanyDeliveryPage: FC = function () {
   const [openModal, setOpenModal] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const dispatch = useDispatch();
   const initialValues: Values = { name: "", discount: 0, infomation: "" };
@@ -38,6 +39,49 @@ const CompanyDeliveryPage: FC = function () {
       "Thêm một tí thông tin gì đó cho nhà cung cấp này"
     ),
   });
+
+  const [suppliers, setSuppliers] = useState([]);
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await axios.get("/api/v2/company");
+        if (result) {
+          setSuppliers(result.data);
+        }
+      } catch (error) {}
+    };
+    fetch();
+  }, []);
+
+  const handleSearch = async () => {
+    if (searchValue === "") {
+      const result = await axios.get("/api/v2/company");
+      if (result) {
+        setSuppliers(result.data);
+      }
+      dispatch(
+        showToast({ type: "error", message: "Vui lòng thêm giá trị tìm kiếm" })
+      );
+    } else {
+      axios
+        .get(`/api/v2/company-search?search=${searchValue}`)
+        .then((res) => {
+          if (res.data.code) {
+            setSuppliers(res.data.data);
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setSearchValue("");
+        });
+    }
+  };
 
   return (
     <div>
@@ -54,16 +98,6 @@ const CompanyDeliveryPage: FC = function () {
               <div className="hidden mb-3 items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100 justify-between">
                 <div className="flex space-x-[560px]">
                   <div className="flex space-x-5">
-                    <div className="max-w-md flex items-center space-x-2">
-                      <div className="mb-2 block">
-                        <Label htmlFor="countries" value="Status:" />
-                      </div>
-                      <Select id="countries" required>
-                        <option value={0}>All</option>
-                        <option value={1}>Running</option>
-                        <option value={2}>Stopped</option>
-                      </Select>
-                    </div>
                     <form className="lg:pr-3">
                       <Label htmlFor="users-search" className="sr-only">
                         Search
@@ -73,12 +107,11 @@ const CompanyDeliveryPage: FC = function () {
                           id="users-search"
                           name="users-search"
                           placeholder="Search for delivery"
+                          onChange={(e) => setSearchValue(e.target.value)}
                         />
                         <IoIosSearch
                           className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
-                          onClick={() => {
-                            console.log("Tingggg");
-                          }}
+                          onClick={handleSearch}
                         />
                       </div>
                     </form>
@@ -104,7 +137,7 @@ const CompanyDeliveryPage: FC = function () {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden shadow">
-                <AllDeliveryTable />
+                <AllDeliveryTable suppliers={suppliers} />
               </div>
             </div>
           </div>
@@ -204,8 +237,11 @@ type Suppier = {
   status: string;
 };
 
-const AllDeliveryTable: FC = function () {
-  const [suppliers, setSuppliers] = useState([]);
+type AllDeliveryTableProps = {
+  suppliers: Suppier[];
+};
+
+const AllDeliveryTable: FC<AllDeliveryTableProps> = function ({ suppliers }) {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectCompany, setSelectCompany] = useState<Suppier | null>(null);
@@ -219,17 +255,6 @@ const AllDeliveryTable: FC = function () {
   const [statusCompanyUpdate, setStatusCompanyUpdate] = useState<string>("");
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const dispatch = useDispatch();
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const result = await axios.get("/api/v2/company");
-        if (result) {
-          setSuppliers(result.data);
-        }
-      } catch (error) {}
-    };
-    fetch();
-  }, []);
 
   const isDisabled =
     nameCompanyUpdate === "" &&
