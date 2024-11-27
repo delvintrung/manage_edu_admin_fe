@@ -148,9 +148,10 @@ function Accordion({ order }: { order: Order }) {
         status: status,
       });
       if (res.data.success === true) {
-        dispatch(showToast({ type: "success", message: res.data.message }));
         reloadSide();
       }
+      const type = res.data.success ? "success" : "error";
+      dispatch(showToast({ type: type, message: res.data.message }));
     };
     changeStatus(od);
   };
@@ -297,9 +298,7 @@ const AllUsersTable: FC = function () {
     dispatch(fetchOrderStatus());
     const getOrders = async () => {
       try {
-        const res = await axios.get(
-          "/api/v2/order/get-all-order-admin"
-        );
+        const res = await axios.get("/api/v2/order/get-all-order-admin");
         setOrders(res.data);
       } catch (error) {
         console.error("Error fetching orders:", error);

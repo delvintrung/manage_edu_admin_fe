@@ -9,7 +9,7 @@ export const fetchOrderStatus = createAsyncThunk(
   "orderStatus/fetchOrderStatus",
   async () => {
     const response = await axios.get(
-      "http://localhost:3006/api/v2/order/get-order-status"
+      "/api/v2/order/get-order-status"
     );
     return response.data;
   }
