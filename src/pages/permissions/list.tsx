@@ -40,7 +40,7 @@ const PermissionPage: FC = function () {
   };
 
   const handleSaveChange = async () => {
-    const result = await axios.put("http://localhost:3006/api/v2/role-change", {
+    const result = await axios.put("/api/v2/role-change", {
       change: JSON.stringify(changePermissions),
     });
     if (result) {

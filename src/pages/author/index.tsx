@@ -374,16 +374,17 @@ const AllAuthorsTable: FC<AuthorListProps> = function ({ authors }) {
 const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
   const role = useSelector((state: any) => state.role.currentAction.list);
-  const [informationAuthor, setInformationAuthor] = useState<string>("");
+  const [informationAuthor, setInformationAuthor] = useState<string>(props.author.infomation);
   const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
   const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
-  const [name, setName] = useState<string>("");
-
+  const [name, setName] = useState<string>(props.author.label);
+  console.log(props.author);
   const handleUpdateAuthor = () => {
     const formData = new FormData();
     formData.append("id", props.author.value.toString());
     formData.append("name", name);
     formData.append("information", informationAuthor);
+    formData.append("thumbnailURL", props.author.thumbnail);
     formData.append("author", thumbnail as Blob);
 
     const sendRequest = async () => {
@@ -410,11 +411,11 @@ const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[200px]">
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[250px]">
           <strong>Edit Author</strong>
         </Modal.Header>
         <Modal.Body>
-          <div className="">
+          <div className="max-h-screen overflow-y-auto">
             <div>
               <Label htmlFor="name">Name Author</Label>
               <div className="mt-1">
