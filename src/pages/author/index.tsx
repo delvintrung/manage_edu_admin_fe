@@ -33,7 +33,7 @@ import { reloadSide } from "../../function/reloadSide";
 interface Author {
   value: number;
   label: string;
-  infomation: string;
+  information: string;
   thumbnail: string;
   status: number;
 }
@@ -231,7 +231,7 @@ const AddAuthorModal: FC = function () {
               </div>
             </div>
             <div>
-              <Label htmlFor="infomation">Infomation</Label>
+              <Label htmlFor="information">Information</Label>
               <div className="mt-1">
                 <Editor
                   value={informationAuthor}
@@ -323,7 +323,7 @@ const AllAuthorsTable: FC<AuthorListProps> = function ({ authors }) {
     <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
       <Table.Head className="bg-gray-100 dark:bg-gray-700">
         <Table.HeadCell>Name</Table.HeadCell>
-        <Table.HeadCell>Information</Table.HeadCell>
+        {/* <Table.HeadCell>Information</Table.HeadCell> */}
         <Table.HeadCell>Status</Table.HeadCell>
         <Table.HeadCell>Actions</Table.HeadCell>
       </Table.Head>
@@ -342,9 +342,9 @@ const AllAuthorsTable: FC<AuthorListProps> = function ({ authors }) {
                 </div>
               </div>
             </Table.Cell>
-            <Table.Cell className="whitespace-nowrap p-4 text-base font-normal text-gray-900 dark:text-white">
-              {author.infomation}
-            </Table.Cell>
+            {/* <Table.Cell className="whitespace-nowrap p-4 text-base font-normal text-gray-900 dark:text-white">
+              {author.information}
+            </Table.Cell> */}
             <Table.Cell className="whitespace-nowrap p-4 text-base font-normal text-gray-900 dark:text-white">
               {author.status == 1 ? (
                 <div className="flex items-center">
@@ -374,16 +374,17 @@ const AllAuthorsTable: FC<AuthorListProps> = function ({ authors }) {
 const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
   const role = useSelector((state: any) => state.role.currentAction.list);
-  const [informationAuthor, setInformationAuthor] = useState<string>("");
+  const [informationAuthor, setInformationAuthor] = useState<string>(props.author.information);
   const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
   const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
-  const [name, setName] = useState<string>("");
-
+  const [name, setName] = useState<string>(props.author.label);
+  console.log(props.author);
   const handleUpdateAuthor = () => {
     const formData = new FormData();
     formData.append("id", props.author.value.toString());
     formData.append("name", name);
     formData.append("information", informationAuthor);
+    formData.append("thumbnailURL", props.author.thumbnail);
     formData.append("author", thumbnail as Blob);
 
     const sendRequest = async () => {
@@ -396,7 +397,9 @@ const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
     };
     sendRequest();
   };
-
+  useEffect(() => {
+    setInformationAuthor(props.author.information);
+  }, []);
   return (
     <>
       <Button
@@ -410,11 +413,11 @@ const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
         </div>
       </Button>
       <Modal onClose={() => setOpen(false)} show={isOpen}>
-        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[200px]">
+        <Modal.Header className="border-b border-gray-200 !p-6 dark:border-gray-700 mt-[250px]">
           <strong>Edit Author</strong>
         </Modal.Header>
         <Modal.Body>
-          <div className="">
+          <div className="max-h-screen overflow-y-auto">
             <div>
               <Label htmlFor="name">Name Author</Label>
               <div className="mt-1">
@@ -428,11 +431,11 @@ const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
               </div>
             </div>
             <div>
-              <Label htmlFor="infomation">Infomation</Label>
+              <Label htmlFor="information">Information</Label>
               <div className="mt-1">
                 <Editor
-                  value={informationAuthor}
-                  defaultValue={props.author.infomation}
+                  value={props.author.information}
+                  // defaultValue={props.author.information}
                   onTextChange={(e: EditorTextChangeEvent) => {
                     setInformationAuthor(e.htmlValue ?? "");
                   }}
