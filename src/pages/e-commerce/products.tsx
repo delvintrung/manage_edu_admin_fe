@@ -471,7 +471,7 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
         if (res.data.code == 1) {
           dispatch(showToast({ type: "success", message: res.data.message }));
           setOpen(false);
-          reloadSide();
+          // reloadSide();
         }
       })
       .finally(() => {
