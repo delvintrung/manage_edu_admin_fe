@@ -69,7 +69,9 @@ const EcommerceProductsPage: FC = function () {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get("/api/v2/product");
+        const response = await axios.get(
+          "/api/v2/product?entity=products&action=view"
+        );
         setAllProducts(response.data);
       } catch (error) {
         console.log(error);
@@ -81,7 +83,9 @@ const EcommerceProductsPage: FC = function () {
     e.preventDefault();
     try {
       if (text == "") {
-        const response = await axios.get("/api/v2/product");
+        const response = await axios.get(
+          "/api/v2/product?entity=products&action=view"
+        );
         setAllProducts(response.data);
         return;
       }
@@ -190,6 +194,8 @@ const AddProductModal: FC = function () {
     formData.append("author", authorProduct);
     formData.append("introduce", introduce);
     formData.append("description", desctiptionProduct);
+    formData.append("entity", "products");
+    formData.append("action", "create");
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       if (file) formData.append("product", file);
@@ -455,6 +461,8 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
     formData.append("description", desctiptionProduct);
     formData.append("introduce", introduce);
     formData.append("imagesDelete", JSON.stringify(imagesDelete));
+    formData.append("entity", "products");
+    formData.append("action", "update");
     if (fileList != null) {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
@@ -644,8 +652,10 @@ const DeleteProductModal: FC<{ id: number }> = function (props) {
   const role = useSelector((state: RootState) => state.role.currentAction.list);
   const dispatch = useDispatch();
   const handleDeleteProduct = async (productId: number) => {
-    const res = await axios.put("http://localhost:3006/api/v2/product", {
+    const res = await axios.put("/api/v2/product", {
       productId: productId,
+      entity: "products",
+      action: "delete",
     });
     if (res.data) {
       dispatch(

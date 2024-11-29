@@ -26,22 +26,15 @@ import ToastComponent from "../../components/toast";
 import { reloadSide } from "../../function/reloadSide";
 
 const PermissionPage: FC = function () {
-  const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [changePermissions, setChangePermissions] = useState<any[]>([]);
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleSearchEmployee = (
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-    }
-  };
-
   const handleSaveChange = async () => {
     const result = await axios.put("/api/v2/role-change", {
       change: JSON.stringify(changePermissions),
+      entity: "permissions",
+      action: "update",
     });
     if (result) {
       dispatch(

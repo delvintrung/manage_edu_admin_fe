@@ -51,7 +51,6 @@ const ExampleSidebar: FC = function () {
     await axios.post("/api/v2/auth/logout");
     localStorage.clear();
     navigate("/authentication/sign-in");
-    // window.location.href = "/authentication/sign-in";
   };
 
   const initialPermissionView = useRef(permissionView);
