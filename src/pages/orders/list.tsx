@@ -146,6 +146,8 @@ function Accordion({ order }: { order: Order }) {
       const res = await axios.put("/api/v2/order/update-order-status", {
         orderId: parseInt(od),
         status: status,
+        entity: "orders",
+        action: "update",
       });
       if (res.data.success === true) {
         reloadSide();
@@ -298,7 +300,9 @@ const AllUsersTable: FC = function () {
     dispatch(fetchOrderStatus());
     const getOrders = async () => {
       try {
-        const res = await axios.get("/api/v2/order/get-all-order-admin");
+        const res = await axios.get(
+          "/api/v2/order/get-all-order-admin?entity=orders&action=view"
+        );
         setOrders(res.data);
       } catch (error) {
         console.error("Error fetching orders:", error);
