@@ -109,7 +109,7 @@ const AuthorListPage: FC = function () {
                   <TextInput
                     id="users-search"
                     name="users-search"
-                    placeholder="Search for users"
+                    placeholder="Search for authors"
                     onChange={(e) => setSearchValue(e.target.value)}
                   />
                 </div>
