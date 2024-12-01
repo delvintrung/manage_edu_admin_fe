@@ -137,11 +137,19 @@ const AddEmployeeModal: FC = function () {
       .required("Không được bỏ trống"),
     email: Yup.string()
       .trim()
+      .matches(
+        /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+        "Email không đúng định dạng"
+      )
       .email("Email không hợp lệ")
       .required("Email không được bỏ trống"),
-    password: Yup.string().required("Password không được bỏ trống"),
+    password: Yup.string()
+      .min(6, "Độ dài mật khẩu tối thiểu là 6 kí tự")
+      .required("Password không được bỏ trống"),
     phone_number: Yup.string()
-      .trim()
+      .min(10, "Độ dài của số điện thoại tối thiểu 10 số")
+      .max(11, "Độ dài của số điện thoại tối đa 11 số")
+      .matches(/(84|0[3|5|7|8|9])+([0-9]{8})\b/g, "Số điện thoại không hợp lệ")
       .required("Số điện thoại không được bỏ trống"),
     address: Yup.string().required("Địa chỉ không được bỏ trống"),
   });
@@ -450,11 +458,15 @@ const EditUserModal: FC<{ employee: Employee | null; onClose: VoidFunction }> =
         .max(70, "Quá dài!")
         .required("Không được bỏ trống"),
       password: Yup.string()
-        .trim()
-        .min(6, "Password phải hơn 6 kí tự")
+        .min(6, "Độ dài mật khẩu tối thiểu là 6 kí tự")
         .required("Password không được bỏ trống"),
       phone_number: Yup.string()
-        .trim()
+        .min(10, "Độ dài của số điện thoại tối thiểu 10 số")
+        .max(11, "Độ dài của số điện thoại tối đa 11 số")
+        .matches(
+          /(84|0[3|5|7|8|9])+([0-9]{8})\b/g,
+          "Số điện thoại không hợp lệ"
+        )
         .required("Số điện thoại không được bỏ trống"),
       address: Yup.string().required("Địa chỉ không được bỏ trống"),
     });

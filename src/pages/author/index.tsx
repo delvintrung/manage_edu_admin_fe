@@ -191,9 +191,12 @@ const AddAuthorModal: FC = function () {
     sendRequest();
   };
 
-  const isDisabled = !name || !informationAuthor || !thumbnail;
+  const isDisabled =
+    !name || name.includes("-") || !informationAuthor || !thumbnail;
   const disabledReason = !name
     ? "Thiếu tên tác giả"
+    : name.includes("-")
+    ? "Tên tác giả không được chứa dấu '-'"
     : !informationAuthor
     ? "Thiếu thông tin tác giả"
     : !thumbnail
@@ -374,7 +377,9 @@ const AllAuthorsTable: FC<AuthorListProps> = function ({ authors }) {
 const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
   const [isOpen, setOpen] = useState(false);
   const role = useSelector((state: any) => state.role.currentAction.list);
-  const [informationAuthor, setInformationAuthor] = useState<string>(props.author.information);
+  const [informationAuthor, setInformationAuthor] = useState<string>(
+    props.author.information
+  );
   const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
   const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
   const [name, setName] = useState<string>(props.author.label);

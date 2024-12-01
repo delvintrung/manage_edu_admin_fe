@@ -2,19 +2,16 @@
 import {
   Button,
   Label,
-  Table,
   TextInput,
   Modal,
   Select,
   Textarea,
-  Accordion,
 } from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 import { IoMdAddCircleOutline, IoIosSearch } from "react-icons/io";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
 import axios from "../../config/axios";
-import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { addProductsWait, removeProductsWait } from "../../Slice/products_wait";
@@ -53,7 +50,7 @@ const DeliveryPage: FC = function () {
       const allProducts = await axios.get("/api/v2/product");
       setProducts(allProducts.data);
 
-      const company = await axios.get("/api/v2/company");
+      const company = await axios.get("/api/v2/company-running");
       setCompany(company.data);
     };
 
@@ -100,24 +97,7 @@ const DeliveryPage: FC = function () {
             </div>
             <div className="sm:flex sm:justify-between">
               <div className="hidden mb-3 items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-                <form className="lg:pr-3">
-                  <Label htmlFor="users-search" className="sr-only">
-                    Search
-                  </Label>
-                  <div className="relative mt-1 lg:w-64 xl:w-96">
-                    <TextInput
-                      id="users-search"
-                      name="users-search"
-                      placeholder="Search for delivery"
-                    />
-                    <IoIosSearch
-                      className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
-                      onClick={() => {
-                        console.log("Tingggg");
-                      }}
-                    />
-                  </div>
-                </form>
+                <h2></h2>
               </div>
               <Button
                 gradientDuoTone="greenToBlue"
@@ -239,10 +219,18 @@ const DeliveryPage: FC = function () {
                     })
                   );
                 }}
-                disabled={idProduct == 0 || costPrice <= 0 || quantity <= 0}
+                disabled={
+                  idProduct == 0 ||
+                  costPrice <= 0 ||
+                  quantity <= 0 ||
+                  isNaN(quantity) ||
+                  isNaN(costPrice)
+                }
                 title={
-                  idProduct == 0 || costPrice <= 0 || quantity <= 0
-                    ? "Số tiền và số lượng phải lớn hơn 0"
+                  idProduct == 0 || costPrice <= 0 || isNaN(costPrice)
+                    ? "Số tiền phải lớn hơn 0"
+                    : quantity <= 0 || isNaN(quantity)
+                    ? "Số lượng phải lớn hơn 0"
                     : ""
                 }
               >
@@ -345,6 +333,13 @@ const AllDeliveryTable: FC = function () {
 
   return (
     <div className="overflow-x-auto">
+      <div className="grid grid-cols-5 bg-gray-300  p-5">
+        <div>ID</div>
+        <div>Time</div>
+        <div>Company</div>
+        <div>Total</div>
+        <div>Description</div>
+      </div>
       {received.length > 0 ? (
         received.map((item) => <Component received={item} />)
       ) : (
