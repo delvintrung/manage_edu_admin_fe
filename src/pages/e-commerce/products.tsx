@@ -44,6 +44,7 @@ interface Product {
   thumbnail?: string;
   gallery?: string[];
   status: number;
+  quantity: number;
 }
 
 type Author = {
@@ -782,7 +783,11 @@ const ProductsTable: FC<{ allProducts: Product[] }> = function ({
               {formatPrice(product.price)}
             </Table.Cell>
             <Table.Cell className="whitespace-nowrap p-4 text-base font-medium text-gray-900 dark:text-white">
-              {product.status == 1 ? "Còn hàng" : "Hết hàng"}
+              {product.status === 1 &&
+              product.quantity !== null &&
+              product.quantity > 0
+                ? "Còn hàng"
+                : "Hết hàng"}
             </Table.Cell>
             <Table.Cell className="space-x-2 whitespace-nowrap p-4">
               <div className="flex items-center gap-x-3 ">
