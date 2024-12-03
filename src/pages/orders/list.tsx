@@ -1,5 +1,12 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Breadcrumb, Button, Badge, Table } from "flowbite-react";
+import {
+  Breadcrumb,
+  Button,
+  Badge,
+  Table,
+  Label,
+  TextInput,
+} from "flowbite-react";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 import { HiHome } from "react-icons/hi";
@@ -11,11 +18,79 @@ import { RootState, AppDispatch } from "../../store";
 import checkActionValid from "../../function/checkActionValid";
 import { showToast } from "../../Slice/toast";
 import ToastComponent from "../../components/toast";
+import { CiSearch } from "react-icons/ci";
+
 import moment from "moment";
 import { FaSortDown } from "react-icons/fa";
 import { reloadSide } from "../../function/reloadSide";
 
 const UserListPage: FC = function () {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const [searchValue, setSearchValue] = useState<string>("");
+
+  useEffect(() => {
+    dispatch(fetchOrderStatus());
+    const getOrders = async () => {
+      try {
+        const res = await axios.get(
+          "/api/v2/order/get-all-order-admin?entity=orders&action=view"
+        );
+        setOrders(res.data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+    getOrders();
+  }, []);
+
+  const handleGetOrderByStatus = async (status: number) => {
+    await axios
+      .post("/api/v2/order/get-order-by-status", { status: status })
+      .then((res) => {
+        setOrders(res.data);
+        dispatch(
+          showToast({ type: "success", message: "Thay đổi thành công" })
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+        dispatch(showToast({ type: "error", message: "Thay đổi thất bại" }));
+      });
+  };
+
+  const handleSearch = async () => {
+    if (searchValue === "") {
+      const result = await axios.get(
+        "/api/v2/order/get-all-order-admin?entity=orders&action=view"
+      );
+      if (result) {
+        setOrders(result.data);
+      }
+      dispatch(
+        showToast({ type: "error", message: "Vui lòng thêm giá trị tìm kiếm" })
+      );
+    } else {
+      axios
+        .get(`/api/v2/order-search?search=${searchValue}`)
+        .then((res) => {
+          if (res.data.code) {
+            setOrders(res.data.data);
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setSearchValue("");
+        });
+    }
+  };
+
   return (
     <NavbarSidebarLayout isFooter={false}>
       <ToastComponent />
@@ -36,13 +111,36 @@ const UserListPage: FC = function () {
               All orders
             </h1>
           </div>
+          <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
+            <div className="lg:pr-3">
+              <Label htmlFor="users-search" className="sr-only">
+                Search
+              </Label>
+              <div className="relative mt-1 lg:w-64 xl:w-96">
+                <TextInput
+                  id="users-search"
+                  name="users-search"
+                  placeholder="Search id, name, email, phone"
+                  onChange={(e) => setSearchValue(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="mt-3 flex space-x-1 pl-0 sm:mt-0 sm:pl-2">
+              <div className="cursor-pointer p-2" onClick={handleSearch}>
+                <CiSearch size="30" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div className="flex flex-col">
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden shadow">
-              <AllUsersTable />
+              <AllUsersTable
+                orders={orders}
+                handleGetOrderByStatus={handleGetOrderByStatus}
+              />
             </div>
           </div>
         </div>
@@ -288,43 +386,14 @@ function Accordion({ order }: { order: Order }) {
   );
 }
 
-const AllUsersTable: FC = function () {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const dispatch = useDispatch<AppDispatch>();
+const AllUsersTable: FC<{
+  orders: Order[];
+  handleGetOrderByStatus: (status: number) => void;
+}> = function ({ orders, handleGetOrderByStatus }) {
   const [showList, setShowList] = useState(false);
   const orderStatus = useSelector(
     (state: RootState) => state.order_status.orderStatus.list
   );
-
-  useEffect(() => {
-    dispatch(fetchOrderStatus());
-    const getOrders = async () => {
-      try {
-        const res = await axios.get(
-          "/api/v2/order/get-all-order-admin?entity=orders&action=view"
-        );
-        setOrders(res.data);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      }
-    };
-    getOrders();
-  }, []);
-
-  const handleGetOrderByStatus = async (status: number) => {
-    await axios
-      .post("/api/v2/order/get-order-by-status", { status: status })
-      .then((res) => {
-        setOrders(res.data);
-        dispatch(
-          showToast({ type: "success", message: "Thay đổi thành công" })
-        );
-      })
-      .catch((error) => {
-        console.log(error);
-        dispatch(showToast({ type: "error", message: "Thay đổi thất bại" }));
-      });
-  };
 
   return (
     <Table

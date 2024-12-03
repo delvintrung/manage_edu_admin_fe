@@ -314,50 +314,117 @@ type AllCouponTableProps = {
 
 const AllCouponTable: FC<AllCouponTableProps> = function ({ discounts }) {
   const role = useSelector((state: RootState) => state.role.currentAction.list);
+  const [selectDelete, setSelectDelete] = useState<number | null>(null);
+  const [openModal, setOpenModal] = useState(false);
+  const dispatch = useDispatch();
 
   return (
-    <div className="overflow-x-auto">
-      <ToastComponent />
-      <Table hoverable>
-        <Table.Head>
-          <Table.HeadCell>Code</Table.HeadCell>
-          <Table.HeadCell>Discount Value</Table.HeadCell>
-          <Table.HeadCell>Value Apply</Table.HeadCell>
-          <Table.HeadCell>Expiry Date</Table.HeadCell>
-          <Table.HeadCell>Drop</Table.HeadCell>
-        </Table.Head>
-        <Table.Body className="divide-y">
-          {discounts.map((discount: Discount) => (
-            <Table.Row
-              className="bg-white dark:border-gray-700 dark:bg-gray-800"
-              key={discount.id}
-            >
-              <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                {discount.coupon_code}
-              </Table.Cell>
-              <Table.Cell>{discount.discount_value}</Table.Cell>
-              <Table.Cell>
-                {formatPrice(parseFloat(discount.value_apply))}
-              </Table.Cell>
-              <Table.Cell>{convertDate(discount.expiration_date)}</Table.Cell>
-              <Table.Cell>{<DropBox coupon={discount} />}</Table.Cell>
-              <Table.Cell>
-                <Button.Group>
-                  <EditModal coupon={discount} />
-                  <Button
-                    color="gray"
-                    disabled={checkActionValid(role, "coupons", "delete")}
-                  >
-                    <MdDeleteForever className="mr-3 h-4 w-4" />
-                    Remove
-                  </Button>
-                </Button.Group>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
-    </div>
+    <>
+      <div className="overflow-x-auto">
+        <ToastComponent />
+        <Table hoverable>
+          <Table.Head>
+            <Table.HeadCell>Code</Table.HeadCell>
+            <Table.HeadCell>Discount Value</Table.HeadCell>
+            <Table.HeadCell>Value Apply</Table.HeadCell>
+            <Table.HeadCell>Expiry Date</Table.HeadCell>
+            <Table.HeadCell>Drop</Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y">
+            {discounts.map((discount: Discount) => (
+              <Table.Row
+                className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                key={discount.id}
+              >
+                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  {discount.coupon_code}
+                </Table.Cell>
+                <Table.Cell>{discount.discount_value}</Table.Cell>
+                <Table.Cell>
+                  {formatPrice(parseFloat(discount.value_apply))}
+                </Table.Cell>
+                <Table.Cell>{convertDate(discount.expiration_date)}</Table.Cell>
+                <Table.Cell>{<DropBox coupon={discount} />}</Table.Cell>
+                <Table.Cell>
+                  <Button.Group>
+                    <EditModal coupon={discount} />
+                    <Button
+                      color="gray"
+                      disabled={checkActionValid(role, "coupons", "delete")}
+                      onClick={() => {
+                        setSelectDelete(discount.id);
+                        setOpenModal(true);
+                      }}
+                    >
+                      <MdDeleteForever className="mr-3 h-4 w-4" />
+                      Remove
+                    </Button>
+                  </Button.Group>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </div>
+      <Modal
+        show={openModal}
+        position="center"
+        onClose={() => {
+          setSelectDelete(null);
+          setOpenModal(false);
+        }}
+      >
+        <Modal.Header>Delete Coupon</Modal.Header>
+        <Modal.Body className="w-[900px]">
+          <ToastComponent />
+          <p className="text-lg "> Do you want to delete this?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            onClick={() => {
+              axios
+                .put(`/api/v2/discount/delete`, {
+                  discount_id: selectDelete,
+                })
+                .then((res) => {
+                  if (res.data.code) {
+                    dispatch(
+                      showToast({ type: "success", message: res.data.message })
+                    );
+                  } else {
+                    dispatch(
+                      showToast({ type: "error", message: res.data.message })
+                    );
+                  }
+                })
+                .catch((err) => {
+                  dispatch(
+                    showToast({
+                      type: "error",
+                      message: "Something went wrong",
+                    })
+                  );
+                })
+                .finally(() => {
+                  setOpenModal(false);
+                  reloadSide();
+                });
+            }}
+          >
+            Confirm
+          </Button>
+          <Button
+            color="gray"
+            onClick={() => {
+              setSelectDelete(null);
+              setOpenModal(false);
+            }}
+          >
+            Cancel
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 

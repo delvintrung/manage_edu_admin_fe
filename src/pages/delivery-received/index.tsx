@@ -19,6 +19,8 @@ import checkActionValid from "../../function/checkActionValid";
 import ToastComponent from "../../components/toast";
 import { showToast } from "../../Slice/toast";
 import { convertDate } from "../../function/convertDate";
+import { IoAddCircle } from "react-icons/io5";
+
 import { formatPrice } from "../../function/formatPrice";
 
 const DeliveryPage: FC = function () {
@@ -30,6 +32,46 @@ const DeliveryPage: FC = function () {
   const [products, setProducts] = useState([]);
   const [company, setCompany] = useState([]);
   const [note, setNote] = useState("");
+  const [searchValue, setSearchValue] = useState("");
+  const [received, setReceived] = useState<Received[]>([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const result = await axios.get("/api/v2/received-detail");
+      setReceived(result.data.result);
+    };
+    fetch();
+  }, []);
+
+  const handleSearch = async () => {
+    if (searchValue === "") {
+      const result = await axios.get("/api/v2/received-detail");
+      if (result) {
+        setReceived(result.data.result);
+      }
+      dispatch(
+        showToast({ type: "error", message: "Vui lòng thêm giá trị tìm kiếm" })
+      );
+    } else {
+      axios
+        .get(`/api/v2/received-search?search=${searchValue}`)
+        .then((res) => {
+          if (res.data.code) {
+            setReceived(res.data.data);
+          } else {
+            dispatch(showToast({ type: "error", message: res.data.message }));
+          }
+        })
+        .catch((err) => {
+          dispatch(
+            showToast({ type: "error", message: "Something went wrong" })
+          );
+        })
+        .finally(() => {
+          setSearchValue("");
+        });
+    }
+  };
 
   const [companySelected, setCompanySelected] = useState(0);
 
@@ -97,7 +139,39 @@ const DeliveryPage: FC = function () {
             </div>
             <div className="sm:flex sm:justify-between">
               <div className="hidden mb-3 items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-                <h2></h2>
+                <div className="flex space-x-[560px]">
+                  <div className="flex space-x-5">
+                    <div className="lg:pr-3">
+                      <Label htmlFor="users-search" className="sr-only">
+                        Search
+                      </Label>
+                      <div className="relative mt-1 lg:w-64 xl:w-96">
+                        <TextInput
+                          id="users-search"
+                          name="users-search"
+                          placeholder="Search for delivery"
+                          onChange={(e) => setSearchValue(e.target.value)}
+                        />
+                        <IoIosSearch
+                          className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
+                          onClick={handleSearch}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="">
+                    <Button
+                      color="gray"
+                      onClick={() => {
+                        setOpenModal(true);
+                      }}
+                      disabled={checkActionValid(role, "company", "create")}
+                    >
+                      <IoAddCircle className="mr-3 h-4 w-4" />
+                      Add
+                    </Button>
+                  </div>
+                </div>
               </div>
               <Button
                 gradientDuoTone="greenToBlue"
@@ -115,7 +189,7 @@ const DeliveryPage: FC = function () {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden shadow">
-                <AllDeliveryTable />
+                <AllDeliveryTable received={received} />
               </div>
             </div>
           </div>
@@ -312,25 +386,9 @@ type Received = {
   details: ReceivedItem[];
 };
 
-const AllDeliveryTable: FC = function () {
-  const [received, setReceived] = useState<Received[]>([]);
-  useEffect(() => {
-    const fetch = async () => {
-      const result = await axios.get("/api/v2/received-detail");
-      setReceived(result.data.result);
-    };
-    fetch();
-  }, []);
-  const formatPrice: (currentPrice: number) => string = (
-    currenPrice: number
-  ) => {
-    const formatter = new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
-    return formatter.format(currenPrice);
-  };
-
+const AllDeliveryTable: FC<{ received: Received[] }> = function ({
+  received,
+}): JSX.Element {
   return (
     <div className="overflow-x-auto">
       <div className="grid grid-cols-5 bg-gray-300  p-5">
