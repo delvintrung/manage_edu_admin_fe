@@ -159,18 +159,6 @@ const DeliveryPage: FC = function () {
                       </div>
                     </div>
                   </div>
-                  <div className="">
-                    <Button
-                      color="gray"
-                      onClick={() => {
-                        setOpenModal(true);
-                      }}
-                      disabled={checkActionValid(role, "company", "create")}
-                    >
-                      <IoAddCircle className="mr-3 h-4 w-4" />
-                      Add
-                    </Button>
-                  </div>
                 </div>
               </div>
               <Button
@@ -178,7 +166,6 @@ const DeliveryPage: FC = function () {
                 onClick={() => setOpenModal(true)}
                 disabled={checkActionValid(role, "goods", "create")}
               >
-                {" "}
                 <IoMdAddCircleOutline className="w-6 h-6" />
                 New Delivery
               </Button>

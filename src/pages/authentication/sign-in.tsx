@@ -5,35 +5,45 @@ import { useState } from "react";
 import axios from "../../config/axios";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../Slice/toast";
-import { useNavigate } from "react-router-dom";
 
 const SignInPage: FC = function () {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const handleLoginAdmin = async () => {
     try {
-      await axios
-        .post("/api/v2/auth/login", {
-          email: email,
-          password: password,
-        })
-        .then((res) => {
-          if (res.data.code === 1) {
-            localStorage.setItem("token", res.data.accessToken);
-            dispatch(showToast({ type: "success", message: "Login success" }));
-            window.location.href = "/";
-          } else {
-            dispatch(showToast({ type: "error", message: res.data.message }));
-            setMessage(res.data.message);
-          }
-        })
-        .catch((error) => {
-          dispatch(showToast({ type: "error", message: error }));
-        });
+      if (!email) {
+        dispatch(showToast({ type: "error", message: "Missing Email" }));
+        return;
+      }
+      if (!password) {
+        dispatch(showToast({ type: "error", message: "Missing Password" }));
+        return;
+      }
+      if (email !== "" && password !== "") {
+        await axios
+          .post("/api/v2/auth/login", {
+            email: email,
+            password: password,
+          })
+          .then((res) => {
+            if (res.data.code === 1) {
+              localStorage.setItem("token", res.data.accessToken);
+              dispatch(
+                showToast({ type: "success", message: "Login success" })
+              );
+              window.location.href = "/";
+            } else {
+              dispatch(showToast({ type: "error", message: res.data.message }));
+              setMessage(res.data.message);
+            }
+          })
+          .catch((error) => {
+            dispatch(showToast({ type: "error", message: error }));
+          });
+      }
     } catch (error) {
       dispatch(showToast({ type: "error", message: "Login failed" }));
       console.error("Login failed:", error);

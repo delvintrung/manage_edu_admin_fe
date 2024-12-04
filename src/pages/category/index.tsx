@@ -106,7 +106,7 @@ const CategoryListPage: FC = function () {
                   <TextInput
                     id="users-search"
                     name="users-search"
-                    placeholder="Search for users"
+                    placeholder="Search category"
                     onChange={(e) => setSearchValue(e.target.value)}
                   />
                 </div>

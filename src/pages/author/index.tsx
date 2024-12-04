@@ -383,7 +383,6 @@ const EditAuthorModal: FC<{ author: Author }> = function (props): JSX.Element {
   const [thumbnail, setThumbnail] = useState<File | undefined>(undefined);
   const [previewThumbnail, setPreviewThumbnail] = useState<string>("");
   const [name, setName] = useState<string>(props.author.label);
-  console.log(props.author);
   const handleUpdateAuthor = () => {
     const formData = new FormData();
     formData.append("id", props.author.value.toString());
@@ -578,7 +577,7 @@ const DeleteAuthorModal: FC<{
 
             <p className="text-xl text-gray-500">
               Are you sure you want to{" "}
-              {props.author.status == 1 ? "delete" : "unlock"} this user?
+              {props.author.status == 1 ? "delete" : "unlock"} this author?
             </p>
             <div className="flex items-center gap-x-3">
               <Button

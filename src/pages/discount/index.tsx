@@ -105,7 +105,7 @@ const DiscountPage: FC = function () {
         }
       ),
     max_apply: Yup.number()
-      .min(50000, "Giá trị áp dụng tối đa phải nhỏ hơn hoặc bằng 50000")
+      .min(50000, "Giá trị áp dụng tối đa phải lớn hơn hoặc bằng 50000")
       .required("Phải điền giá trị áp dụng tối thiểu"),
     expiration_date: Yup.date().required("Phải chọn ngày hết hạn"),
   });
@@ -121,29 +121,27 @@ const DiscountPage: FC = function () {
                 Discount Management
               </h1>
             </div>
-            <div className="sm:flex sm:justify-between">
-              <div className="hidden mb-3 items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100 justify-between">
-                <div className="flex space-x-[560px]">
-                  <div className="flex space-x-5">
-                    <div className="lg:pr-3">
-                      <Label htmlFor="users-search" className="sr-only">
-                        Search
-                      </Label>
-                      <div className="relative mt-1 lg:w-64 xl:w-96">
-                        <TextInput
-                          id="users-search"
-                          name="users-search"
-                          placeholder="Search for discount"
-                          onChange={(e) => setSearchValue(e.target.value)}
-                        />
-                        <IoIosSearch
-                          className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
-                          onClick={handleSearch}
-                        />
-                      </div>
+            <div className="flex">
+              <div className="mb-3 dark:divide-gray-700 sm:mb-0 flex sm:divide-x w-full sm:divide-gray-100">
+                <div className="flex items-center justify-between w-full">
+                  <div className="lg:pr-3">
+                    <Label htmlFor="users-search" className="sr-only">
+                      Search
+                    </Label>
+                    <div className="relative mt-1 lg:w-64 xl:w-96">
+                      <TextInput
+                        id="users-search"
+                        name="users-search"
+                        placeholder="Search for discount"
+                        onChange={(e) => setSearchValue(e.target.value)}
+                      />
+                      <IoIosSearch
+                        className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
+                        onClick={handleSearch}
+                      />
                     </div>
                   </div>
-                  <div className="">
+                  <div>
                     <Button
                       color="gray"
                       onClick={() => {
@@ -630,7 +628,7 @@ const EditModal: FC<{ coupon: Discount }> = function (props): JSX.Element {
         }
       ),
     max_apply: Yup.number()
-      .min(50000, "Giá trị áp dụng tối đa phải nhỏ hơn hoặc bằng 50000")
+      .min(50000, "Giá trị áp dụng tối đa phải lớn hơn hoặc bằng 50000")
       .required("Phải điền giá trị áp dụng tối thiểu"),
     expiration_date: Yup.date().required("Phải chọn ngày hết hạn"),
   });

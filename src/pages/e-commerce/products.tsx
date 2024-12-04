@@ -238,6 +238,7 @@ const AddProductModal: FC = function () {
     nameProduct == "" ||
     cateProduct.length <= 0 ||
     authorProduct == "" ||
+    authorProduct == "0" ||
     desctiptionProduct == "" ||
     introduce == "" ||
     fileList == null;
@@ -245,7 +246,7 @@ const AddProductModal: FC = function () {
     ? "Thiếu tên sản phẩm"
     : cateProduct.length <= 0
     ? "Thiếu danh mục"
-    : !authorProduct
+    : !authorProduct || authorProduct == "0"
     ? "Thiếu tác giả"
     : desctiptionProduct == ""
     ? "Thiếu mô tả sản phẩm"
@@ -480,7 +481,7 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
         if (res.data.code == 1) {
           dispatch(showToast({ type: "success", message: res.data.message }));
           setOpen(false);
-          // reloadSide();
+          reloadSide();
         }
       })
       .finally(() => {
@@ -526,7 +527,7 @@ const EditProductModal: FC<{ product: Product }> = function (props) {
                   className="border-slate-400 rounded"
                   name="category"
                   id=""
-                  disabled={parseInt(props.product.author_id) ? true : false}
+                  disabled
                 >
                   <option value="0" selected>
                     Chọn tác giả

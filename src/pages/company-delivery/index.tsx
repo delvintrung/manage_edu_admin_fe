@@ -265,7 +265,7 @@ const AllDeliveryTable: FC<AllDeliveryTableProps> = function ({ suppliers }) {
   const handleSubmitUpdate = (e: any) => {
     e.preventDefault();
     try {
-      const updatedName = nameCompanyUpdate || selectCompany?.name;
+      const updatedName = selectCompany?.name;
       const updatedDiscount = discountCompanyUpdate ?? selectCompany?.discount;
       const updatedInfo = infoCompanyUpdate || selectCompany?.description;
       const updatedStatus = statusCompanyUpdate || selectCompany?.status;
@@ -396,17 +396,15 @@ const AllDeliveryTable: FC<AllDeliveryTableProps> = function ({ suppliers }) {
           <Modal.Body>
             <form onSubmit={handleSubmitUpdate}>
               <div className="p-5 ">
-                <div className="flex">
+                <div className="flex ">
                   <label htmlFor="name">Name: </label>
                   <input
                     id="name"
                     name="name"
                     placeholder="Name"
-                    className="ml-3"
+                    className="ml-3 cursor-not-allowed"
                     defaultValue={selectCompany?.name}
-                    onChange={(e) => {
-                      setNameCompanyUpdate(e.target.value);
-                    }}
+                    disabled
                   />
                 </div>
                 <div className="flex">
@@ -477,7 +475,7 @@ const AllDeliveryTable: FC<AllDeliveryTableProps> = function ({ suppliers }) {
           show={openDeleteModal}
           position="center"
           onClose={() => {
-            setOpenEditModal(false);
+            setOpenDeleteModal(false);
             setSelectCompany(null);
           }}
         >
