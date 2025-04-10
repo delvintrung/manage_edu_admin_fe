@@ -12,10 +12,12 @@ const SignInPage: FC = function () {
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
 
-  const handleLoginAdmin = async () => {
+  const handleLoginAdmin = async (e: React.SyntheticEvent) => {
     try {
+      e.preventDefault();
       if (!email) {
         dispatch(showToast({ type: "error", message: "Missing Email" }));
+
         return;
       }
       if (!password) {
@@ -36,11 +38,11 @@ const SignInPage: FC = function () {
               );
               window.location.href = "/";
             } else {
-              dispatch(showToast({ type: "error", message: res.data.message }));
               setMessage(res.data.message);
             }
           })
           .catch((error) => {
+            console.error("Login failed:", error);
             dispatch(showToast({ type: "error", message: error }));
           });
       }
@@ -52,7 +54,7 @@ const SignInPage: FC = function () {
 
   const handlePressEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleLoginAdmin();
+      handleLoginAdmin(e);
     }
   };
 
@@ -74,7 +76,7 @@ const SignInPage: FC = function () {
         <h1 className="mb-3 text-2xl font-bold dark:text-white md:text-3xl">
           Sign in to dashboard
         </h1>
-        <form>
+        <div>
           <div className="mb-4 flex flex-col gap-y-3">
             <Label htmlFor="email">Your email</Label>
             <TextInput
@@ -109,11 +111,14 @@ const SignInPage: FC = function () {
             </div>
           </div>
           <div className="mb-6">
-            <Button onClick={handleLoginAdmin} className="w-full lg:w-auto">
+            <Button
+              onClick={(e) => handleLoginAdmin(e)}
+              className="w-full lg:w-auto"
+            >
               Login to your account
             </Button>
           </div>
-        </form>
+        </div>
         <p className="text-red-500 font-light">{message ? message : null}</p>
       </Card>
     </div>

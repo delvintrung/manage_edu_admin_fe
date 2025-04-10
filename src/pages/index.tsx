@@ -8,11 +8,15 @@ import type { FC } from "react";
 import Chart from "react-apexcharts";
 import NavbarSidebarLayout from "../layouts/navbar-sidebar";
 import { formatPrice } from "../function/formatPrice";
+import ToastComponent from "../components/toast";
+import { useDispatch } from "react-redux";
+import { showToast } from "../Slice/toast";
 
 const DashboardPage: FC = function () {
   return (
     <NavbarSidebarLayout>
       <div className="px-4 pt-6 relative">
+        <ToastComponent />
         <SalesThisWeek />
         <div className="my-6"></div>
         <LatestCustomers />
@@ -288,8 +292,16 @@ const LatestCustomers: FC = function () {
     total_orders: 0,
   });
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const handleReport = async function () {
+      if (toDay != "" && fromDay == "") {
+        dispatch(
+          showToast({ type: "error", message: "Vui lòng chọn ngày bắt đầu" })
+        );
+        return;
+      }
       if (fromDay != "" && toDay != "") {
         const res = await axios.post("/api/v2/order/date-to-date", {
           startDate: fromDay,
@@ -405,6 +417,7 @@ const LatestCustomers: FC = function () {
                   className="bring-0 rounded"
                   onChange={(e) => {
                     setFromDay(e.target.value);
+                    setToDay(e.target.value);
                   }}
                 />
               </div>
@@ -415,6 +428,7 @@ const LatestCustomers: FC = function () {
                   name=""
                   id=""
                   className="bring-0 rounded"
+                  value={toDay}
                   onChange={(e) => {
                     setToDay(e.target.value);
                   }}

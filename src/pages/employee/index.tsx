@@ -88,7 +88,7 @@ const EmployeeListPage: FC = function () {
           </div>
           <div className="sm:flex">
             <div className="mb-3 hidden items-center dark:divide-gray-700 sm:mb-0 sm:flex sm:divide-x sm:divide-gray-100">
-              <form className="lg:pr-3" onSubmit={handleSearch}>
+              <form className="lg:pr-3 flex" onSubmit={handleSearch}>
                 <Label htmlFor="users-search" className="sr-only">
                   Search
                 </Label>
