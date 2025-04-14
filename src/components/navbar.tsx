@@ -1,7 +1,5 @@
 import type { FC } from "react";
 import { DarkThemeToggle, Navbar } from "flowbite-react";
-import Chat from "./Chat";
-import { useState } from "react";
 
 const ExampleNavbar: FC = function () {
   return (
@@ -12,8 +10,8 @@ const ExampleNavbar: FC = function () {
             <Navbar.Brand href="/">
               <img
                 alt=""
-                src="/images/Comi_shop_logo.png"
-                className="mr-3 h-6 sm:h-8"
+                src="/images/vector-education-logo.avif"
+                className="mx-[50%] h-20"
               />
             </Navbar.Brand>
           </div>

@@ -45,6 +45,7 @@ root.render(
                 element={<EcommerceProductsPage />}
               />
               <Route path="/users/list" element={<UserListPage />} />
+              <Route path="/users" element={<DiscountPage />} />
               <Route path="/orders/list" element={<OrderListPage />} />
               <Route path="/employee/list" element={<EmployeeListPage />} />
               <Route path="/author/list" element={<AuthorListPage />} />
@@ -62,7 +63,6 @@ root.render(
                 element={<CompanyDeliveryPage />}
               />
               <Route path="/discount" element={<DiscountPage />} />
-              <Route path="/category" element={<CategoryPage />} />
             </Routes>
           </BrowserRouter>
         </Flowbite>

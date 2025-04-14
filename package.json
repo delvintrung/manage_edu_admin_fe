@@ -46,6 +46,7 @@
     "react-redux": "^9.1.2",
     "react-select": "^5.8.1",
     "socket.io-client": "^4.8.0",
+    "yarn": "^1.22.22",
     "yup": "^1.4.0"
   },
   "devDependencies": {

@@ -17,7 +17,6 @@ const DashboardPage: FC = function () {
     <NavbarSidebarLayout>
       <div className="px-4 pt-6 relative">
         <ToastComponent />
-        <SalesThisWeek />
         <div className="my-6"></div>
         <LatestCustomers />
         <div className="my-6">
