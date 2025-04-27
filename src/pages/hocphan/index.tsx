@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import { Button, Label, Table, Modal, TextInput, Select } from "flowbite-react";
 import type { FC } from "react";
 import { IoIosSearch } from "react-icons/io";
@@ -9,57 +10,68 @@ import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
 
-interface User {
+interface NganhHoc {
   id: string;
-  email: string;
-  username: string;
-  password: string;
-  role: string;
+  ten: string; // Sửa từ tenNganh thành ten để khớp với backend
+}
+
+interface HocPhan {
+  id: string;
+  nganhHoc: NganhHoc;
+  ten: string;
+  tinChi: string;
+  tietLyThuyet: number;
+  tietThucHanh: number;
 }
 
 interface TableProps {
-  users: User[];
+  hocPhans: HocPhan[];
 }
 
-const UserPage: FC = function () {
-  const [users, setUsers] = useState<User[]>([]);
+const HocPhanPage: FC = function () {
+  const [hocPhans, setHocPhans] = useState<HocPhan[]>([]);
+  const [nganhHocs, setNganhHocs] = useState<NganhHoc[]>([]);
   const [openModal, setOpenModal] = useState<"add" | "edit" | "delete" | null>(
     null
   );
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedHocPhan, setSelectedHocPhan] = useState<HocPhan | null>(null);
   const [searchValue, setSearchValue] = useState<string>("");
 
-  // Fetch all users on mount
+  // Fetch all hocPhans and nganhHocs on mount
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
-        const result = await axios.get("/api/user");
-        setUsers(result.data);
+        const [hocPhanRes, nganhHocRes] = await Promise.all([
+          axios.get("/api/hocphan"),
+          axios.get("/api/nganhhoc"),
+        ]);
+        setHocPhans(hocPhanRes.data);
+        setNganhHocs(nganhHocRes.data);
       } catch (error) {
-        alert("Failed to fetch users");
+        alert("Không thể tải dữ liệu");
       }
     };
-    fetchUsers();
+    fetchData();
   }, []);
 
-  // Handle search (client-side filtering)
+  // Handle search (client-side filtering by ten)
   const handleSearch = async () => {
     try {
-      const result = await axios.get("/api/user");
-      const allUsers = result.data;
+      const result = await axios.get("/api/hocphan");
+      const allHocPhans = result.data;
       if (!searchValue) {
-        setUsers(allUsers);
+        setHocPhans(allHocPhans);
         return;
       }
-      const filteredUsers = allUsers.filter((user: User) =>
-        user.username.toLowerCase().includes(searchValue.toLowerCase())
+      const filteredHocPhans = allHocPhans.filter((hp: HocPhan) =>
+        hp.ten.toLowerCase().includes(searchValue.toLowerCase())
       );
-      setUsers(filteredUsers);
-      if (filteredUsers.length === 0) {
-        alert("No users found");
+      setHocPhans(filteredHocPhans);
+      if (filteredHocPhans.length === 0) {
+        alert("Không tìm thấy học phần nào");
       }
     } catch (error) {
-      alert("Failed to fetch users");
+      alert("Không thể tải danh sách học phần");
     }
   };
 
@@ -67,39 +79,42 @@ const UserPage: FC = function () {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const user: User = {
-      id: openModal === "add" ? uuidv4() : selectedUser!.id,
-      email: form["email"].value,
-      username: form["username"].value,
-      password: form["password"].value,
-      role: "USER",
+    const hocPhan: HocPhan = {
+      id: openModal === "add" ? uuidv4() : selectedHocPhan!.id,
+      nganhHoc: { id: form["nganhHoc"].value, ten: "" },
+      ten: form["ten"].value,
+      tinChi: form["tinChi"].value,
+      tietLyThuyet: parseInt(form["tietLyThuyet"].value),
+      tietThucHanh: parseInt(form["tietThucHanh"].value),
     };
 
     try {
       if (openModal === "add") {
-        const result = await axios.post("/api/user", user);
-        setUsers([...users, result.data]);
-        alert("User created successfully");
+        const result = await axios.post("/api/hocphan", hocPhan);
+        setHocPhans([...hocPhans, result.data]);
+        alert("Thêm học phần thành công");
       } else {
-        const result = await axios.put(`/api/user/${user.id}`, user);
-        setUsers(users.map((u) => (u.id === user.id ? result.data : u)));
-        alert("User updated successfully");
+        const result = await axios.put(`/api/hocphan/${hocPhan.id}`, hocPhan);
+        setHocPhans(
+          hocPhans.map((hp) => (hp.id === hocPhan.id ? result.data : hp))
+        );
+        alert("Cập nhật học phần thành công");
       }
       setOpenModal(null);
     } catch (error: any) {
-      alert(error.response?.data?.message || "Operation failed");
+      alert(error.response?.data?.message || "Thao tác thất bại");
     }
   };
 
   // Handle delete
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/user/${selectedUser!.id}`);
-      setUsers(users.filter((u) => u.id !== selectedUser!.id));
-      alert("User deleted successfully");
+      await axios.delete(`/api/hocphan/${selectedHocPhan!.id}`);
+      setHocPhans(hocPhans.filter((hp) => hp.id !== selectedHocPhan!.id));
+      alert("Xóa học phần thành công");
       setOpenModal(null);
     } catch (error) {
-      alert("Failed to delete user");
+      alert("Xóa học phần thất bại");
     }
   };
 
@@ -110,21 +125,21 @@ const UserPage: FC = function () {
           <div className="mb-1 w-full">
             <div className="mb-4">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-                User Management
+                Quản lý Học Phần
               </h1>
             </div>
             <div className="flex">
               <div className="mb-3 dark:divide-gray-700 sm:mb-0 flex sm:divide-x w-full sm:divide-gray-100">
                 <div className="flex items-center justify-between w-full">
                   <div className="lg:pr-3">
-                    <Label htmlFor="users-search" className="sr-only">
-                      Search
+                    <Label htmlFor="hocphan-search" className="sr-only">
+                      Tìm kiếm
                     </Label>
                     <div className="relative mt-1 lg:w-64 xl:w-96">
                       <TextInput
-                        id="users-search"
-                        name="users-search"
-                        placeholder="Search for user by username"
+                        id="hocphan-search"
+                        name="hocphan-search"
+                        placeholder="Tìm kiếm học phần theo tên"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                       />
@@ -137,7 +152,7 @@ const UserPage: FC = function () {
                   <div>
                     <Button color="gray" onClick={() => setOpenModal("add")}>
                       <IoAddCircle className="mr-3 h-4 w-4" />
-                      Add User
+                      Thêm Học Phần
                     </Button>
                   </div>
                 </div>
@@ -149,10 +164,10 @@ const UserPage: FC = function () {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden shadow">
-                <UserTable
-                  users={users}
+                <HocPhanTable
+                  hocPhans={hocPhans}
                   setOpenModal={setOpenModal}
-                  setSelectedUser={setSelectedUser}
+                  setSelectedHocPhan={setSelectedHocPhan}
                 />
               </div>
             </div>
@@ -164,66 +179,87 @@ const UserPage: FC = function () {
       {(openModal === "add" || openModal === "edit") && (
         <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
           <Modal.Header>
-            {openModal === "add" ? "Add User" : "Edit User"}
+            {openModal === "add" ? "Thêm Học Phần" : "Sửa Học Phần"}
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={handleSubmit}>
               <div className="mb-5">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="ten">Tên Học Phần</Label>
                 <TextInput
-                  id="email"
-                  name="email"
-                  type="email"
-                  defaultValue={openModal === "edit" ? selectedUser?.email : ""}
-                  required
-                />
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="username">Username</Label>
-                <TextInput
-                  id="username"
-                  name="username"
+                  id="ten"
+                  name="ten"
                   defaultValue={
-                    openModal === "edit" ? selectedUser?.username : ""
+                    openModal === "edit" ? selectedHocPhan?.ten : ""
                   }
                   required
-                  maxLength={20}
+                  maxLength={100}
                 />
               </div>
               <div className="mb-5">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="tinChi">Số Tín Chỉ</Label>
                 <TextInput
-                  id="password"
-                  name="password"
-                  type="password"
+                  id="tinChi"
+                  name="tinChi"
+                  type="number"
+                  min="1"
                   defaultValue={
-                    openModal === "edit" ? selectedUser?.password : ""
+                    openModal === "edit" ? selectedHocPhan?.tinChi : ""
                   }
                   required
                 />
               </div>
               <div className="mb-5">
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="tietLyThuyet">Tiết Lý Thuyết</Label>
+                <TextInput
+                  id="tietLyThuyet"
+                  name="tietLyThuyet"
+                  type="number"
+                  min="0"
+                  defaultValue={
+                    openModal === "edit" ? selectedHocPhan?.tietLyThuyet : "0"
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-5">
+                <Label htmlFor="tietThucHanh">Tiết Thực Hành</Label>
+                <TextInput
+                  id="tietThucHanh"
+                  name="tietThucHanh"
+                  type="number"
+                  min="0"
+                  defaultValue={
+                    openModal === "edit" ? selectedHocPhan?.tietThucHanh : "0"
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-5">
+                <Label htmlFor="nganhHoc">Ngành Học</Label>
                 <Select
-                  id="role"
-                  name="role"
+                  id="nganhHoc"
+                  name="nganhHoc"
                   defaultValue={
-                    openModal === "edit" ? selectedUser?.role : "USER"
+                    openModal === "edit" ? selectedHocPhan?.nganhHoc.id : ""
                   }
                   required
                 >
-                  <option value="USER">User</option>
-                  <option value="ADMIN">Admin</option>
+                  <option value="">Chọn Ngành Học</option>
+                  {nganhHocs.map((nganhHoc) => (
+                    <option key={nganhHoc.id} value={nganhHoc.id}>
+                      {nganhHoc.ten}
+                    </option>
+                  ))}
                 </Select>
               </div>
               <div className="flex">
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Lưu</Button>
                 <Button
                   color="gray"
                   onClick={() => setOpenModal(null)}
                   className="ml-2"
                 >
-                  Cancel
+                  Hủy
                 </Button>
               </div>
             </form>
@@ -234,16 +270,16 @@ const UserPage: FC = function () {
       {/* Delete Modal */}
       {openModal === "delete" && (
         <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
-          <Modal.Header>Delete User</Modal.Header>
+          <Modal.Header>Xóa Học Phần</Modal.Header>
           <Modal.Body>
             <p className="text-lg">
-              Are you sure you want to delete this user?
+              Bạn có chắc chắn muốn xóa học phần này không?
             </p>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={handleDelete}>Confirm</Button>
+            <Button onClick={handleDelete}>Xác nhận</Button>
             <Button color="gray" onClick={() => setOpenModal(null)}>
-              Cancel
+              Hủy
             </Button>
           </Modal.Footer>
         </Modal>
@@ -252,54 +288,58 @@ const UserPage: FC = function () {
   );
 };
 
-const UserTable: FC<
+const HocPhanTable: FC<
   TableProps & {
     setOpenModal: (modal: "edit" | "delete" | null) => void;
-    setSelectedUser: (user: User) => void;
+    setSelectedHocPhan: (hocPhan: HocPhan) => void;
   }
-> = function ({ users, setOpenModal, setSelectedUser }) {
+> = function ({ hocPhans, setOpenModal, setSelectedHocPhan }) {
   return (
     <Table hoverable>
       <Table.Head>
         <Table.HeadCell>ID</Table.HeadCell>
-        <Table.HeadCell>Email</Table.HeadCell>
-        <Table.HeadCell>Username</Table.HeadCell>
-        <Table.HeadCell>Role</Table.HeadCell>
-        <Table.HeadCell>Actions</Table.HeadCell>
+        <Table.HeadCell>Tên Học Phần</Table.HeadCell>
+        <Table.HeadCell>Số Tín Chỉ</Table.HeadCell>
+        <Table.HeadCell>Tiết Lý Thuyết</Table.HeadCell>
+        <Table.HeadCell>Tiết Thực Hành</Table.HeadCell>
+        <Table.HeadCell>Ngành Học</Table.HeadCell>
+        <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
-        {users.map((user) => (
+        {hocPhans.map((hocPhan) => (
           <Table.Row
             className="bg-white dark:border-gray-700 dark:bg-gray-800"
-            key={user.id}
+            key={hocPhan.id}
           >
             <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-              {user.id}
+              {hocPhan.id}
             </Table.Cell>
-            <Table.Cell>{user.email}</Table.Cell>
-            <Table.Cell>{user.username}</Table.Cell>
-            <Table.Cell>{user.role}</Table.Cell>
+            <Table.Cell>{hocPhan.ten}</Table.Cell>
+            <Table.Cell>{hocPhan.tinChi}</Table.Cell>
+            <Table.Cell>{hocPhan.tietLyThuyet}</Table.Cell>
+            <Table.Cell>{hocPhan.tietThucHanh}</Table.Cell>
+            <Table.Cell>{hocPhan.nganhHoc.ten}</Table.Cell>
             <Table.Cell>
               <Button.Group>
                 <Button
                   color="gray"
                   onClick={() => {
-                    setSelectedUser(user);
+                    setSelectedHocPhan(hocPhan);
                     setOpenModal("edit");
                   }}
                 >
                   <RxUpdate className="mr-3 h-4 w-4" />
-                  Edit
+                  Sửa
                 </Button>
                 <Button
                   color="gray"
                   onClick={() => {
-                    setSelectedUser(user);
+                    setSelectedHocPhan(hocPhan);
                     setOpenModal("delete");
                   }}
                 >
                   <MdDeleteForever className="mr-3 h-4 w-4" />
-                  Delete
+                  Xóa
                 </Button>
               </Button.Group>
             </Table.Cell>
@@ -310,4 +350,4 @@ const UserTable: FC<
   );
 };
 
-export default UserPage;
+export default HocPhanPage;

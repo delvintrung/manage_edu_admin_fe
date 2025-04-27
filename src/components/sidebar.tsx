@@ -86,12 +86,12 @@ const ExampleSidebar: FC = function () {
                         : ""
                     }
                   >
-                    Kế hoạch mở nhóm
+                    Users
                   </Sidebar.Item>
                 </Link>
               }
               {
-                <Link to="/orders/list">
+                <Link to="/khoa/list">
                   <Sidebar.Item
                     icon={AiFillMedicineBox}
                     className={
@@ -100,16 +100,28 @@ const ExampleSidebar: FC = function () {
                         : ""
                     }
                   >
-                    Ngành học
+                    Khoa
                   </Sidebar.Item>
                 </Link>
               }
+              <Link to="/nganhhoc/list">
+                <Sidebar.Item
+                  icon={AiFillMedicineBox}
+                  className={
+                    "/nganhhoc/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Ngành học
+                </Sidebar.Item>
+              </Link>
               {
-                <Link to="/employee/list">
+                <Link to="/lecturer/list">
                   <Sidebar.Item
                     icon={GrUserManager}
                     className={
-                      "/employee/list" === currentPage
+                      "/lecturer/list" === currentPage
                         ? "bg-gray-100 dark:bg-gray-700"
                         : ""
                     }
@@ -119,38 +131,38 @@ const ExampleSidebar: FC = function () {
                 </Link>
               }
               {
-                <Link to="/author/list">
+                <Link to="/hocphan/list">
                   <Sidebar.Item
                     icon={TfiWrite}
                     className={
-                      "/author/list" === currentPage
+                      "/hocphan/list" === currentPage
                         ? "bg-gray-100 dark:bg-gray-700"
                         : ""
                     }
                   >
-                    Khoa
+                    Học phần
                   </Sidebar.Item>
                 </Link>
               }
               {
-                <Link to="/permissions/list">
+                <Link to="/nhomkienthuc/list">
                   <Sidebar.Item
                     icon={FaUserLock}
                     className={
-                      "/permissions/list" === currentPage
+                      "/nhomkienthuc/list" === currentPage
                         ? "bg-gray-100 dark:bg-gray-700"
                         : ""
                     }
                   >
-                    Khung chương trình
+                    Nhóm kiến thức
                   </Sidebar.Item>
                 </Link>
               }
               {
-                <Link to="/delivery-received">
+                <Link to="/chuongtrinhdaotao/list">
                   <Sidebar.Item
                     className={
-                      "/delivery-received" === currentPage
+                      "/chuongtrinhdaotao/list" === currentPage
                         ? "bg-gray-100 dark:bg-gray-700"
                         : ""
                     }
@@ -161,28 +173,16 @@ const ExampleSidebar: FC = function () {
                 </Link>
               }
 
-              <Link to="/company-delivery">
+              <Link to="/decuongchitiet/list">
                 <Sidebar.Item
                   className={
-                    "/company-delivery" === currentPage
+                    "/decuongchitiet/list" === currentPage
                       ? "bg-gray-100 dark:bg-gray-700"
                       : ""
                   }
                   icon={FaBuilding}
                 >
                   Đề cương chi tiết
-                </Sidebar.Item>
-              </Link>
-              <Link to="/users">
-                <Sidebar.Item
-                  className={
-                    "/users" === currentPage
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : ""
-                  }
-                  icon={FaBuilding}
-                >
-                  Người dùng
                 </Sidebar.Item>
               </Link>
             </Sidebar.ItemGroup>

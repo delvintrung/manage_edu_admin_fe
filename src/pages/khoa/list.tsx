@@ -1,4 +1,5 @@
-import { Button, Label, Table, Modal, TextInput, Select } from "flowbite-react";
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import { Button, Label, Table, Modal, TextInput } from "flowbite-react";
 import type { FC } from "react";
 import { IoIosSearch } from "react-icons/io";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
@@ -9,57 +10,55 @@ import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
 
-interface User {
+interface Khoa {
   id: string;
-  email: string;
-  username: string;
-  password: string;
-  role: string;
+  ten: string;
+  moTa: string;
 }
 
 interface TableProps {
-  users: User[];
+  khoas: Khoa[];
 }
 
-const UserPage: FC = function () {
-  const [users, setUsers] = useState<User[]>([]);
+const KhoaPage: FC = function () {
+  const [khoas, setKhoas] = useState<Khoa[]>([]);
   const [openModal, setOpenModal] = useState<"add" | "edit" | "delete" | null>(
     null
   );
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedKhoa, setSelectedKhoa] = useState<Khoa | null>(null);
   const [searchValue, setSearchValue] = useState<string>("");
 
-  // Fetch all users on mount
+  // Fetch all khoas on mount
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchKhoas = async () => {
       try {
-        const result = await axios.get("/api/user");
-        setUsers(result.data);
+        const result = await axios.get("/api/khoa");
+        setKhoas(result.data);
       } catch (error) {
-        alert("Failed to fetch users");
+        alert("Không thể tải danh sách khoa");
       }
     };
-    fetchUsers();
+    fetchKhoas();
   }, []);
 
-  // Handle search (client-side filtering)
+  // Handle search (client-side filtering by ten)
   const handleSearch = async () => {
     try {
-      const result = await axios.get("/api/user");
-      const allUsers = result.data;
+      const result = await axios.get("/api/khoa");
+      const allKhoas = result.data;
       if (!searchValue) {
-        setUsers(allUsers);
+        setKhoas(allKhoas);
         return;
       }
-      const filteredUsers = allUsers.filter((user: User) =>
-        user.username.toLowerCase().includes(searchValue.toLowerCase())
+      const filteredKhoas = allKhoas.filter((khoa: Khoa) =>
+        khoa.ten.toLowerCase().includes(searchValue.toLowerCase())
       );
-      setUsers(filteredUsers);
-      if (filteredUsers.length === 0) {
-        alert("No users found");
+      setKhoas(filteredKhoas);
+      if (filteredKhoas.length === 0) {
+        alert("Không tìm thấy khoa nào");
       }
     } catch (error) {
-      alert("Failed to fetch users");
+      alert("Không thể tải danh sách khoa");
     }
   };
 
@@ -67,39 +66,37 @@ const UserPage: FC = function () {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const user: User = {
-      id: openModal === "add" ? uuidv4() : selectedUser!.id,
-      email: form["email"].value,
-      username: form["username"].value,
-      password: form["password"].value,
-      role: "USER",
+    const khoa: Khoa = {
+      id: openModal === "add" ? uuidv4() : selectedKhoa!.id,
+      ten: form["ten"].value,
+      moTa: form["moTa"].value,
     };
 
     try {
       if (openModal === "add") {
-        const result = await axios.post("/api/user", user);
-        setUsers([...users, result.data]);
-        alert("User created successfully");
+        const result = await axios.post("/api/khoa", khoa);
+        setKhoas([...khoas, result.data]);
+        alert("Thêm khoa thành công");
       } else {
-        const result = await axios.put(`/api/user/${user.id}`, user);
-        setUsers(users.map((u) => (u.id === user.id ? result.data : u)));
-        alert("User updated successfully");
+        const result = await axios.put(`/api/khoa/${khoa.id}`, khoa);
+        setKhoas(khoas.map((k) => (k.id === khoa.id ? result.data : k)));
+        alert("Cập nhật khoa thành công");
       }
       setOpenModal(null);
     } catch (error: any) {
-      alert(error.response?.data?.message || "Operation failed");
+      alert(error.response?.data?.message || "Thao tác thất bại");
     }
   };
 
   // Handle delete
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/user/${selectedUser!.id}`);
-      setUsers(users.filter((u) => u.id !== selectedUser!.id));
-      alert("User deleted successfully");
+      await axios.delete(`/api/khoa/${selectedKhoa!.id}`);
+      setKhoas(khoas.filter((k) => k.id !== selectedKhoa!.id));
+      alert("Xóa khoa thành công");
       setOpenModal(null);
     } catch (error) {
-      alert("Failed to delete user");
+      alert("Xóa khoa thất bại");
     }
   };
 
@@ -110,21 +107,21 @@ const UserPage: FC = function () {
           <div className="mb-1 w-full">
             <div className="mb-4">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-                User Management
+                Quản lý Khoa
               </h1>
             </div>
             <div className="flex">
               <div className="mb-3 dark:divide-gray-700 sm:mb-0 flex sm:divide-x w-full sm:divide-gray-100">
                 <div className="flex items-center justify-between w-full">
                   <div className="lg:pr-3">
-                    <Label htmlFor="users-search" className="sr-only">
-                      Search
+                    <Label htmlFor="khoa-search" className="sr-only">
+                      Tìm kiếm
                     </Label>
                     <div className="relative mt-1 lg:w-64 xl:w-96">
                       <TextInput
-                        id="users-search"
-                        name="users-search"
-                        placeholder="Search for user by username"
+                        id="khoa-search"
+                        name="khoa-search"
+                        placeholder="Tìm kiếm khoa theo tên"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                       />
@@ -137,7 +134,7 @@ const UserPage: FC = function () {
                   <div>
                     <Button color="gray" onClick={() => setOpenModal("add")}>
                       <IoAddCircle className="mr-3 h-4 w-4" />
-                      Add User
+                      Thêm Khoa
                     </Button>
                   </div>
                 </div>
@@ -149,10 +146,10 @@ const UserPage: FC = function () {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden shadow">
-                <UserTable
-                  users={users}
+                <KhoaTable
+                  khoas={khoas}
                   setOpenModal={setOpenModal}
-                  setSelectedUser={setSelectedUser}
+                  setSelectedKhoa={setSelectedKhoa}
                 />
               </div>
             </div>
@@ -164,66 +161,36 @@ const UserPage: FC = function () {
       {(openModal === "add" || openModal === "edit") && (
         <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
           <Modal.Header>
-            {openModal === "add" ? "Add User" : "Edit User"}
+            {openModal === "add" ? "Thêm Khoa" : "Sửa Khoa"}
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={handleSubmit}>
               <div className="mb-5">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="ten">Tên Khoa</Label>
                 <TextInput
-                  id="email"
-                  name="email"
-                  type="email"
-                  defaultValue={openModal === "edit" ? selectedUser?.email : ""}
+                  id="ten"
+                  name="ten"
+                  defaultValue={openModal === "edit" ? selectedKhoa?.ten : ""}
                   required
+                  maxLength={100}
                 />
               </div>
               <div className="mb-5">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="moTa">Mô Tả</Label>
                 <TextInput
-                  id="username"
-                  name="username"
-                  defaultValue={
-                    openModal === "edit" ? selectedUser?.username : ""
-                  }
-                  required
-                  maxLength={20}
+                  id="moTa"
+                  name="moTa"
+                  defaultValue={openModal === "edit" ? selectedKhoa?.moTa : ""}
                 />
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="password">Password</Label>
-                <TextInput
-                  id="password"
-                  name="password"
-                  type="password"
-                  defaultValue={
-                    openModal === "edit" ? selectedUser?.password : ""
-                  }
-                  required
-                />
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="role">Role</Label>
-                <Select
-                  id="role"
-                  name="role"
-                  defaultValue={
-                    openModal === "edit" ? selectedUser?.role : "USER"
-                  }
-                  required
-                >
-                  <option value="USER">User</option>
-                  <option value="ADMIN">Admin</option>
-                </Select>
               </div>
               <div className="flex">
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Lưu</Button>
                 <Button
                   color="gray"
                   onClick={() => setOpenModal(null)}
                   className="ml-2"
                 >
-                  Cancel
+                  Hủy
                 </Button>
               </div>
             </form>
@@ -234,16 +201,14 @@ const UserPage: FC = function () {
       {/* Delete Modal */}
       {openModal === "delete" && (
         <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
-          <Modal.Header>Delete User</Modal.Header>
+          <Modal.Header>Xóa Khoa</Modal.Header>
           <Modal.Body>
-            <p className="text-lg">
-              Are you sure you want to delete this user?
-            </p>
+            <p className="text-lg">Bạn có chắc chắn muốn xóa khoa này không?</p>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={handleDelete}>Confirm</Button>
+            <Button onClick={handleDelete}>Xác nhận</Button>
             <Button color="gray" onClick={() => setOpenModal(null)}>
-              Cancel
+              Hủy
             </Button>
           </Modal.Footer>
         </Modal>
@@ -252,54 +217,52 @@ const UserPage: FC = function () {
   );
 };
 
-const UserTable: FC<
+const KhoaTable: FC<
   TableProps & {
     setOpenModal: (modal: "edit" | "delete" | null) => void;
-    setSelectedUser: (user: User) => void;
+    setSelectedKhoa: (khoa: Khoa) => void;
   }
-> = function ({ users, setOpenModal, setSelectedUser }) {
+> = function ({ khoas, setOpenModal, setSelectedKhoa }) {
   return (
     <Table hoverable>
       <Table.Head>
         <Table.HeadCell>ID</Table.HeadCell>
-        <Table.HeadCell>Email</Table.HeadCell>
-        <Table.HeadCell>Username</Table.HeadCell>
-        <Table.HeadCell>Role</Table.HeadCell>
-        <Table.HeadCell>Actions</Table.HeadCell>
+        <Table.HeadCell>Tên</Table.HeadCell>
+        <Table.HeadCell>Mô Tả</Table.HeadCell>
+        <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
-        {users.map((user) => (
+        {khoas.map((khoa) => (
           <Table.Row
             className="bg-white dark:border-gray-700 dark:bg-gray-800"
-            key={user.id}
+            key={khoa.id}
           >
             <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-              {user.id}
+              {khoa.id}
             </Table.Cell>
-            <Table.Cell>{user.email}</Table.Cell>
-            <Table.Cell>{user.username}</Table.Cell>
-            <Table.Cell>{user.role}</Table.Cell>
+            <Table.Cell>{khoa.ten}</Table.Cell>
+            <Table.Cell>{khoa.moTa}</Table.Cell>
             <Table.Cell>
               <Button.Group>
                 <Button
                   color="gray"
                   onClick={() => {
-                    setSelectedUser(user);
+                    setSelectedKhoa(khoa);
                     setOpenModal("edit");
                   }}
                 >
                   <RxUpdate className="mr-3 h-4 w-4" />
-                  Edit
+                  Sửa
                 </Button>
                 <Button
                   color="gray"
                   onClick={() => {
-                    setSelectedUser(user);
+                    setSelectedKhoa(khoa);
                     setOpenModal("delete");
                   }}
                 >
                   <MdDeleteForever className="mr-3 h-4 w-4" />
-                  Delete
+                  Xóa
                 </Button>
               </Button.Group>
             </Table.Cell>
@@ -310,4 +273,4 @@ const UserTable: FC<
   );
 };
 
-export default UserPage;
+export default KhoaPage;

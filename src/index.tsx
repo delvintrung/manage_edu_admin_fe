@@ -8,20 +8,17 @@ import { Flowbite } from "flowbite-react";
 import { Routes, Route } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import DashboardPage from "./pages/index";
-import SignInPage from "./pages/authentication/sign-in";
 import EcommerceProductsPage from "./pages/e-commerce/products";
 import UserListPage from "./pages/users/list";
-import OrderListPage from "./pages/orders/list";
-import PermissionPage from "./pages/permissions/list";
-import DeliveryReceivedPage from "./pages/delivery-received";
-import CreateTempProduct from "./pages/delivery-received/createTempProduct";
-import CompanyDeliveryPage from "./pages/company-delivery";
-import EmployeeListPage from "./pages/employee";
-import AuthorListPage from "./pages/author";
-import DiscountPage from "./pages/discount";
-import CategoryPage from "./pages/category";
+import KhoaPage from "./pages/khoa/list";
+import HocPhanPage from "./pages/hocphan";
+import GiangVienPage from "./pages/giangvien";
 import ToastComponent from "./components/toast";
 import { ContextProvider } from "./context/contextAPI.jsx";
+import NhomKienThucPage from "./pages/nhomkienthuc";
+import ChuongTrinhDaoTaoPage from "./pages/chuongtrinhdaotao";
+import DeCuongChiTietPage from "./pages/decuongchitiet";
+import NganhHocPage from "./pages/nganhhoc";
 const container = document.getElementById("root");
 
 if (!container) {
@@ -38,31 +35,27 @@ root.render(
           <ToastComponent />
           <BrowserRouter>
             <Routes>
-              <Route path="/authentication/sign-in" element={<SignInPage />} />
               <Route path="/" element={<DashboardPage />} index />
               <Route
                 path="/e-commerce/products"
                 element={<EcommerceProductsPage />}
               />
               <Route path="/users/list" element={<UserListPage />} />
-              <Route path="/users" element={<DiscountPage />} />
-              <Route path="/orders/list" element={<OrderListPage />} />
-              <Route path="/employee/list" element={<EmployeeListPage />} />
-              <Route path="/author/list" element={<AuthorListPage />} />
-              <Route path="/permissions/list" element={<PermissionPage />} />
+              <Route path="/khoa/list" element={<KhoaPage />} />
+              <Route path="/lecturer/list" element={<GiangVienPage />} />
+              <Route path="/hocphan/list" element={<HocPhanPage />} />
+
+              <Route path="/nhomkienthuc/list" element={<NhomKienThucPage />} />
               <Route
-                path="/delivery-received"
-                element={<DeliveryReceivedPage />}
+                path="/chuongtrinhdaotao/list"
+                element={<ChuongTrinhDaoTaoPage />}
               />
               <Route
-                path="/delivery-received/create-temporary-product"
-                element={<CreateTempProduct />}
+                path="/decuongchitiet/list"
+                element={<DeCuongChiTietPage />}
               />
-              <Route
-                path="/company-delivery"
-                element={<CompanyDeliveryPage />}
-              />
-              <Route path="/discount" element={<DiscountPage />} />
+
+              <Route path="/nganhhoc/list" element={<NganhHocPage />} />
             </Routes>
           </BrowserRouter>
         </Flowbite>
