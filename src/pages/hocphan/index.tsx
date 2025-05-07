@@ -22,6 +22,7 @@ interface HocPhan {
   tinChi: string;
   tietLyThuyet: number;
   tietThucHanh: number;
+  hocKyThucHien: number;
 }
 
 interface TableProps {
@@ -86,6 +87,7 @@ const HocPhanPage: FC = function () {
       tinChi: form["tinChi"].value,
       tietLyThuyet: parseInt(form["tietLyThuyet"].value),
       tietThucHanh: parseInt(form["tietThucHanh"].value),
+      hocKyThucHien: parseInt(form["hocKyThucHien"].value),
     };
 
     try {
@@ -234,6 +236,20 @@ const HocPhanPage: FC = function () {
                   required
                 />
               </div>
+
+              <div className="mb-5">
+                <Label htmlFor="hocKyThucHien">Học kỳ thực hiện</Label>
+                <TextInput
+                  id="hocKyThucHien"
+                  name="hocKyThucHien"
+                  type="number"
+                  min="0"
+                  defaultValue={
+                    openModal === "edit" ? selectedHocPhan?.hocKyThucHien : "0"
+                  }
+                  required
+                />
+              </div>
               <div className="mb-5">
                 <Label htmlFor="nganhHoc">Ngành Học</Label>
                 <Select
@@ -302,6 +318,7 @@ const HocPhanTable: FC<
         <Table.HeadCell>Số Tín Chỉ</Table.HeadCell>
         <Table.HeadCell>Tiết Lý Thuyết</Table.HeadCell>
         <Table.HeadCell>Tiết Thực Hành</Table.HeadCell>
+        <Table.HeadCell>Học Kỳ Thực Hiện</Table.HeadCell>
         <Table.HeadCell>Ngành Học</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
@@ -318,6 +335,7 @@ const HocPhanTable: FC<
             <Table.Cell>{hocPhan.tinChi}</Table.Cell>
             <Table.Cell>{hocPhan.tietLyThuyet}</Table.Cell>
             <Table.Cell>{hocPhan.tietThucHanh}</Table.Cell>
+            <Table.Cell>{hocPhan.hocKyThucHien}</Table.Cell>
             <Table.Cell>{hocPhan.nganhHoc.ten}</Table.Cell>
             <Table.Cell>
               <Button.Group>

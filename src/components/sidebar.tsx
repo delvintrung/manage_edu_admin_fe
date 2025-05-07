@@ -62,20 +62,47 @@ const ExampleSidebar: FC = function () {
                   </Sidebar.Item>
                 </Link>
               }
+
               {
-                <Link to="/e-commerce/products">
+                <Link to={"/thongtinchung/list"}>
                   <Sidebar.Item
-                    icon={HiShoppingBag}
+                    icon={HiChartPie}
                     className={
-                      "/e-commerce/products" === currentPage
+                      "/thongtinchung/list" === currentPage
                         ? "bg-gray-100 dark:bg-gray-700"
                         : ""
                     }
                   >
-                    Phân công giảng dạy
+                    Thông tin chung CTDT
                   </Sidebar.Item>
                 </Link>
               }
+
+              <Link to={"/kehoachmonhom/list"}>
+                <Sidebar.Item
+                  icon={HiChartPie}
+                  className={
+                    "/kehoachmonhom/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Mở nhóm môn học
+                </Sidebar.Item>
+              </Link>
+
+              <Link to="/phanconggiangday/list">
+                <Sidebar.Item
+                  icon={HiShoppingBag}
+                  className={
+                    "/phanconggiangday/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Quản lý nhóm đã mở
+                </Sidebar.Item>
+              </Link>
               {
                 <Link to="/users/list">
                   <Sidebar.Item

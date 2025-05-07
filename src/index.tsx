@@ -19,6 +19,9 @@ import NhomKienThucPage from "./pages/nhomkienthuc";
 import ChuongTrinhDaoTaoPage from "./pages/chuongtrinhdaotao";
 import DeCuongChiTietPage from "./pages/decuongchitiet";
 import NganhHocPage from "./pages/nganhhoc";
+import KeHoachMoNhomPage from "./pages/kehoachmonhom";
+import NhomHocPage from "./pages/phanconggiangday";
+import ThongTinChungCTDTPage from "./pages/thongtinchung";
 const container = document.getElementById("root");
 
 if (!container) {
@@ -40,6 +43,15 @@ root.render(
                 path="/e-commerce/products"
                 element={<EcommerceProductsPage />}
               />
+              <Route
+                path="/thongtinchung/list"
+                element={<ThongTinChungCTDTPage />}
+              />
+              <Route
+                path="/kehoachmonhom/list"
+                element={<KeHoachMoNhomPage />}
+              />
+              <Route path="/phanconggiangday/list" element={<NhomHocPage />} />
               <Route path="/users/list" element={<UserListPage />} />
               <Route path="/khoa/list" element={<KhoaPage />} />
               <Route path="/lecturer/list" element={<GiangVienPage />} />

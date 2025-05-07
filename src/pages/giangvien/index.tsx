@@ -1,5 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Button, Label, Table, Modal, TextInput, Select } from "flowbite-react";
+import {
+  Button,
+  Label,
+  Table,
+  Modal,
+  TextInput,
+  Select,
+  FileInput,
+} from "flowbite-react";
 import type { FC } from "react";
 import { IoIosSearch } from "react-icons/io";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
@@ -9,10 +17,12 @@ import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
+import { IoInformation } from "react-icons/io5";
+import { FaFileExport, FaFileImport } from "react-icons/fa";
 
 interface Khoa {
   id: string;
-  ten: string; // Sửa từ tenKhoa thành ten để khớp với backend và các trang khác
+  ten: string;
 }
 
 interface User {
@@ -27,6 +37,7 @@ interface GiangVien {
   hoTen: string;
   trinhDo: string;
   chuyenMon: string;
+  namSinh: string;
 }
 
 interface TableProps {
@@ -37,13 +48,14 @@ const GiangVienPage: FC = function () {
   const [giangViens, setGiangViens] = useState<GiangVien[]>([]);
   const [khoas, setKhoas] = useState<Khoa[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [openModal, setOpenModal] = useState<"add" | "edit" | "delete" | null>(
-    null
-  );
+  const [openModal, setOpenModal] = useState<
+    "add" | "edit" | "delete" | "import" | null
+  >(null);
   const [selectedGiangVien, setSelectedGiangVien] = useState<GiangVien | null>(
     null
   );
   const [searchValue, setSearchValue] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
 
   // Fetch all giangViens, khoas, and users on mount
   useEffect(() => {
@@ -96,6 +108,7 @@ const GiangVienPage: FC = function () {
       hoTen: form["hoTen"].value,
       trinhDo: form["trinhDo"].value,
       chuyenMon: form["chuyenMon"].value,
+      namSinh: form["namSinh"].value,
     };
 
     try {
@@ -131,6 +144,73 @@ const GiangVienPage: FC = function () {
     }
   };
 
+  // Handle export to CSV
+  const handleExport = async () => {
+    try {
+      const response = await axios.get("/api/giangvien");
+      const giangViens = response.data;
+
+      const headers = [
+        "ID",
+        "Họ Tên",
+        "Trình Độ",
+        "Chuyên Môn",
+        "Năm Sinh",
+        "Khoa",
+        "Người Dùng",
+      ];
+      const csvContent = [
+        "\uFEFF" + headers.join(","), // Add UTF-8 BOM
+        ...giangViens.map((gv: GiangVien) =>
+          [
+            gv.id,
+            `"${gv.hoTen.replace(/"/g, '""')}"`, // Escape quotes
+            `"${gv.trinhDo.replace(/"/g, '""')}"`,
+            `"${gv.chuyenMon.replace(/"/g, '""')}"`,
+            gv.namSinh,
+            `"${gv.khoa.ten.replace(/"/g, '""')}"`,
+            `"${gv.user.username.replace(/"/g, '""')}"`,
+          ].join(",")
+        ),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "giang_vien_export.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      alert("Xuất danh sách giảng viên thất bại");
+    }
+  };
+
+  // Handle import file
+  const handleImport = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!file) {
+      alert("Vui lòng chọn file để nhập");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post("/api/giangvien/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setGiangViens(response.data); // Assuming backend returns updated list
+      alert("Nhập danh sách giảng viên thành công");
+      setOpenModal(null);
+      setFile(null);
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Nhập danh sách thất bại");
+    }
+  };
+
   return (
     <div>
       <NavbarSidebarLayout isFooter={false}>
@@ -162,10 +242,18 @@ const GiangVienPage: FC = function () {
                       />
                     </div>
                   </div>
-                  <div>
+                  <div className="flex space-x-2">
                     <Button color="gray" onClick={() => setOpenModal("add")}>
                       <IoAddCircle className="mr-3 h-4 w-4" />
                       Thêm Giảng Viên
+                    </Button>
+                    <Button color="gray" onClick={handleExport}>
+                      <FaFileExport className="mr-3 h-4 w-4" />
+                      Xuất CSV
+                    </Button>
+                    <Button color="gray" onClick={() => setOpenModal("import")}>
+                      <FaFileImport className="mr-3 h-4 w-4" />
+                      Nhập CSV
                     </Button>
                   </div>
                 </div>
@@ -231,6 +319,17 @@ const GiangVienPage: FC = function () {
                 />
               </div>
               <div className="mb-5">
+                <Label htmlFor="namSinh">Năm Sinh</Label>
+                <TextInput
+                  id="namSinh"
+                  name="namSinh"
+                  defaultValue={
+                    openModal === "edit" ? selectedGiangVien?.namSinh : ""
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-5">
                 <Label htmlFor="khoa">Khoa</Label>
                 <Select
                   id="khoa"
@@ -281,6 +380,40 @@ const GiangVienPage: FC = function () {
         </Modal>
       )}
 
+      {/* Import Modal */}
+      {openModal === "import" && (
+        <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
+          <Modal.Header>Nhập Danh Sách Giảng Viên</Modal.Header>
+          <Modal.Body>
+            <form onSubmit={handleImport}>
+              <div className="mb-5">
+                <Label htmlFor="file">Chọn file CSV</Label>
+                <FileInput
+                  id="file"
+                  name="file"
+                  accept=".csv"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  required
+                />
+              </div>
+              <div className="flex">
+                <Button type="submit">Nhập</Button>
+                <Button
+                  color="gray"
+                  onClick={() => {
+                    setOpenModal(null);
+                    setFile(null);
+                  }}
+                  className="ml-2"
+                >
+                  Hủy
+                </Button>
+              </div>
+            </form>{" "}
+          </Modal.Body>
+        </Modal>
+      )}
+
       {/* Delete Modal */}
       {openModal === "delete" && (
         <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
@@ -315,6 +448,7 @@ const GiangVienTable: FC<
         <Table.HeadCell>Họ Tên</Table.HeadCell>
         <Table.HeadCell>Trình Độ</Table.HeadCell>
         <Table.HeadCell>Chuyên Môn</Table.HeadCell>
+        <Table.HeadCell>Năm Sinh</Table.HeadCell>
         <Table.HeadCell>Khoa</Table.HeadCell>
         <Table.HeadCell>Người Dùng</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
@@ -331,10 +465,21 @@ const GiangVienTable: FC<
             <Table.Cell>{giangVien.hoTen}</Table.Cell>
             <Table.Cell>{giangVien.trinhDo}</Table.Cell>
             <Table.Cell>{giangVien.chuyenMon}</Table.Cell>
+            <Table.Cell>{giangVien.namSinh}</Table.Cell>
             <Table.Cell>{giangVien.khoa.ten}</Table.Cell>
             <Table.Cell>{giangVien.user.username}</Table.Cell>
             <Table.Cell>
               <Button.Group>
+                <Button
+                  color="gray"
+                  onClick={() => {
+                    setSelectedGiangVien(giangVien);
+                    setOpenModal("edit");
+                  }}
+                  className=" py-1"
+                >
+                  <IoInformation className="mr-3 h-4 w-4" />
+                </Button>
                 <Button
                   color="gray"
                   onClick={() => {

@@ -214,6 +214,9 @@ const UserPage: FC = function () {
                 >
                   <option value="USER">User</option>
                   <option value="ADMIN">Admin</option>
+                  <option disabled value="GIANGVIEN">
+                    Giảng viên
+                  </option>
                 </Select>
               </div>
               <div className="flex">
