@@ -6,7 +6,7 @@ import {
   Modal,
   TextInput,
   Select,
-  Checkbox,
+  Textarea,
 } from "flowbite-react";
 import type { FC } from "react";
 import { IoIosSearch } from "react-icons/io";
@@ -20,20 +20,16 @@ import { v4 as uuidv4 } from "uuid";
 
 interface HocPhan {
   id: string;
-  tenHocPhan: string;
-}
-
-interface NhomKienThuc {
-  id: string;
   ten: string;
 }
 
 interface DeCuongChiTiet {
   id: string;
   hocPhan: HocPhan;
-  nhomKienThuc: NhomKienThuc;
-  thuTuHocKy: number;
-  batBuoc: boolean;
+  mucTieu: string;
+  noiDung: string;
+  phuongPhapDanhGia: string;
+  taiLieuThamKhao: string;
 }
 
 interface TableProps {
@@ -43,7 +39,6 @@ interface TableProps {
 const DeCuongChiTietPage: FC = function () {
   const [deCuongChiTiets, setDeCuongChiTiets] = useState<DeCuongChiTiet[]>([]);
   const [hocPhans, setHocPhans] = useState<HocPhan[]>([]);
-  const [nhomKienThucs, setNhomKienThucs] = useState<NhomKienThuc[]>([]);
   const [openModal, setOpenModal] = useState<"add" | "edit" | "delete" | null>(
     null
   );
@@ -52,18 +47,16 @@ const DeCuongChiTietPage: FC = function () {
   );
   const [searchValue, setSearchValue] = useState<string>("");
 
-  // Fetch all deCuongChiTiets, hocPhans, and nhomKienThucs on mount
+  // Fetch all deCuongChiTiets and hocPhans on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [deCuongRes, hocPhanRes, nhomKienThucRes] = await Promise.all([
+        const [deCuongRes, hocPhanRes] = await Promise.all([
           axios.get("/api/decuongchitiet"),
           axios.get("/api/hocphan"),
-          axios.get("/api/nhomkienthuc"),
         ]);
         setDeCuongChiTiets(deCuongRes.data);
         setHocPhans(hocPhanRes.data);
-        setNhomKienThucs(nhomKienThucRes.data);
       } catch (error) {
         alert("Không thể lấy dữ liệu");
       }
@@ -71,7 +64,7 @@ const DeCuongChiTietPage: FC = function () {
     fetchData();
   }, []);
 
-  // Handle search (client-side filtering by hocPhan.tenHocPhan)
+  // Handle search (client-side filtering by hocPhan.ten)
   const handleSearch = async () => {
     try {
       const result = await axios.get("/api/decuongchitiet");
@@ -81,7 +74,7 @@ const DeCuongChiTietPage: FC = function () {
         return;
       }
       const filteredDeCuongs = allDeCuongs.filter((dc: DeCuongChiTiet) =>
-        dc.hocPhan.tenHocPhan.toLowerCase().includes(searchValue.toLowerCase())
+        dc.hocPhan.ten.toLowerCase().includes(searchValue.toLowerCase())
       );
       setDeCuongChiTiets(filteredDeCuongs);
       if (filteredDeCuongs.length === 0) {
@@ -98,10 +91,11 @@ const DeCuongChiTietPage: FC = function () {
     const form = e.currentTarget;
     const deCuong: DeCuongChiTiet = {
       id: openModal === "add" ? uuidv4() : selectedDeCuong!.id,
-      hocPhan: { id: form["hocPhan"].value, tenHocPhan: "" },
-      nhomKienThuc: { id: form["nhomKienThuc"].value, ten: "" },
-      thuTuHocKy: parseInt(form["thuTuHocKy"].value),
-      batBuoc: form["batBuoc"].checked,
+      hocPhan: { id: form["hocPhan"].value, ten: "" },
+      mucTieu: form["mucTieu"].value,
+      noiDung: form["noiDung"].value,
+      phuongPhapDanhGia: form["phuongPhapDanhGia"].value,
+      taiLieuThamKhao: form["taiLieuThamKhao"].value,
     };
 
     try {
@@ -140,74 +134,65 @@ const DeCuongChiTietPage: FC = function () {
   };
 
   return (
-    <div>
-      <NavbarSidebarLayout isFooter={false}>
-        <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
-          <div className="mb-1 w-full">
-            <div className="mb-4">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-                Quản lý Đề cương Chi tiết
-              </h1>
+    <NavbarSidebarLayout isFooter={false}>
+      <div className="block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex">
+        <div className="mb-1 w-full">
+          <div className="mb-4">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+              Quản lý Đề cương Chi tiết
+            </h1>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="relative lg:w-64 xl:w-96">
+              <TextInput
+                id="decuongchitiet-search"
+                name="decuongchitiet-search"
+                placeholder="Tìm kiếm học phần theo tên"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+              />
+              <IoIosSearch
+                className="absolute right-2 top-2.5 h-5 w-5 cursor-pointer"
+                onClick={handleSearch}
+              />
             </div>
-            <div className="flex">
-              <div className="mb-3 dark:divide-gray-700 sm:mb-0 flex sm:divide-x w-full sm:divide-gray-100">
-                <div className="flex items-center justify-between w-full">
-                  <div className="lg:pr-3">
-                    <Label htmlFor="decuongchitiet-search" className="sr-only">
-                      Tìm kiếm
-                    </Label>
-                    <div className="relative mt-1 lg:w-64 xl:w-96">
-                      <TextInput
-                        id="decuongchitiet-search"
-                        name="decuongchitiet-search"
-                        placeholder="Tìm kiếm học phần theo tên"
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                      />
-                      <IoIosSearch
-                        className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
-                        onClick={handleSearch}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Button color="gray" onClick={() => setOpenModal("add")}>
-                      <IoAddCircle className="mr-3 h-4 w-4" />
-                      Thêm Đề cương Chi tiết
-                    </Button>
-                  </div>
-                </div>
-              </div>
+            <Button
+              color="blue"
+              onClick={() => setOpenModal("add")}
+              className="flex items-center"
+            >
+              <IoAddCircle className="mr-2 h-5 w-5" />
+              Thêm Đề cương
+            </Button>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col p-4">
+        <div className="overflow-x-auto">
+          <div className="inline-block min-w-full align-middle">
+            <div className="overflow-hidden shadow">
+              <DeCuongChiTietTable
+                deCuongChiTiets={deCuongChiTiets}
+                setOpenModal={setOpenModal}
+                setSelectedDeCuong={setSelectedDeCuong}
+              />
             </div>
           </div>
         </div>
-        <div className="flex flex-col">
-          <div className="overflow-x-auto">
-            <div className="inline-block min-w-full align-middle">
-              <div className="overflow-hidden shadow">
-                <DeCuongChiTietTable
-                  deCuongChiTiets={deCuongChiTiets}
-                  setOpenModal={setOpenModal}
-                  setSelectedDeCuong={setSelectedDeCuong}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </NavbarSidebarLayout>
+      </div>
 
       {/* Add/Edit Modal */}
       {(openModal === "add" || openModal === "edit") && (
-        <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
+        <Modal show={true} onClose={() => setOpenModal(null)} size="xl">
           <Modal.Header>
             {openModal === "add"
               ? "Thêm Đề cương Chi tiết"
               : "Sửa Đề cương Chi tiết"}
           </Modal.Header>
           <Modal.Body>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-5">
-                <Label htmlFor="hocPhan">Học Phần</Label>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="hocPhan" value="Học Phần" />
                 <Select
                   id="hocPhan"
                   name="hocPhan"
@@ -219,59 +204,68 @@ const DeCuongChiTietPage: FC = function () {
                   <option value="">Chọn Học Phần</option>
                   {hocPhans.map((hocPhan) => (
                     <option key={hocPhan.id} value={hocPhan.id}>
-                      {hocPhan.tenHocPhan}
+                      {hocPhan.ten}
                     </option>
                   ))}
                 </Select>
               </div>
-              <div className="mb-5">
-                <Label htmlFor="nhomKienThuc">Nhóm Kiến Thức</Label>
-                <Select
-                  id="nhomKienThuc"
-                  name="nhomKienThuc"
+              <div>
+                <Label htmlFor="mucTieu" value="Mục Tiêu" />
+                <Textarea
+                  id="mucTieu"
+                  name="mucTieu"
                   defaultValue={
-                    openModal === "edit" ? selectedDeCuong?.nhomKienThuc.id : ""
+                    openModal === "edit" ? selectedDeCuong?.mucTieu : ""
                   }
-                  required
-                >
-                  <option value="">Chọn Nhóm Kiến Thức</option>
-                  {nhomKienThucs.map((nhomKienThuc) => (
-                    <option key={nhomKienThuc.id} value={nhomKienThuc.id}>
-                      {nhomKienThuc.ten}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="thuTuHocKy">Thứ tự Học kỳ</Label>
-                <TextInput
-                  id="thuTuHocKy"
-                  name="thuTuHocKy"
-                  type="number"
-                  min="1"
-                  defaultValue={
-                    openModal === "edit" ? selectedDeCuong?.thuTuHocKy : "1"
-                  }
+                  rows={4}
                   required
                 />
               </div>
-              <div className="mb-5">
-                <Label htmlFor="batBuoc">Bắt buộc</Label>
-                <Checkbox
-                  id="batBuoc"
-                  name="batBuoc"
-                  defaultChecked={
-                    openModal === "edit" ? selectedDeCuong?.batBuoc : false
+              <div>
+                <Label htmlFor="noiDung" value="Nội Dung" />
+                <Textarea
+                  id="noiDung"
+                  name="noiDung"
+                  defaultValue={
+                    openModal === "edit" ? selectedDeCuong?.noiDung : ""
                   }
+                  rows={4}
+                  required
                 />
               </div>
-              <div className="flex">
-                <Button type="submit">Gửi</Button>
-                <Button
-                  color="gray"
-                  onClick={() => setOpenModal(null)}
-                  className="ml-2"
-                >
+              <div>
+                <Label
+                  htmlFor="phuongPhapDanhGia"
+                  value="Phương Pháp Đánh Giá"
+                />
+                <Textarea
+                  id="phuongPhapDanhGia"
+                  name="phuongPhapDanhGia"
+                  defaultValue={
+                    openModal === "edit"
+                      ? selectedDeCuong?.phuongPhapDanhGia
+                      : ""
+                  }
+                  rows={4}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="taiLieuThamKhao" value="Tài Liệu Tham Khảo" />
+                <Textarea
+                  id="taiLieuThamKhao"
+                  name="taiLieuThamKhao"
+                  defaultValue={
+                    openModal === "edit" ? selectedDeCuong?.taiLieuThamKhao : ""
+                  }
+                  rows={4}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button type="submit" color="blue">
+                  {openModal === "add" ? "Thêm" : "Cập nhật"}
+                </Button>
+                <Button color="gray" onClick={() => setOpenModal(null)}>
                   Hủy
                 </Button>
               </div>
@@ -282,7 +276,7 @@ const DeCuongChiTietPage: FC = function () {
 
       {/* Delete Modal */}
       {openModal === "delete" && (
-        <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
+        <Modal show={true} onClose={() => setOpenModal(null)}>
           <Modal.Header>Xóa Đề cương Chi tiết</Modal.Header>
           <Modal.Body>
             <p className="text-lg">
@@ -290,14 +284,16 @@ const DeCuongChiTietPage: FC = function () {
             </p>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={handleDelete}>Xác nhận</Button>
+            <Button color="red" onClick={handleDelete}>
+              Xóa
+            </Button>
             <Button color="gray" onClick={() => setOpenModal(null)}>
               Hủy
             </Button>
           </Modal.Footer>
         </Modal>
       )}
-    </div>
+    </NavbarSidebarLayout>
   );
 };
 
@@ -312,9 +308,10 @@ const DeCuongChiTietTable: FC<
       <Table.Head>
         <Table.HeadCell>Mã</Table.HeadCell>
         <Table.HeadCell>Học Phần</Table.HeadCell>
-        <Table.HeadCell>Nhóm Kiến Thức</Table.HeadCell>
-        <Table.HeadCell>Học Kỳ</Table.HeadCell>
-        <Table.HeadCell>Bắt Buộc</Table.HeadCell>
+        <Table.HeadCell>Mục Tiêu</Table.HeadCell>
+        <Table.HeadCell>Nội Dung</Table.HeadCell>
+        <Table.HeadCell>Phương Pháp Đánh Giá</Table.HeadCell>
+        <Table.HeadCell>Tài Liệu Tham Khảo</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
@@ -326,10 +323,19 @@ const DeCuongChiTietTable: FC<
             <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
               {deCuong.id}
             </Table.Cell>
-            <Table.Cell>{deCuong.hocPhan.tenHocPhan}</Table.Cell>
-            <Table.Cell>{deCuong.nhomKienThuc.ten}</Table.Cell>
-            <Table.Cell>{deCuong.thuTuHocKy}</Table.Cell>
-            <Table.Cell>{deCuong.batBuoc ? "Có" : "Không"}</Table.Cell>
+            <Table.Cell>{deCuong.hocPhan.ten}</Table.Cell>
+            <Table.Cell className="max-w-xs truncate">
+              {deCuong.mucTieu}
+            </Table.Cell>
+            <Table.Cell className="max-w-xs truncate">
+              {deCuong.noiDung}
+            </Table.Cell>
+            <Table.Cell className="max-w-xs truncate">
+              {deCuong.phuongPhapDanhGia}
+            </Table.Cell>
+            <Table.Cell className="max-w-xs truncate">
+              {deCuong.taiLieuThamKhao}
+            </Table.Cell>
             <Table.Cell>
               <Button.Group>
                 <Button
@@ -339,7 +345,7 @@ const DeCuongChiTietTable: FC<
                     setOpenModal("edit");
                   }}
                 >
-                  <RxUpdate className="mr-3 h-4 w-4" />
+                  <RxUpdate className="mr-2 h-4 w-4" />
                   Sửa
                 </Button>
                 <Button
@@ -349,7 +355,7 @@ const DeCuongChiTietTable: FC<
                     setOpenModal("delete");
                   }}
                 >
-                  <MdDeleteForever className="mr-3 h-4 w-4" />
+                  <MdDeleteForever className="mr-2 h-4 w-4" />
                   Xóa
                 </Button>
               </Button.Group>

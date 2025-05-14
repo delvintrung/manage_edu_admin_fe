@@ -91,6 +91,19 @@ const ExampleSidebar: FC = function () {
                 </Sidebar.Item>
               </Link>
 
+              <Link to="/kehoachdayhoc/list">
+                <Sidebar.Item
+                  icon={HiShoppingBag}
+                  className={
+                    "/kehoachdayhoc/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Kế hoạch giảng dạy
+                </Sidebar.Item>
+              </Link>
+
               <Link to="/phanconggiangday/list">
                 <Sidebar.Item
                   icon={HiShoppingBag}

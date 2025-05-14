@@ -7,36 +7,7 @@ import { FaChalkboardTeacher, FaPrint } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
-
-interface NganhHoc {
-  id: string;
-  ten: string;
-  moTa: string;
-}
-
-interface HocPhan {
-  id: string;
-  ten: string;
-  nganhHoc: NganhHoc;
-  tinChi: string;
-  tietLyThuyet: number;
-  tietThucHanh: number;
-  hocKyThucHien: number;
-}
-
-interface Khoa {
-  id: string;
-  ten: string;
-  moTa: string;
-}
-
-interface GiangVien {
-  id: string;
-  hoTen: string;
-  khoa: Khoa;
-  namSinh: string;
-  chuyenMon: string;
-}
+import { HocPhan, NganhHoc, Khoa, GiangVien } from "../../types";
 
 interface KeHoachMoNhom {
   id: string;
@@ -282,13 +253,6 @@ const NhomHocPage: FC = function () {
       prepareDataPrint[giangVien.id] = Object.values(hocPhanGroups);
     });
 
-    let giangVien: GiangVien = {
-      id: "",
-      hoTen: "",
-      khoa: { id: "", ten: "", moTa: "" },
-      namSinh: "",
-      chuyenMon: "",
-    };
     let res = "";
     Object.entries(prepareDataPrint).forEach(([giangVienId, hocPhanList]) => {
       let rowHtml = "";
@@ -321,7 +285,6 @@ const NhomHocPage: FC = function () {
             <td rowspan="${hocPhanList.length}">${
             giangVien?.chuyenMon || ""
           }</td>
-            <td>${hocPhan?.nganhHoc?.ten || "N/A"}</td>
             <td>${hocPhan.ten}</td>
             <td>${hocPhan.tinChi}</td>
             <td>${hocPhan.tietLyThuyet}</td>
@@ -334,7 +297,6 @@ const NhomHocPage: FC = function () {
           </tr>`;
         } else {
           rowHtml += `<tr>
-            <td>${hocPhan?.nganhHoc?.ten || "N/A"}</td>
             <td>${hocPhan.ten}</td>
             <td>${hocPhan.tinChi}</td>
             <td>${hocPhan.tietLyThuyet}</td>
@@ -706,7 +668,6 @@ const NhomHocTable: FC<
         <Table.HeadCell>ID</Table.HeadCell>
         <Table.HeadCell>Mã Nhóm</Table.HeadCell>
         <Table.HeadCell>Học Phần</Table.HeadCell>
-        <Table.HeadCell>Ngành Học</Table.HeadCell>
         <Table.HeadCell>Giảng Viên</Table.HeadCell>
         <Table.HeadCell>Số Sinh Viên</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
@@ -724,9 +685,6 @@ const NhomHocTable: FC<
                 </Table.Cell>
                 <Table.Cell>{nhomHoc.maNhom}</Table.Cell>
                 <Table.Cell>{nhomHoc.keHoachMoNhom.hocPhan.ten}</Table.Cell>
-                <Table.Cell>
-                  {nhomHoc.keHoachMoNhom.hocPhan.nganhHoc.ten}
-                </Table.Cell>
                 <Table.Cell>
                   {nhomHoc.giangVien
                     ? nhomHoc.giangVien.hoTen

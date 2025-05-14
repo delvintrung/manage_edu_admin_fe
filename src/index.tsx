@@ -15,13 +15,14 @@ import HocPhanPage from "./pages/hocphan";
 import GiangVienPage from "./pages/giangvien";
 import ToastComponent from "./components/toast";
 import { ContextProvider } from "./context/contextAPI.jsx";
-import NhomKienThucPage from "./pages/nhomkienthuc";
+import KhoiKienThucPage from "./pages/khoikienthuc";
 import ChuongTrinhDaoTaoPage from "./pages/chuongtrinhdaotao";
 import DeCuongChiTietPage from "./pages/decuongchitiet";
 import NganhHocPage from "./pages/nganhhoc";
 import KeHoachMoNhomPage from "./pages/kehoachmonhom";
 import NhomHocPage from "./pages/phanconggiangday";
 import ThongTinChungCTDTPage from "./pages/thongtinchung";
+import KeHoachDayHocPage from "./pages/kehoachdayhoc";
 const container = document.getElementById("root");
 
 if (!container) {
@@ -56,8 +57,11 @@ root.render(
               <Route path="/khoa/list" element={<KhoaPage />} />
               <Route path="/lecturer/list" element={<GiangVienPage />} />
               <Route path="/hocphan/list" element={<HocPhanPage />} />
-
-              <Route path="/nhomkienthuc/list" element={<NhomKienThucPage />} />
+              <Route
+                path="/kehoachdayhoc/list"
+                element={<KeHoachDayHocPage />}
+              />
+              <Route path="/nhomkienthuc/list" element={<KhoiKienThucPage />} />
               <Route
                 path="/chuongtrinhdaotao/list"
                 element={<ChuongTrinhDaoTaoPage />}

@@ -9,36 +9,39 @@ import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
-import { HocPhan } from "../../types";
+import { KhoiKienThuc } from "../../types";
 
-interface NganhHoc {
+interface ChuongTrinhDaoTao {
   id: string;
-  ten: string; // Sửa từ tenNganh thành ten để khớp với backend
+  ten: string;
 }
 
 interface TableProps {
-  hocPhans: HocPhan[];
+  nhomKienThucs: KhoiKienThuc[];
 }
 
-const HocPhanPage: FC = function () {
-  const [hocPhans, setHocPhans] = useState<HocPhan[]>([]);
-  const [nganhHocs, setNganhHocs] = useState<NganhHoc[]>([]);
+const KhoiKienThucPage: FC = function () {
+  const [nhomKienThucs, setNhomKienThucs] = useState<KhoiKienThuc[]>([]);
+  const [chuongTrinhDaoTaos, setChuongTrinhDaoTaos] = useState<
+    ChuongTrinhDaoTao[]
+  >([]);
   const [openModal, setOpenModal] = useState<"add" | "edit" | "delete" | null>(
     null
   );
-  const [selectedHocPhan, setSelectedHocPhan] = useState<HocPhan | null>(null);
+  const [selectedNhomKienThuc, setSelectedNhomKienThuc] =
+    useState<KhoiKienThuc | null>(null);
   const [searchValue, setSearchValue] = useState<string>("");
 
-  // Fetch all hocPhans and nganhHocs on mount
+  // Fetch all nhomKienThucs and chuongTrinhDaoTaos on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [hocPhanRes, nganhHocRes] = await Promise.all([
-          axios.get("/api/hocphan"),
-          axios.get("/api/nganhhoc"),
+        const [nhomKienThucRes, chuongTrinhDaoTaoRes] = await Promise.all([
+          axios.get("/api/khoikienthuc"),
+          axios.get("/api/chuongtrinhdaotao"),
         ]);
-        setHocPhans(hocPhanRes.data);
-        setNganhHocs(nganhHocRes.data);
+        setNhomKienThucs(nhomKienThucRes.data);
+        setChuongTrinhDaoTaos(chuongTrinhDaoTaoRes.data);
       } catch (error) {
         alert("Không thể tải dữ liệu");
       }
@@ -49,21 +52,22 @@ const HocPhanPage: FC = function () {
   // Handle search (client-side filtering by ten)
   const handleSearch = async () => {
     try {
-      const result = await axios.get("/api/hocphan");
-      const allHocPhans = result.data;
+      const result = await axios.get("/api/khoikienthuc");
+      const allNhomKienThucs = result.data;
       if (!searchValue) {
-        setHocPhans(allHocPhans);
+        setNhomKienThucs(allNhomKienThucs);
         return;
       }
-      const filteredHocPhans = allHocPhans.filter((hp: HocPhan) =>
-        hp.ten.toLowerCase().includes(searchValue.toLowerCase())
+      const filteredNhomKienThucs = allNhomKienThucs.filter(
+        (nkt: KhoiKienThuc) =>
+          nkt.ten.toLowerCase().includes(searchValue.toLowerCase())
       );
-      setHocPhans(filteredHocPhans);
-      if (filteredHocPhans.length === 0) {
-        alert("Không tìm thấy học phần nào");
+      setNhomKienThucs(filteredNhomKienThucs);
+      if (filteredNhomKienThucs.length === 0) {
+        alert("Không tìm thấy nhóm kiến thức nào");
       }
     } catch (error) {
-      alert("Không thể tải danh sách học phần");
+      alert("Không thể tải danh sách nhóm kiến thức");
     }
   };
 
@@ -71,25 +75,29 @@ const HocPhanPage: FC = function () {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const hocPhan: HocPhan = {
-      id: openModal === "add" ? uuidv4() : selectedHocPhan!.id,
+    const nhomKienThuc: KhoiKienThuc = {
+      id: openModal === "add" ? uuidv4() : selectedNhomKienThuc!.id,
       ten: form["ten"].value,
-      tinChi: form["tinChi"].value,
-      tietLyThuyet: parseInt(form["tietLyThuyet"].value),
-      tietThucHanh: parseInt(form["tietThucHanh"].value),
+      tinChiBatBuoc: parseInt(form["tinChiBatBuoc"].value),
+      tinChiTuChon: parseInt(form["tinChiTuChon"].value),
     };
 
     try {
       if (openModal === "add") {
-        const result = await axios.post("/api/hocphan", hocPhan);
-        setHocPhans([...hocPhans, result.data]);
-        alert("Thêm học phần thành công");
+        const result = await axios.post("/api/nhomkienthuc", nhomKienThuc);
+        setNhomKienThucs([...nhomKienThucs, result.data]);
+        alert("Thêm nhóm kiến thức thành công");
       } else {
-        const result = await axios.put(`/api/hocphan/${hocPhan.id}`, hocPhan);
-        setHocPhans(
-          hocPhans.map((hp) => (hp.id === hocPhan.id ? result.data : hp))
+        const result = await axios.put(
+          `/api/nhomkienthuc/${nhomKienThuc.id}`,
+          nhomKienThuc
         );
-        alert("Cập nhật học phần thành công");
+        setNhomKienThucs(
+          nhomKienThucs.map((nkt) =>
+            nkt.id === nhomKienThuc.id ? result.data : nkt
+          )
+        );
+        alert("Cập nhật nhóm kiến thức thành công");
       }
       setOpenModal(null);
     } catch (error: any) {
@@ -100,12 +108,14 @@ const HocPhanPage: FC = function () {
   // Handle delete
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/hocphan/${selectedHocPhan!.id}`);
-      setHocPhans(hocPhans.filter((hp) => hp.id !== selectedHocPhan!.id));
-      alert("Xóa học phần thành công");
+      await axios.delete(`/api/nhomkienthuc/${selectedNhomKienThuc!.id}`);
+      setNhomKienThucs(
+        nhomKienThucs.filter((nkt) => nkt.id !== selectedNhomKienThuc!.id)
+      );
+      alert("Xóa nhóm kiến thức thành công");
       setOpenModal(null);
     } catch (error) {
-      alert("Xóa học phần thất bại");
+      alert("Xóa nhóm kiến thức thất bại");
     }
   };
 
@@ -116,21 +126,21 @@ const HocPhanPage: FC = function () {
           <div className="mb-1 w-full">
             <div className="mb-4">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-                Quản lý Học Phần
+                Quản lý Nhóm Kiến Thức
               </h1>
             </div>
             <div className="flex">
               <div className="mb-3 dark:divide-gray-700 sm:mb-0 flex sm:divide-x w-full sm:divide-gray-100">
                 <div className="flex items-center justify-between w-full">
                   <div className="lg:pr-3">
-                    <Label htmlFor="hocphan-search" className="sr-only">
+                    <Label htmlFor="nhomkienthuc-search" className="sr-only">
                       Tìm kiếm
                     </Label>
                     <div className="relative mt-1 lg:w-64 xl:w-96">
                       <TextInput
-                        id="hocphan-search"
-                        name="hocphan-search"
-                        placeholder="Tìm kiếm học phần theo tên"
+                        id="nhomkienthuc-search"
+                        name="nhomkienthuc-search"
+                        placeholder="Tìm kiếm nhóm kiến thức theo tên"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                       />
@@ -143,7 +153,7 @@ const HocPhanPage: FC = function () {
                   <div>
                     <Button color="gray" onClick={() => setOpenModal("add")}>
                       <IoAddCircle className="mr-3 h-4 w-4" />
-                      Thêm Học Phần
+                      Thêm Nhóm Kiến Thức
                     </Button>
                   </div>
                 </div>
@@ -155,10 +165,10 @@ const HocPhanPage: FC = function () {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden shadow">
-                <HocPhanTable
-                  hocPhans={hocPhans}
+                <NhomKienThucTable
+                  nhomKienThucs={nhomKienThucs}
                   setOpenModal={setOpenModal}
-                  setSelectedHocPhan={setSelectedHocPhan}
+                  setSelectedNhomKienThuc={setSelectedNhomKienThuc}
                 />
               </div>
             </div>
@@ -170,62 +180,52 @@ const HocPhanPage: FC = function () {
       {(openModal === "add" || openModal === "edit") && (
         <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
           <Modal.Header>
-            {openModal === "add" ? "Thêm Học Phần" : "Sửa Học Phần"}
+            {openModal === "add" ? "Thêm Nhóm Kiến Thức" : "Sửa Nhóm Kiến Thức"}
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={handleSubmit}>
               <div className="mb-5">
-                <Label htmlFor="ten">Tên Học Phần</Label>
+                <Label htmlFor="ten">Tên</Label>
                 <TextInput
                   id="ten"
                   name="ten"
                   defaultValue={
-                    openModal === "edit" ? selectedHocPhan?.ten : ""
+                    openModal === "edit" ? selectedNhomKienThuc?.ten : ""
                   }
                   required
                   maxLength={100}
                 />
               </div>
               <div className="mb-5">
-                <Label htmlFor="tinChi">Số Tín Chỉ</Label>
+                <Label htmlFor="tinChiBatBuoc">Tín Chỉ Bắt Buộc</Label>
                 <TextInput
-                  id="tinChi"
-                  name="tinChi"
+                  id="tinChiBatBuoc"
+                  name="tinChiBatBuoc"
                   type="number"
-                  min="1"
+                  min="0"
                   defaultValue={
-                    openModal === "edit" ? selectedHocPhan?.tinChi : ""
+                    openModal === "edit"
+                      ? selectedNhomKienThuc?.tinChiBatBuoc
+                      : "0"
                   }
                   required
                 />
               </div>
               <div className="mb-5">
-                <Label htmlFor="tietLyThuyet">Tiết Lý Thuyết</Label>
+                <Label htmlFor="tinChiTuChon">Tín Chỉ Tự Chọn</Label>
                 <TextInput
-                  id="tietLyThuyet"
-                  name="tietLyThuyet"
+                  id="tinChiTuChon"
+                  name="tinChiTuChon"
                   type="number"
                   min="0"
                   defaultValue={
-                    openModal === "edit" ? selectedHocPhan?.tietLyThuyet : "0"
+                    openModal === "edit"
+                      ? selectedNhomKienThuc?.tinChiTuChon
+                      : "0"
                   }
                   required
                 />
               </div>
-              <div className="mb-5">
-                <Label htmlFor="tietThucHanh">Tiết Thực Hành</Label>
-                <TextInput
-                  id="tietThucHanh"
-                  name="tietThucHanh"
-                  type="number"
-                  min="0"
-                  defaultValue={
-                    openModal === "edit" ? selectedHocPhan?.tietThucHanh : "0"
-                  }
-                  required
-                />
-              </div>
-
               <div className="flex">
                 <Button type="submit">Lưu</Button>
                 <Button
@@ -244,10 +244,10 @@ const HocPhanPage: FC = function () {
       {/* Delete Modal */}
       {openModal === "delete" && (
         <Modal show={true} position="center" onClose={() => setOpenModal(null)}>
-          <Modal.Header>Xóa Học Phần</Modal.Header>
+          <Modal.Header>Xóa Nhóm Kiến Thức</Modal.Header>
           <Modal.Body>
             <p className="text-lg">
-              Bạn có chắc chắn muốn xóa học phần này không?
+              Bạn có chắc chắn muốn xóa nhóm kiến thức này không?
             </p>
           </Modal.Body>
           <Modal.Footer>
@@ -262,41 +262,42 @@ const HocPhanPage: FC = function () {
   );
 };
 
-const HocPhanTable: FC<
+const NhomKienThucTable: FC<
   TableProps & {
     setOpenModal: (modal: "edit" | "delete" | null) => void;
-    setSelectedHocPhan: (hocPhan: HocPhan) => void;
+    setSelectedNhomKienThuc: (nhomKienThuc: KhoiKienThuc) => void;
   }
-> = function ({ hocPhans, setOpenModal, setSelectedHocPhan }) {
+> = function ({ nhomKienThucs, setOpenModal, setSelectedNhomKienThuc }) {
   return (
     <Table hoverable>
       <Table.Head>
         <Table.HeadCell>ID</Table.HeadCell>
-        <Table.HeadCell>Tên Học Phần</Table.HeadCell>
+        <Table.HeadCell>Tên</Table.HeadCell>
+        <Table.HeadCell>Tín Chỉ Bắt Buộc</Table.HeadCell>
+        <Table.HeadCell>Tín Chỉ Tự Chọn</Table.HeadCell>
         <Table.HeadCell>Số Tín Chỉ</Table.HeadCell>
-        <Table.HeadCell>Tiết Lý Thuyết</Table.HeadCell>
-        <Table.HeadCell>Tiết Thực Hành</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
-        {hocPhans.map((hocPhan) => (
+        {nhomKienThucs.map((nhomKienThuc) => (
           <Table.Row
             className="bg-white dark:border-gray-700 dark:bg-gray-800"
-            key={hocPhan.id}
+            key={nhomKienThuc.id}
           >
             <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-              {hocPhan.id}
+              {nhomKienThuc.id}
             </Table.Cell>
-            <Table.Cell>{hocPhan.ten}</Table.Cell>
-            <Table.Cell>{hocPhan.tinChi}</Table.Cell>
-            <Table.Cell>{hocPhan.tietLyThuyet}</Table.Cell>
-            <Table.Cell>{hocPhan.tietThucHanh}</Table.Cell>
+            <Table.Cell>{nhomKienThuc.ten}</Table.Cell>
+            <Table.Cell>{nhomKienThuc.tinChiBatBuoc}</Table.Cell>
+            <Table.Cell>{nhomKienThuc.tinChiTuChon}</Table.Cell>
+            <Table.Cell>{nhomKienThuc.tinChi}</Table.Cell>
+
             <Table.Cell>
               <Button.Group>
                 <Button
                   color="gray"
                   onClick={() => {
-                    setSelectedHocPhan(hocPhan);
+                    setSelectedNhomKienThuc(nhomKienThuc);
                     setOpenModal("edit");
                   }}
                 >
@@ -306,7 +307,7 @@ const HocPhanTable: FC<
                 <Button
                   color="gray"
                   onClick={() => {
-                    setSelectedHocPhan(hocPhan);
+                    setSelectedNhomKienThuc(nhomKienThuc);
                     setOpenModal("delete");
                   }}
                 >
@@ -322,4 +323,4 @@ const HocPhanTable: FC<
   );
 };
 
-export default HocPhanPage;
+export default KhoiKienThucPage;

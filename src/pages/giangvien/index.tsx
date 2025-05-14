@@ -19,26 +19,7 @@ import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
 import { IoInformation } from "react-icons/io5";
 import { FaFileExport, FaFileImport } from "react-icons/fa";
-
-interface Khoa {
-  id: string;
-  ten: string;
-}
-
-interface User {
-  id: string;
-  username: string;
-}
-
-interface GiangVien {
-  id: string;
-  khoa: Khoa;
-  user: User;
-  hoTen: string;
-  trinhDo: string;
-  chuyenMon: string;
-  namSinh: string;
-}
+import { GiangVien, User, Khoa } from "../../types";
 
 interface TableProps {
   giangViens: GiangVien[];
