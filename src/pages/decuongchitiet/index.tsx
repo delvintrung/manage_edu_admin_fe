@@ -1,13 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import {
-  Button,
-  Label,
-  Table,
-  Modal,
-  TextInput,
-  Select,
-  Textarea,
-} from "flowbite-react";
+import { Button, Label, Table, Modal, TextInput, Select } from "flowbite-react";
 import type { FC } from "react";
 import { IoIosSearch } from "react-icons/io";
 import NavbarSidebarLayout from "../../layouts/navbar-sidebar";
@@ -17,20 +9,9 @@ import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
+import { FaEye } from "react-icons/fa";
 
-interface HocPhan {
-  id: string;
-  ten: string;
-}
-
-interface DeCuongChiTiet {
-  id: string;
-  hocPhan: HocPhan;
-  mucTieu: string;
-  noiDung: string;
-  phuongPhapDanhGia: string;
-  taiLieuThamKhao: string;
-}
+import { DeCuongChiTiet, HocPhan, CotDiemChiTiet } from "../../types";
 
 interface TableProps {
   deCuongChiTiets: DeCuongChiTiet[];
@@ -39,9 +20,10 @@ interface TableProps {
 const DeCuongChiTietPage: FC = function () {
   const [deCuongChiTiets, setDeCuongChiTiets] = useState<DeCuongChiTiet[]>([]);
   const [hocPhans, setHocPhans] = useState<HocPhan[]>([]);
-  const [openModal, setOpenModal] = useState<"add" | "edit" | "delete" | null>(
-    null
-  );
+  const [cotDiemChiTiets, setCotDiemChiTiets] = useState<CotDiemChiTiet[]>([]);
+  const [openModal, setOpenModal] = useState<
+    "add" | "edit" | "delete" | "details" | null
+  >(null);
   const [selectedDeCuong, setSelectedDeCuong] = useState<DeCuongChiTiet | null>(
     null
   );
@@ -63,6 +45,24 @@ const DeCuongChiTietPage: FC = function () {
     };
     fetchData();
   }, []);
+
+  // Fetch CotDiemChiTiet when details modal is opened
+  useEffect(() => {
+    if (openModal === "details" && selectedDeCuong) {
+      const fetchCotDiemChiTiet = async () => {
+        try {
+          const response = await axios.get(
+            `/api/cotdiemchitiet/deCuong/${selectedDeCuong.id}`
+          );
+          setCotDiemChiTiets(response.data);
+        } catch (error) {
+          alert("Không thể lấy danh sách cột điểm chi tiết");
+          setCotDiemChiTiets([]);
+        }
+      };
+      fetchCotDiemChiTiet();
+    }
+  }, [openModal, selectedDeCuong]);
 
   // Handle search (client-side filtering by hocPhan.ten)
   const handleSearch = async () => {
@@ -91,11 +91,7 @@ const DeCuongChiTietPage: FC = function () {
     const form = e.currentTarget;
     const deCuong: DeCuongChiTiet = {
       id: openModal === "add" ? uuidv4() : selectedDeCuong!.id,
-      hocPhan: { id: form["hocPhan"].value, ten: "" },
-      mucTieu: form["mucTieu"].value,
-      noiDung: form["noiDung"].value,
-      phuongPhapDanhGia: form["phuongPhapDanhGia"].value,
-      taiLieuThamKhao: form["taiLieuThamKhao"].value,
+      hocPhan: hocPhans.find((hp) => hp.id === form["hocPhan"].value)!,
     };
 
     try {
@@ -209,58 +205,7 @@ const DeCuongChiTietPage: FC = function () {
                   ))}
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="mucTieu" value="Mục Tiêu" />
-                <Textarea
-                  id="mucTieu"
-                  name="mucTieu"
-                  defaultValue={
-                    openModal === "edit" ? selectedDeCuong?.mucTieu : ""
-                  }
-                  rows={4}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="noiDung" value="Nội Dung" />
-                <Textarea
-                  id="noiDung"
-                  name="noiDung"
-                  defaultValue={
-                    openModal === "edit" ? selectedDeCuong?.noiDung : ""
-                  }
-                  rows={4}
-                  required
-                />
-              </div>
-              <div>
-                <Label
-                  htmlFor="phuongPhapDanhGia"
-                  value="Phương Pháp Đánh Giá"
-                />
-                <Textarea
-                  id="phuongPhapDanhGia"
-                  name="phuongPhapDanhGia"
-                  defaultValue={
-                    openModal === "edit"
-                      ? selectedDeCuong?.phuongPhapDanhGia
-                      : ""
-                  }
-                  rows={4}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="taiLieuThamKhao" value="Tài Liệu Tham Khảo" />
-                <Textarea
-                  id="taiLieuThamKhao"
-                  name="taiLieuThamKhao"
-                  defaultValue={
-                    openModal === "edit" ? selectedDeCuong?.taiLieuThamKhao : ""
-                  }
-                  rows={4}
-                />
-              </div>
+
               <div className="flex justify-end space-x-2">
                 <Button type="submit" color="blue">
                   {openModal === "add" ? "Thêm" : "Cập nhật"}
@@ -293,13 +238,61 @@ const DeCuongChiTietPage: FC = function () {
           </Modal.Footer>
         </Modal>
       )}
+
+      {/* Details Modal */}
+      {openModal === "details" && (
+        <Modal show={true} onClose={() => setOpenModal(null)} size="2xl">
+          <Modal.Header>
+            Chi tiết Đề cương - {selectedDeCuong?.hocPhan.ten}
+          </Modal.Header>
+          <Modal.Body>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">
+                Danh sách Cột Điểm Chi tiết
+              </h3>
+              {cotDiemChiTiets.length > 0 ? (
+                <Table hoverable>
+                  <Table.Head>
+                    <Table.HeadCell>Mã Cột Điểm</Table.HeadCell>
+                    <Table.HeadCell>Tên Cột Điểm</Table.HeadCell>
+                    <Table.HeadCell>Trọng Số</Table.HeadCell>
+                    <Table.HeadCell>Hình Thức Đánh Giá</Table.HeadCell>
+                  </Table.Head>
+                  <Table.Body className="divide-y">
+                    {cotDiemChiTiets.map((cdc) => (
+                      <Table.Row
+                        key={cdc.id}
+                        className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                      >
+                        <Table.Cell>{cdc.cotDiem.id}</Table.Cell>
+                        <Table.Cell>{cdc.cotDiem.tenCotDiem}</Table.Cell>
+                        <Table.Cell>{cdc.cotDiem.trongSoDanhGia}</Table.Cell>
+                        <Table.Cell>
+                          {cdc.cotDiem.hinhThucDanhGia || "N/A"}
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              ) : (
+                <p>Không có cột điểm chi tiết nào cho đề cương này.</p>
+              )}
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button color="gray" onClick={() => setOpenModal(null)}>
+              Đóng
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
     </NavbarSidebarLayout>
   );
 };
 
 const DeCuongChiTietTable: FC<
   TableProps & {
-    setOpenModal: (modal: "edit" | "delete" | null) => void;
+    setOpenModal: (modal: "edit" | "delete" | "details" | null) => void;
     setSelectedDeCuong: (deCuong: DeCuongChiTiet) => void;
   }
 > = function ({ deCuongChiTiets, setOpenModal, setSelectedDeCuong }) {
@@ -308,10 +301,6 @@ const DeCuongChiTietTable: FC<
       <Table.Head>
         <Table.HeadCell>Mã</Table.HeadCell>
         <Table.HeadCell>Học Phần</Table.HeadCell>
-        <Table.HeadCell>Mục Tiêu</Table.HeadCell>
-        <Table.HeadCell>Nội Dung</Table.HeadCell>
-        <Table.HeadCell>Phương Pháp Đánh Giá</Table.HeadCell>
-        <Table.HeadCell>Tài Liệu Tham Khảo</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
@@ -323,21 +312,19 @@ const DeCuongChiTietTable: FC<
             <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
               {deCuong.id}
             </Table.Cell>
-            <Table.Cell>{deCuong.hocPhan.ten}</Table.Cell>
-            <Table.Cell className="max-w-xs truncate">
-              {deCuong.mucTieu}
-            </Table.Cell>
-            <Table.Cell className="max-w-xs truncate">
-              {deCuong.noiDung}
-            </Table.Cell>
-            <Table.Cell className="max-w-xs truncate">
-              {deCuong.phuongPhapDanhGia}
-            </Table.Cell>
-            <Table.Cell className="max-w-xs truncate">
-              {deCuong.taiLieuThamKhao}
-            </Table.Cell>
+            <Table.Cell>{deCuong.hocPhan?.ten}</Table.Cell>
             <Table.Cell>
               <Button.Group>
+                <Button
+                  color="gray"
+                  onClick={() => {
+                    setSelectedDeCuong(deCuong);
+                    setOpenModal("details");
+                  }}
+                >
+                  <FaEye className="mr-3 h-4 w-4" />
+                  Xem
+                </Button>
                 <Button
                   color="gray"
                   onClick={() => {

@@ -17,6 +17,7 @@ export interface KhoiKienThuc {
 export interface KeHoachDayHoc {
   id: string;
   hocPhan: HocPhan;
+  nganhHocId?: string;
   hocKy: number;
   hocPhanTruoc: HocPhan | null;
 }
@@ -58,4 +59,34 @@ export interface Khoa {
 export interface User {
   id: string;
   username: string;
+}
+
+export interface ThongKe {
+  soGiangVien?: number;
+  soKhoa?: number;
+  soNganh?: number;
+  soHocPhan?: number;
+  soKeHoachDayHoc?: number;
+  soKhoiKienThuc?: number;
+  soKeHoachMoNhom?: number;
+  soNhomHoc?: number;
+  soDeCuongChiTiet?: number;
+}
+
+export interface CotDiem {
+  id: string;
+  tenCotDiem: string;
+  trongSoDanhGia: string;
+  hinhThucDanhGia: string | null;
+}
+
+export interface DeCuongChiTiet {
+  id: string;
+  hocPhan: HocPhan;
+}
+
+export interface CotDiemChiTiet {
+  id: string;
+  de_cuong_id: DeCuongChiTiet;
+  cotDiem: CotDiem;
 }

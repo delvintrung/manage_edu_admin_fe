@@ -286,6 +286,7 @@ const NhomHocPage: FC = function () {
             giangVien?.chuyenMon || ""
           }</td>
             <td>${hocPhan.ten}</td>
+            <td>${hocPhan.id}</td>
             <td>${hocPhan.tinChi}</td>
             <td>${hocPhan.tietLyThuyet}</td>
             <td>${hocPhan.tietThucHanh}</td>
@@ -298,6 +299,7 @@ const NhomHocPage: FC = function () {
         } else {
           rowHtml += `<tr>
             <td>${hocPhan.ten}</td>
+            <td>${hocPhan.id}</td>
             <td>${hocPhan.tinChi}</td>
             <td>${hocPhan.tietLyThuyet}</td>
             <td>${hocPhan.tietThucHanh}</td>

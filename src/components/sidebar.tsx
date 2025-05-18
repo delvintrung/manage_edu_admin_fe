@@ -77,6 +77,33 @@ const ExampleSidebar: FC = function () {
                   </Sidebar.Item>
                 </Link>
               }
+              <Link to="/chuongtrinhdaotao/list">
+                <Sidebar.Item
+                  className={
+                    "/chuongtrinhdaotao/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                  icon={GrStorage}
+                >
+                  Chương trình đào tạo
+                </Sidebar.Item>
+              </Link>
+
+              {
+                <Link to="/khoa/list">
+                  <Sidebar.Item
+                    icon={AiFillMedicineBox}
+                    className={
+                      "/orders/list" === currentPage
+                        ? "bg-gray-100 dark:bg-gray-700"
+                        : ""
+                    }
+                  >
+                    Khoa
+                  </Sidebar.Item>
+                </Link>
+              }
 
               <Link to={"/kehoachmonhom/list"}>
                 <Sidebar.Item
@@ -87,7 +114,7 @@ const ExampleSidebar: FC = function () {
                       : ""
                   }
                 >
-                  Mở nhóm môn học
+                  Mở Nhóm && Phân Công
                 </Sidebar.Item>
               </Link>
 
@@ -100,7 +127,7 @@ const ExampleSidebar: FC = function () {
                       : ""
                   }
                 >
-                  Kế hoạch giảng dạy
+                  Kế hoạch dạy học
                 </Sidebar.Item>
               </Link>
 
@@ -116,34 +143,20 @@ const ExampleSidebar: FC = function () {
                   Quản lý nhóm đã mở
                 </Sidebar.Item>
               </Link>
-              {
-                <Link to="/users/list">
-                  <Sidebar.Item
-                    icon={HiUsers}
-                    className={
-                      "/users/list" === currentPage
-                        ? "bg-gray-100 dark:bg-gray-700"
-                        : ""
-                    }
-                  >
-                    Users
-                  </Sidebar.Item>
-                </Link>
-              }
-              {
-                <Link to="/khoa/list">
-                  <Sidebar.Item
-                    icon={AiFillMedicineBox}
-                    className={
-                      "/orders/list" === currentPage
-                        ? "bg-gray-100 dark:bg-gray-700"
-                        : ""
-                    }
-                  >
-                    Khoa
-                  </Sidebar.Item>
-                </Link>
-              }
+
+              <Link to="/hocphan/list">
+                <Sidebar.Item
+                  icon={TfiWrite}
+                  className={
+                    "/hocphan/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Học phần
+                </Sidebar.Item>
+              </Link>
+
               <Link to="/nganhhoc/list">
                 <Sidebar.Item
                   icon={AiFillMedicineBox}
@@ -154,6 +167,18 @@ const ExampleSidebar: FC = function () {
                   }
                 >
                   Ngành học
+                </Sidebar.Item>
+              </Link>
+              <Link to="/users/list">
+                <Sidebar.Item
+                  icon={HiUsers}
+                  className={
+                    "/users/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Users
                 </Sidebar.Item>
               </Link>
               {
@@ -171,20 +196,6 @@ const ExampleSidebar: FC = function () {
                 </Link>
               }
               {
-                <Link to="/hocphan/list">
-                  <Sidebar.Item
-                    icon={TfiWrite}
-                    className={
-                      "/hocphan/list" === currentPage
-                        ? "bg-gray-100 dark:bg-gray-700"
-                        : ""
-                    }
-                  >
-                    Học phần
-                  </Sidebar.Item>
-                </Link>
-              }
-              {
                 <Link to="/nhomkienthuc/list">
                   <Sidebar.Item
                     icon={FaUserLock}
@@ -195,20 +206,6 @@ const ExampleSidebar: FC = function () {
                     }
                   >
                     Nhóm kiến thức
-                  </Sidebar.Item>
-                </Link>
-              }
-              {
-                <Link to="/chuongtrinhdaotao/list">
-                  <Sidebar.Item
-                    className={
-                      "/chuongtrinhdaotao/list" === currentPage
-                        ? "bg-gray-100 dark:bg-gray-700"
-                        : ""
-                    }
-                    icon={GrStorage}
-                  >
-                    Chương trình đào tạo
                   </Sidebar.Item>
                 </Link>
               }
@@ -223,6 +220,19 @@ const ExampleSidebar: FC = function () {
                   icon={FaBuilding}
                 >
                   Đề cương chi tiết
+                </Sidebar.Item>
+              </Link>
+
+              <Link to="/cotdiem/list">
+                <Sidebar.Item
+                  className={
+                    "/cotdiem/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                  icon={FaBuilding}
+                >
+                  Cột điểm
                 </Sidebar.Item>
               </Link>
             </Sidebar.ItemGroup>

@@ -23,6 +23,7 @@ import KeHoachMoNhomPage from "./pages/kehoachmonhom";
 import NhomHocPage from "./pages/phanconggiangday";
 import ThongTinChungCTDTPage from "./pages/thongtinchung";
 import KeHoachDayHocPage from "./pages/kehoachdayhoc";
+import CotDiemPage from "./pages/cotdiem";
 const container = document.getElementById("root");
 
 if (!container) {
@@ -72,6 +73,7 @@ root.render(
               />
 
               <Route path="/nganhhoc/list" element={<NganhHocPage />} />
+              <Route path="/cotdiem/list" element={<CotDiemPage />} />
             </Routes>
           </BrowserRouter>
         </Flowbite>

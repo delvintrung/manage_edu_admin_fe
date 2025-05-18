@@ -9,28 +9,32 @@ import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
-import { KeHoachDayHoc, HocPhan } from "../../types";
+import { KeHoachDayHoc, HocPhan, NganhHoc } from "../../types";
 
 const KeHoachDayHocPage: FC = function () {
   const [keHoachDayHocs, setKeHoachDayHocs] = useState<KeHoachDayHoc[]>([]);
   const [hocPhans, setHocPhans] = useState<HocPhan[]>([]);
+  const [nganhHocs, setNganhHocs] = useState<NganhHoc[]>([]);
   const [openModal, setOpenModal] = useState<"add" | "edit" | "delete" | null>(
     null
   );
   const [selectedKeHoachDayHoc, setSelectedKeHoachDayHoc] =
     useState<KeHoachDayHoc | null>(null);
-  const [searchValue, setSearchValue] = useState<string>("");
+  const [searchHocKy, setSearchHocKy] = useState<string>("");
+  const [searchNganhHocId, setSearchNganhHocId] = useState<string>("");
 
-  // Fetch all keHoachDayHocs and hocPhans on mount
+  // Fetch all keHoachDayHocs, hocPhans, and nganhHocs on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [keHoachDayHocRes, hocPhanRes] = await Promise.all([
+        const [keHoachDayHocRes, hocPhanRes, nganhHocsRes] = await Promise.all([
           axios.get("/api/kehoachdayhoc"),
           axios.get("/api/hocphan"),
+          axios.get("/api/nganhhoc"),
         ]);
         setKeHoachDayHocs(keHoachDayHocRes.data);
         setHocPhans(hocPhanRes.data);
+        setNganhHocs(nganhHocsRes.data);
       } catch (error) {
         alert("Không thể tải dữ liệu");
       }
@@ -38,19 +42,18 @@ const KeHoachDayHocPage: FC = function () {
     fetchData();
   }, []);
 
-  // Handle search (client-side filtering by ten hoc phan)
+  // Handle search by hocKy and nganhHocId
   const handleSearch = async () => {
     try {
-      const result = await axios.get("/api/kehoachdayhoc");
-      const allKeHoachDayHocs = result.data;
-      if (!searchValue) {
-        setKeHoachDayHocs(allKeHoachDayHocs);
-        return;
-      }
-      const filteredKeHoachDayHocs = allKeHoachDayHocs.filter(
-        (khdh: KeHoachDayHoc) =>
-          khdh.hocPhan?.ten.toLowerCase().includes(searchValue.toLowerCase())
+      const params = new URLSearchParams();
+      if (searchHocKy) params.append("hocKy", searchHocKy);
+      if (searchNganhHocId) params.append("nganhHocId", searchNganhHocId);
+
+      const result = await axios.get(
+        `/api/kehoachdayhoc/search?${params.toString()}`
       );
+      const filteredKeHoachDayHocs = result.data;
+
       setKeHoachDayHocs(filteredKeHoachDayHocs);
       if (filteredKeHoachDayHocs.length === 0) {
         alert("Không tìm thấy kế hoạch dạy học nào");
@@ -64,6 +67,8 @@ const KeHoachDayHocPage: FC = function () {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
+    const nganhHocIdValue = form["nganhHocId"].value || null;
+
     const keHoachDayHoc: KeHoachDayHoc = {
       id: openModal === "add" ? uuidv4() : selectedKeHoachDayHoc!.id,
       hocPhan: (() => {
@@ -72,9 +77,12 @@ const KeHoachDayHocPage: FC = function () {
         return found;
       })(),
       hocKy: parseInt(form["hocKy"].value),
-      hocPhanTruoc: form["maHocPhanTruoc"].value
-        ? hocPhans.find((hp) => hp.id === form["maHocPhanTruoc"].value) || null
-        : null,
+      hocPhanTruoc:
+        form["maHocPhanTruoc"].value !== ""
+          ? hocPhans.find((hp) => hp.id === form["maHocPhanTruoc"].value) ||
+            null
+          : null,
+      nganhHocId: nganhHocIdValue,
     };
 
     try {
@@ -124,34 +132,53 @@ const KeHoachDayHocPage: FC = function () {
                 Quản lý Kế hoạch Dạy Học
               </h1>
             </div>
-            <div className="flex">
-              <div className="mb-3 dark:divide-gray-700 sm:mb-0 flex sm:divide-x w-full sm:divide-gray-100">
-                <div className="flex items-center justify-between w-full">
-                  <div className="lg:pr-3">
-                    <Label htmlFor="kehoachdayhoc-search" className="sr-only">
-                      Tìm kiếm
-                    </Label>
-                    <div className="relative mt-1 lg:w-64 xl:w-96">
-                      <TextInput
-                        id="kehoachdayhoc-search"
-                        name="kehoachdayhoc-search"
-                        placeholder="Tìm kiếm theo tên học phần"
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                      />
-                      <IoIosSearch
-                        className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
-                        onClick={handleSearch}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Button color="gray" onClick={() => setOpenModal("add")}>
-                      <IoAddCircle className="mr-3 h-4 w-4" />
-                      Thêm Kế hoạch
-                    </Button>
-                  </div>
+            <div className="flex flex-col sm:flex-row sm:gap-4">
+              <div className="mb-3 sm:mb-0">
+                <Label htmlFor="hocKy-search" className="sr-only">
+                  Tìm kiếm theo học kỳ
+                </Label>
+                <div className="relative">
+                  <TextInput
+                    id="hocKy-search"
+                    name="hocKy-search"
+                    type="number"
+                    placeholder="Nhập học kỳ (1, 2, ...)"
+                    value={searchHocKy}
+                    onChange={(e) => setSearchHocKy(e.target.value)}
+                  />
                 </div>
+              </div>
+              <div className="mb-3 sm:mb-0">
+                <Label htmlFor="nganhHocId-search" className="sr-only">
+                  Tìm kiếm theo ngành học
+                </Label>
+                <div className="relative">
+                  <Select
+                    id="nganhHocId-search"
+                    name="nganhHocId-search"
+                    value={searchNganhHocId}
+                    onChange={(e) => setSearchNganhHocId(e.target.value)}
+                  >
+                    <option value="">Chọn ngành học</option>
+                    {nganhHocs.map((nh) => (
+                      <option key={nh.id} value={nh.id}>
+                        {nh.ten}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Button color="gray" onClick={handleSearch}>
+                  <IoIosSearch className="mr-3 h-4 w-4" />
+                  Tìm kiếm
+                </Button>
+              </div>
+              <div>
+                <Button color="gray" onClick={() => setOpenModal("add")}>
+                  <IoAddCircle className="mr-3 h-4 w-4" />
+                  Thêm Kế hoạch
+                </Button>
               </div>
             </div>
           </div>
@@ -203,7 +230,7 @@ const KeHoachDayHocPage: FC = function () {
                 </Select>
               </div>
               <div className="mb-5">
-                <Label htmlFor="hocKy">Học Kỳ</Label>
+                <Label htmlFor="hocKy">Học Kỳ Thực Hiện</Label>
                 <TextInput
                   id="hocKy"
                   name="hocKy"
@@ -228,14 +255,43 @@ const KeHoachDayHocPage: FC = function () {
                   }
                 >
                   <option value="">Không có</option>
-                  {hocPhans.map((hp) => (
-                    <option key={hp.id} value={hp.id}>
-                      {hp.ten}
+                  {openModal === "edit"
+                    ? hocPhans
+                        .filter(
+                          (hp) => selectedKeHoachDayHoc?.hocPhan?.id !== hp.id
+                        )
+                        .map((hp) => (
+                          <option key={hp.id} value={hp.id}>
+                            {hp.ten}
+                          </option>
+                        ))
+                    : hocPhans.map((hp) => (
+                        <option key={hp.id} value={hp.id}>
+                          {hp.ten}
+                        </option>
+                      ))}
+                </Select>
+              </div>
+              <div className="mb-5">
+                <Label htmlFor="nganhHocId">Ngành học</Label>
+                <Select
+                  id="nganhHocId"
+                  name="nganhHocId"
+                  defaultValue={
+                    openModal === "edit"
+                      ? selectedKeHoachDayHoc?.nganhHocId || ""
+                      : ""
+                  }
+                  required
+                >
+                  <option value="">Chọn ngành học</option>
+                  {nganhHocs.map((nh) => (
+                    <option key={nh.id} value={nh.id}>
+                      {nh.ten}
                     </option>
                   ))}
                 </Select>
               </div>
-
               <div className="flex">
                 <Button type="submit">Lưu</Button>
                 <Button
