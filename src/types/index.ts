@@ -71,6 +71,7 @@ export interface ThongKe {
   soKeHoachMoNhom?: number;
   soNhomHoc?: number;
   soDeCuongChiTiet?: number;
+  chuongTrinhDaoTao?: number;
 }
 
 export interface CotDiem {
@@ -89,4 +90,15 @@ export interface CotDiemChiTiet {
   id: string;
   de_cuong_id: DeCuongChiTiet;
   cotDiem: CotDiem;
+}
+
+export interface ChuongTrinhKhung {
+  id: string;
+  nganhHoc: NganhHoc;
+}
+
+export interface KhoiKienThucKhungChuongTrinh {
+  id: string;
+  khoiKienThuc: KhoiKienThuc;
+  khungChuongTrinh: ChuongTrinhKhung;
 }

@@ -8,7 +8,6 @@ import { Flowbite } from "flowbite-react";
 import { Routes, Route } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import DashboardPage from "./pages/index";
-import EcommerceProductsPage from "./pages/e-commerce/products";
 import UserListPage from "./pages/users/list";
 import KhoaPage from "./pages/khoa/list";
 import HocPhanPage from "./pages/hocphan";
@@ -24,6 +23,8 @@ import NhomHocPage from "./pages/phanconggiangday";
 import ThongTinChungCTDTPage from "./pages/thongtinchung";
 import KeHoachDayHocPage from "./pages/kehoachdayhoc";
 import CotDiemPage from "./pages/cotdiem";
+import ChuongTrinhKhungTable from "./pages/chuongtrinhkhung";
+import ChuongTrinhKhungPage from "./pages/chuongtrinhkhung";
 const container = document.getElementById("root");
 
 if (!container) {
@@ -42,16 +43,16 @@ root.render(
             <Routes>
               <Route path="/" element={<DashboardPage />} index />
               <Route
-                path="/e-commerce/products"
-                element={<EcommerceProductsPage />}
-              />
-              <Route
                 path="/thongtinchung/list"
                 element={<ThongTinChungCTDTPage />}
               />
               <Route
                 path="/kehoachmonhom/list"
                 element={<KeHoachMoNhomPage />}
+              />
+              <Route
+                path="/chuongtrinhkhung/list"
+                element={<ChuongTrinhKhungPage />}
               />
               <Route path="/phanconggiangday/list" element={<NhomHocPage />} />
               <Route path="/users/list" element={<UserListPage />} />

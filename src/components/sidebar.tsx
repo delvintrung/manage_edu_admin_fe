@@ -77,6 +77,19 @@ const ExampleSidebar: FC = function () {
                   </Sidebar.Item>
                 </Link>
               }
+
+              <Link to={"/chuongtrinhkhung/list"}>
+                <Sidebar.Item
+                  icon={HiChartPie}
+                  className={
+                    "/chuongtrinhkhung/list" === currentPage
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : ""
+                  }
+                >
+                  Chương trình khung
+                </Sidebar.Item>
+              </Link>
               <Link to="/chuongtrinhdaotao/list">
                 <Sidebar.Item
                   className={

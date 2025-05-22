@@ -39,18 +39,23 @@ const Dashboard: FC = function () {
   return (
     <div>
       <div className="flex justify-between items-center">
-        <div className="w-[200px] bg-primary-500 p-5 rounded-md text-white">
+        <div className="w-[250px] bg-primary-500 p-5 rounded-md text-white">
           <p>Số giảng viên:</p>
           <p>{data.soGiangVien}</p>
         </div>
-        <div className="w-[200px] bg-gray-500 p-5 rounded-md text-white">
+        <div className="w-[250px] bg-gray-500 p-5 rounded-md text-white">
           <p>Số học phần:</p>
           <p>{data.soHocPhan}</p>
         </div>
 
-        <div className="w-[200px] bg-gray-500 p-5 rounded-md text-white">
+        <div className="w-[250px] bg-gray-500 p-5 rounded-md text-white">
           <p>Số khoa:</p>
           <p>{data.soKhoa}</p>
+        </div>
+
+        <div className="w-[250px] bg-gray-500 p-5 rounded-md text-white">
+          <p>Chương trình đào tạo:</p>
+          <p>{data.chuongTrinhDaoTao}</p>
         </div>
       </div>
     </div>
