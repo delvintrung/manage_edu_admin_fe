@@ -4,6 +4,7 @@ export interface HocPhan {
   tinChi: number;
   tietLyThuyet: number;
   tietThucHanh: number;
+  nganhHoc?: NganhHoc;
 }
 
 export interface KhoiKienThuc {

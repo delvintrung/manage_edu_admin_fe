@@ -228,6 +228,8 @@ const NhomHocPage: FC = function () {
     }, {} as { [key: string]: NhomHoc[] });
 
     let totalStudents = 0;
+    let totalSoTiets = 0;
+    let totalSoTiet = 0;
     const prepareDataPrint: {
       [giangVienId: string]: { hocPhan: HocPhan; nhomHocs: NhomHoc[] }[];
     } = {};
@@ -265,9 +267,20 @@ const NhomHocPage: FC = function () {
         );
         totalStudents += totalSinhVien;
 
-        const dh1 = nhomHocList.filter((nh) => nh.maNhom === 1).length;
-        const dh2 = nhomHocList.filter((nh) => nh.maNhom === 2).length;
-        const dh3 = nhomHocList.filter((nh) => nh.maNhom === 3).length;
+        totalSoTiet = nhomHocList.reduce(
+          (sum, nh) =>
+            sum +
+            nh.keHoachMoNhom.hocPhan.tietLyThuyet +
+            nh.keHoachMoNhom.hocPhan.tietThucHanh,
+          0
+        );
+        totalSoTiets += totalSoTiet;
+
+        const dh1 = nhomHocList.filter((nh) => nh.maNhom == 1).length;
+        const dh2 = nhomHocList.filter((nh) => nh.maNhom == 2).length;
+        const dh3 = nhomHocList.filter(
+          (nh) => nh.maNhom == 3 || nh.maNhom == 10
+        ).length;
 
         const giangVien = giangViens.find((gv) => gv.id === giangVienId) || {
           id: "",
@@ -294,7 +307,7 @@ const NhomHocPage: FC = function () {
             <td>${dh1}</td>
             <td>${dh2}</td>
             <td>${dh3}</td>
-            <td>${totalSinhVien}</td>
+            <td>${totalSoTiet}</td>
           </tr>`;
         } else {
           rowHtml += `<tr>
@@ -307,7 +320,7 @@ const NhomHocPage: FC = function () {
             <td>${dh1}</td>
             <td>${dh2}</td>
             <td>${dh3}</td>
-            <td>${totalSinhVien}</td>
+            <td>${totalSoTiet}</td>
           </tr>`;
         }
       });
@@ -359,7 +372,7 @@ const NhomHocPage: FC = function () {
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>${totalStudents}</td>
+                <td>${totalSoTiets}</td>
               </tr>
             </tbody>
           </table>

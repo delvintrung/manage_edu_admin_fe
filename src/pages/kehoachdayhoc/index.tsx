@@ -192,6 +192,7 @@ const KeHoachDayHocPage: FC = function () {
                   setOpenModal={setOpenModal}
                   setSelectedKeHoachDayHoc={setSelectedKeHoachDayHoc}
                   hocPhans={hocPhans}
+                  nganhHocs={nganhHocs}
                 />
               </div>
             </div>
@@ -333,11 +334,13 @@ const KeHoachDayHocTable: FC<{
   setOpenModal: (modal: "edit" | "delete" | null) => void;
   setSelectedKeHoachDayHoc: (keHoachDayHoc: KeHoachDayHoc) => void;
   hocPhans: HocPhan[];
+  nganhHocs: NganhHoc[];
 }> = function ({
   keHoachDayHocs,
   setOpenModal,
   setSelectedKeHoachDayHoc,
   hocPhans,
+  nganhHocs,
 }) {
   return (
     <Table hoverable>
@@ -346,6 +349,8 @@ const KeHoachDayHocTable: FC<{
         <Table.HeadCell>Học Phần</Table.HeadCell>
         <Table.HeadCell>Học Kỳ</Table.HeadCell>
         <Table.HeadCell>Học Phần Trước</Table.HeadCell>
+        <Table.HeadCell>Ngành Học</Table.HeadCell>
+
         <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
@@ -360,6 +365,12 @@ const KeHoachDayHocTable: FC<{
             <Table.Cell>{khdh.hocPhan?.ten || "N/A"}</Table.Cell>
             <Table.Cell>{khdh.hocKy}</Table.Cell>
             <Table.Cell>{khdh.hocPhanTruoc?.ten || "Không có"}</Table.Cell>
+            <Table.Cell>
+              {khdh.nganhHocId
+                ? nganhHocs.find((hp) => hp.id === khdh.nganhHocId)?.ten ||
+                  "N/A"
+                : ""}
+            </Table.Cell>
             <Table.Cell>
               <Button.Group>
                 <Button

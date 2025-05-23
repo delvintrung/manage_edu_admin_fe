@@ -9,12 +9,7 @@ import { RxUpdate } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import axios from "../../config/axios";
 import { v4 as uuidv4 } from "uuid";
-import { HocPhan } from "../../types";
-
-interface NganhHoc {
-  id: string;
-  ten: string; // Sửa từ tenNganh thành ten để khớp với backend
-}
+import { HocPhan, NganhHoc } from "../../types";
 
 interface TableProps {
   hocPhans: HocPhan[];
@@ -28,6 +23,7 @@ const HocPhanPage: FC = function () {
   );
   const [selectedHocPhan, setSelectedHocPhan] = useState<HocPhan | null>(null);
   const [searchValue, setSearchValue] = useState<string>("");
+  const [selectedNganhHoc, setSelectedNganhHoc] = useState<string>("");
 
   // Fetch all hocPhans and nganhHocs on mount
   useEffect(() => {
@@ -46,18 +42,26 @@ const HocPhanPage: FC = function () {
     fetchData();
   }, []);
 
-  // Handle search (client-side filtering by ten)
+  // Handle search (client-side filtering by ten and nganhHoc)
   const handleSearch = async () => {
     try {
       const result = await axios.get("/api/hocphan");
-      const allHocPhans = result.data;
-      if (!searchValue) {
-        setHocPhans(allHocPhans);
-        return;
+      let filteredHocPhans = result.data;
+
+      // Filter by name if searchValue is provided
+      if (searchValue) {
+        filteredHocPhans = filteredHocPhans.filter((hp: HocPhan) =>
+          hp.ten.toLowerCase().includes(searchValue.toLowerCase())
+        );
       }
-      const filteredHocPhans = allHocPhans.filter((hp: HocPhan) =>
-        hp.ten.toLowerCase().includes(searchValue.toLowerCase())
-      );
+
+      // Filter by nganhHoc if selectedNganhHoc is provided
+      if (selectedNganhHoc) {
+        filteredHocPhans = filteredHocPhans.filter(
+          (hp: HocPhan) => hp.nganhHoc?.id === selectedNganhHoc
+        );
+      }
+
       setHocPhans(filteredHocPhans);
       if (filteredHocPhans.length === 0) {
         alert("Không tìm thấy học phần nào");
@@ -71,12 +75,16 @@ const HocPhanPage: FC = function () {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
+    const selectedNganhHocId = form["nganhHoc"].value;
     const hocPhan: HocPhan = {
       id: openModal === "add" ? uuidv4() : selectedHocPhan!.id,
       ten: form["ten"].value,
-      tinChi: form["tinChi"].value,
+      tinChi: parseInt(form["tinChi"].value),
       tietLyThuyet: parseInt(form["tietLyThuyet"].value),
       tietThucHanh: parseInt(form["tietThucHanh"].value),
+      nganhHoc: selectedNganhHocId
+        ? nganhHocs.find((nganh) => nganh.id === selectedNganhHocId)
+        : undefined,
     };
 
     try {
@@ -119,34 +127,47 @@ const HocPhanPage: FC = function () {
                 Quản lý Học Phần
               </h1>
             </div>
-            <div className="flex">
-              <div className="mb-3 dark:divide-gray-700 sm:mb-0 flex sm:divide-x w-full sm:divide-gray-100">
-                <div className="flex items-center justify-between w-full">
-                  <div className="lg:pr-3">
-                    <Label htmlFor="hocphan-search" className="sr-only">
-                      Tìm kiếm
-                    </Label>
-                    <div className="relative mt-1 lg:w-64 xl:w-96">
-                      <TextInput
-                        id="hocphan-search"
-                        name="hocphan-search"
-                        placeholder="Tìm kiếm học phần theo tên"
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                      />
-                      <IoIosSearch
-                        className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
-                        onClick={handleSearch}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Button color="gray" onClick={() => setOpenModal("add")}>
-                      <IoAddCircle className="mr-3 h-4 w-4" />
-                      Thêm Học Phần
-                    </Button>
-                  </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+              <div className="mb-3 sm:mb-0">
+                <Label htmlFor="hocphan-search" className="sr-only">
+                  Tìm kiếm
+                </Label>
+                <div className="relative mt-1 lg:w-64 xl:w-96">
+                  <TextInput
+                    id="hocphan-search"
+                    name="hocphan-search"
+                    placeholder="Tìm kiếm học phần theo tên"
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                  />
+                  <IoIosSearch
+                    className="w-8 h-8 absolute top-1 right-2 hover:cursor-pointer"
+                    onClick={handleSearch}
+                  />
                 </div>
+              </div>
+              <div className="mb-3 sm:mb-0">
+                <Label htmlFor="nganhhoc-search" className="sr-only">
+                  Tìm kiếm theo ngành học
+                </Label>
+                <Select
+                  id="nganhhoc-search"
+                  value={selectedNganhHoc}
+                  onChange={(e) => setSelectedNganhHoc(e.target.value)}
+                >
+                  <option value="">Tất cả ngành học</option>
+                  {nganhHocs.map((nganh) => (
+                    <option key={nganh.id} value={nganh.id}>
+                      {nganh.ten}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Button color="gray" onClick={() => setOpenModal("add")}>
+                  <IoAddCircle className="mr-3 h-4 w-4" />
+                  Thêm Học Phần
+                </Button>
               </div>
             </div>
           </div>
@@ -225,7 +246,25 @@ const HocPhanPage: FC = function () {
                   required
                 />
               </div>
-
+              <div className="mb-5">
+                <Label htmlFor="nganhHoc">Ngành Học</Label>
+                <Select
+                  id="nganhHoc"
+                  name="nganhHoc"
+                  defaultValue={
+                    openModal === "edit"
+                      ? selectedHocPhan?.nganhHoc?.id || ""
+                      : ""
+                  }
+                >
+                  <option value="">Không chọn ngành học</option>
+                  {nganhHocs.map((nganh) => (
+                    <option key={nganh.id} value={nganh.id}>
+                      {nganh.ten}
+                    </option>
+                  ))}
+                </Select>
+              </div>
               <div className="flex">
                 <Button type="submit">Lưu</Button>
                 <Button
@@ -276,6 +315,7 @@ const HocPhanTable: FC<
         <Table.HeadCell>Số Tín Chỉ</Table.HeadCell>
         <Table.HeadCell>Tiết Lý Thuyết</Table.HeadCell>
         <Table.HeadCell>Tiết Thực Hành</Table.HeadCell>
+        <Table.HeadCell>Ngành Học</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
@@ -291,6 +331,9 @@ const HocPhanTable: FC<
             <Table.Cell>{hocPhan.tinChi}</Table.Cell>
             <Table.Cell>{hocPhan.tietLyThuyet}</Table.Cell>
             <Table.Cell>{hocPhan.tietThucHanh}</Table.Cell>
+            <Table.Cell>
+              {hocPhan.nganhHoc ? hocPhan.nganhHoc.ten : "Không có ngành"}
+            </Table.Cell>
             <Table.Cell>
               <Button.Group>
                 <Button

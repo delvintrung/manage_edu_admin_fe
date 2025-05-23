@@ -20,6 +20,8 @@ interface NganhHoc {
   khoa: Khoa;
   ten: string;
   moTa: string;
+  tongSoTinChi?: number;
+  tongSoHocPhan?: number;
 }
 
 interface TableProps {
@@ -273,6 +275,8 @@ const NganhHocTable: FC<
         <Table.HeadCell>Tên</Table.HeadCell>
         <Table.HeadCell>Mô Tả</Table.HeadCell>
         <Table.HeadCell>Khoa</Table.HeadCell>
+        <Table.HeadCell>Tổng Số Tin Chỉ</Table.HeadCell>
+        <Table.HeadCell>Tổng Số Học Phần</Table.HeadCell>
         <Table.HeadCell>Hành Động</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y">
@@ -287,6 +291,8 @@ const NganhHocTable: FC<
             <Table.Cell>{nganhHoc.ten}</Table.Cell>
             <Table.Cell>{nganhHoc.moTa}</Table.Cell>
             <Table.Cell>{nganhHoc.khoa.ten}</Table.Cell>
+            <Table.Cell>{nganhHoc.tongSoTinChi}</Table.Cell>
+            <Table.Cell>{nganhHoc.tongSoHocPhan}</Table.Cell>
             <Table.Cell>
               <Button.Group>
                 <Button
